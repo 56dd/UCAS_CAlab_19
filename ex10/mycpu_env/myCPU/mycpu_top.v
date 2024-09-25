@@ -38,7 +38,7 @@ module mycpu_top(
     wire [37:0] ws_rf_zip;
 
     wire [32:0] br_zip;
-    wire [`FS2DS_LEN -1:0] fs2ds_bus;
+    wire [63:0] fs2ds_bus;
     wire [`DS2ES_LEN -1:0] ds2es_bus;
 
 

@@ -5,7 +5,7 @@ module EXEreg(
     // ds and es interface
     output wire        es_allowin,
     input  wire        ds2es_valid,
-    input  wire [`DS2ES_LEN -1:0] ds2es_bus,
+    input  wire [147:0] ds2es_bus,
     // output wire        es_allowin,
     // input  wire [5 :0] id_rf_zip, // {id_rf_we, id_rf_waddr}
     // input  wire        id2es_valid,
@@ -57,7 +57,7 @@ module EXEreg(
     always @(posedge clk) begin
         if(~resetn)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
-             es_mem_we, es_rf_we, es_rf_waddr, es_rkd_value, es_pc} <= {`DS2ES_LEN{1'b0}};
+             es_mem_we, es_rf_we, es_rf_waddr, es_rkd_value, es_pc} <= {148{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_mem_we, es_rf_we, es_rf_waddr, es_rkd_value, es_pc} <= ds2es_bus;    

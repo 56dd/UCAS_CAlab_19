@@ -6,11 +6,11 @@ module IDreg(
     input  wire                   fs2ds_valid,
     output wire                   ds_allowin,
     output wire [32:0]            br_zip,
-    input  wire [`FS2DS_LEN -1:0] fs2ds_bus,
+    input  wire [63:0]            fs2ds_bus,
     // ds and es interface
     input  wire                   es_allowin,
     output wire                   ds2es_valid,
-    output wire [`DS2ES_LEN -1:0] ds2es_bus,
+    output wire [147:0]           ds2es_bus,
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip, // {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
     input  wire [37:0] ms_rf_zip, // {ms_rf_we, ms_rf_waddr, ms_rf_wdata}
