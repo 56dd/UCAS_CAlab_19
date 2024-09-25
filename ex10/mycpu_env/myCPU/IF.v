@@ -14,7 +14,7 @@ module IFreg(
     input  wire [32:0]  br_zip,
     // fs to ds interface
     output wire         fs2ds_valid,
-    output wire [`FS2DS_LEN -1:0]  fs2ds_bus
+    output wire [65 -1:0]  fs2ds_bus
 );
 
     //reg         fs_valid;
