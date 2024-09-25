@@ -17,8 +17,8 @@ module IFreg(
     output wire [63:0]  fs2ds_bus
 );
 
-    //reg         fs_valid;
-    //wire        fs_ready_go;
+    reg         fs_valid;
+    wire        fs_ready_go;
     wire        fs_allowin;
     wire        to_fs_valid;
 
