@@ -9,6 +9,7 @@ verilog xil_defaultlib  --include "../../../../../../rtl/xilinx_ip/clk_pll" \
 "../../../../../../../../myCPU/IFreg.v" \
 "../../../../../../../../myCPU/MEMreg.v" \
 "../../../../../../../../myCPU/WBreg.v" \
+"../../../../../../../../myCPU/alu.v" \
 "../../../../../../rtl/BRIDGE/bridge_1x2.v" \
 "../../../../../../rtl/CONFREG/confreg.v" \
 "../../../../../../../../myCPU/mycpu_top.v" \

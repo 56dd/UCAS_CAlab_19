@@ -1,0 +1,38 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/clk_pll/clk_pll_clk_wiz.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll_clk_wiz
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/clk_pll/clk_pll.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/data_ram/sim/data_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module data_ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/inst_ram/sim/inst_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module inst_ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/EXEreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module EXEreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/IDreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module IDreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/IFreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module IFreg
+WARNING: [VRFC 10-3676] redeclaration of ansi port 'fs_inst' is not allowed [d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/IFreg.v:33]
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/MEMreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module MEMreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/WBreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module WBreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/alu.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module alu
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/BRIDGE/bridge_1x2.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module bridge_1x2
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/CONFREG/confreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module confreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/mycpu_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module mycpu_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/reg_file.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module regfile
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/soc_lite_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module soc_lite_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/tools.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module decoder_2_4
+INFO: [VRFC 10-311] analyzing module decoder_4_16
+INFO: [VRFC 10-311] analyzing module decoder_5_32
+INFO: [VRFC 10-311] analyzing module decoder_6_64
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/testbench/mycpu_tb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tb_top

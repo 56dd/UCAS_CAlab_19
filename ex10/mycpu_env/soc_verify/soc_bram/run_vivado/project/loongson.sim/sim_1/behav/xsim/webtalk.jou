@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Webtalk v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Fri Sep 27 01:50:40 2024
+# Process ID: 10960
+# Current directory: d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/run_vivado/project/loongson.sim/sim_1/behav/xsim
+# Command line: wbtcv.exe -mode batch -source d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/run_vivado/project/loongson.sim/sim_1/behav/xsim/xsim.dir/tb_top_behav/webtalk/xsim_webtalk.tcl -notrace
+# Log file: d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/run_vivado/project/loongson.sim/sim_1/behav/xsim/webtalk.log
+# Journal file: d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/run_vivado/project/loongson.sim/sim_1/behav/xsim\webtalk.jou
+#-----------------------------------------------------------
+source d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/run_vivado/project/loongson.sim/sim_1/behav/xsim/xsim.dir/tb_top_behav/webtalk/xsim_webtalk.tcl -notrace
