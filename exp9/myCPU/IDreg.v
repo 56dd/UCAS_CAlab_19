@@ -1,4 +1,3 @@
-`include "macro.h"
 module IDreg(
     input  wire          clk,
     input  wire          resetn,
@@ -6,11 +5,13 @@ module IDreg(
     input  wire                   fs2ds_valid,
     output wire                   ds_allowin,
     output wire [32:0]            br_zip,
-    input  wire [63:0]            fs2ds_bus,
+    input  wire [31:0]            fs_pc,
+    input  wire [31:0]            fs_inst,
     // ds and es interface
     input  wire                   es_allowin,
     output wire                   ds2es_valid,
-    output wire [147:0]           ds2es_bus,
+    output wire [115:0]           ds2es_bus,
+    output reg  [31 :0]           ds_pc,
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip, // {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
     input  wire [37:0] ms_rf_zip, // {ms_rf_we, ms_rf_waddr, ms_rf_wdata}
@@ -28,7 +29,6 @@ module IDreg(
     wire        ds_src1_is_pc;
     wire        ds_src2_is_imm;
     wire        ds_res_from_mem;
-    reg  [31:0] ds_pc;
     wire [31:0] ds_rkd_value;
     wire        ds_mem_we;
 
@@ -140,7 +140,7 @@ module IDreg(
         if(~resetn)
             {ds_inst, ds_pc} <= 64'b0;
         if(fs2ds_valid & ds_allowin) begin
-            {ds_inst, ds_pc} <= fs2ds_bus;
+            {ds_inst, ds_pc} <= {fs_inst, fs_pc};
         end
     end
 
@@ -294,7 +294,6 @@ module IDreg(
                         ds_mem_we,          //1  bit
                         ds_rf_we,           //1  bit
                         ds_rf_waddr,        //5  bit
-                        ds_rkd_value,       //32 bit
-                        ds_pc               //32 bit
+                        ds_rkd_value        //32 bit                                    
                         };
 endmodule

@@ -1,4 +1,3 @@
-`include "macro.h"
 module IFreg(
     input  wire   clk,
     input  wire   resetn,
@@ -14,7 +13,8 @@ module IFreg(
     input  wire [32:0]  br_zip,
     // fs to ds interface
     output wire         fs2ds_valid,
-    output wire [63:0]  fs2ds_bus
+    output wire [31:0]  fs_inst,
+    output reg  [31:0]  fs_pc
 );
 
     reg         fs_valid;
@@ -31,9 +31,6 @@ module IFreg(
     assign {br_taken, br_target} = br_zip;
 
     wire [31:0] fs_inst;
-    reg  [31:0] fs_pc;
-    assign fs2ds_bus = {fs_inst, fs_pc};
-
 
     assign seq_pc       = fs_pc + 3'h4;
     assign nextpc       = br_taken ? br_target : seq_pc;
@@ -71,5 +68,5 @@ module IFreg(
     end
 
     assign fs_inst    = inst_sram_rdata;
-    assign fs2ds_bus  = {fs_inst, fs_pc}; // 32+32
+
 endmodule

@@ -1,20 +1,12 @@
-`include "macro.h"
 module EXEreg(
     input  wire        clk,
     input  wire        resetn,
     // ds and es interface
     output wire        es_allowin,
     input  wire        ds2es_valid,
-    input  wire [147:0] ds2es_bus,
-    // output wire        es_allowin,
-    // input  wire [5 :0] id_rf_zip, // {id_rf_we, id_rf_waddr}
-    // input  wire        id2es_valid,
-    // input  wire [31:0] id_pc,    
-    // input  wire [31:0] id_alu_result, 
-    // input  wire        id_res_from_mem, 
-    // input  wire        id_mem_we,
-    // input  wire [31:0] id_rkd_value,
-
+    input  wire [115:0] ds2es_bus,
+    input  wire [31:0] ds_pc,
+    
     // exe and mem state interface
     input  wire        ms_allowin,
     output wire [38:0] es_rf_zip, // {es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
@@ -60,7 +52,7 @@ module EXEreg(
              es_mem_we, es_rf_we, es_rf_waddr, es_rkd_value, es_pc} <= {148{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
-             es_mem_we, es_rf_we, es_rf_waddr, es_rkd_value, es_pc} <= ds2es_bus;    
+             es_mem_we, es_rf_we, es_rf_waddr, es_rkd_value, es_pc} <= {ds2es_bus,ds_pc};    
     end
 
 
