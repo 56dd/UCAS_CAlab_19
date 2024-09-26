@@ -1,0 +1,21 @@
+0.6
+2019.2
+Nov  6 2019
+21:57:16
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/EXEreg.v,1727368300,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/IDreg.v,,EXEreg,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/IDreg.v,1727371814,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/IFreg.v,,IDreg,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/IFreg.v,1727369950,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/MEMreg.v,,IFreg,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/MEMreg.v,1727278664,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/WBreg.v,,MEMreg,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/WBreg.v,1727268108,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/BRIDGE/bridge_1x2.v,,WBreg,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/mycpu_top.v,1727368260,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/reg_file.v,,mycpu_top,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/reg_file.v,1727270904,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/soc_lite_top.v,,regfile,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/tools.v,1727270976,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/testbench/mycpu_tb.v,,decoder_2_4;decoder_4_16;decoder_5_32;decoder_6_64,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/BRIDGE/bridge_1x2.v,1727268108,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/CONFREG/confreg.v,,bridge_1x2,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/CONFREG/confreg.v,1727268108,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/mycpu_top.v,,confreg,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/soc_lite_top.v,1727268108,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/tools.v,,soc_lite_top,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/clk_pll/clk_pll.v,1727372228,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/data_ram/sim/data_ram.v,,clk_pll,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/clk_pll/clk_pll_clk_wiz.v,1727372228,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/clk_pll/clk_pll.v,,clk_pll_clk_wiz,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/data_ram/sim/data_ram.v,1727372231,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/inst_ram/sim/inst_ram.v,,data_ram,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/inst_ram/sim/inst_ram.v,1727372242,verilog,,d:/calab/UCAS_CAlab_19/ex10/mycpu_env/myCPU/EXEreg.v,,inst_ram,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/run_vivado/project/loongson.sim/sim_1/behav/xsim/glbl.v,1573089660,verilog,,,,glbl,,,,,,,,
+d:/calab/UCAS_CAlab_19/ex10/mycpu_env/soc_verify/soc_bram/testbench/mycpu_tb.v,1727268108,verilog,,,,tb_top,,,../../../../../../rtl/xilinx_ip/clk_pll,,,,,
