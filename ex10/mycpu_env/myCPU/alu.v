@@ -61,10 +61,7 @@ wire [31:0] div_result;
 wire [31:0] mod_result;
 wire [31:0] divu_result;
 wire [31:0] modu_result;
-wire [31:0] mul_result;
-wire [31:0] mulh_result;
-wire [31:0] mulhu_result;
-
+wire [63:0] mul_result;
 
 // 32-bit adder
 wire [31:0] adder_a;
@@ -105,7 +102,7 @@ assign sr64_result = {{32{op_sra & alu_src1[31]}}, alu_src1[31:0]} >> alu_src2[4
 
 assign sr_result   = sr64_result[31:0];
 
-mul mul(
+mul u_mul(
     .mul_clk(clk),
     .resetn(resetn),
     .mul_signed(op_mulh|op_mul),
