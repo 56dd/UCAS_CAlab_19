@@ -58,6 +58,8 @@ module EXEreg(
 
 //------------------------------alu interface---------------------------------------
     alu u_alu(
+        .clk        (clk          ),
+        .resetn     (resetn       ),
         .alu_op     (es_alu_op    ),
         .alu_src1   (es_alu_src1  ),
         .alu_src2   (es_alu_src2  ),

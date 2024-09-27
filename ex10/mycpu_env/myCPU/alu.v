@@ -1,4 +1,6 @@
 module alu(
+  input  wire        clk,
+  input  wire        resetn,
   input  wire [18:0] alu_op,
   input  wire [31:0] alu_src1,
   input  wire [31:0] alu_src2,
@@ -103,24 +105,14 @@ assign sr64_result = {{32{op_sra & alu_src1[31]}}, alu_src1[31:0]} >> alu_src2[4
 
 assign sr_result   = sr64_result[31:0];
 
-// MUL, MULH, MULHU result
-wire   [62:0] mul_result63;
-wire   [63:0] mul_result64;
-wire   [63:0] mul_result64u;
-wire   [31:0] mul_src1;
-wire   [31:0] mul_src2;
-wire          mul_result_sign;
-
-assign mul_src1 = alu_src1[31] ? ~alu_src1 + 1 : alu_src1;
-assign mul_src2 = alu_src2[31] ? ~alu_src2 + 1 : alu_src2;
-assign mul_result63 = mul_src1 * mul_src2;
-assign mul_result_sign = alu_src1[31] ^ alu_src2[31];
-assign mul_result64[63] = mul_result63 == 63'h0000000000000000 ? 1'b0 : mul_result_sign;
-assign mul_result64[62:0] =mul_result64[63] ? ~mul_result63 + 1 : mul_result63;
-assign mul_result = mul_result64[31:0];
-assign mulh_result = mul_result64[63:32];
-assign mul_result64u  = alu_src1 * alu_src2;
-assign mulhu_result   = mul_result64u[63:32];
+mul mul(
+    .mul_clk(clk),
+    .resetn(resetn),
+    .mul_signed(op_mulh|op_mul),
+    .A(alu_src1),
+    .B(alu_src2),
+    .result(mul_result)
+);
 
 // DIV, MOD result
 wire   [31:0] div_src1;
@@ -158,8 +150,8 @@ assign alu_result = ({32{op_add|op_sub}} & add_sub_result)
                   | ({32{op_mod       }} & mod_result)
                   | ({32{op_divu      }} & divu_result)
                   | ({32{op_modu      }} & modu_result)
-                  | ({32{op_mul       }} & mul_result)
-                  | ({32{op_mulh      }} & mulh_result)
-                  | ({32{op_mulhu     }} & mulhu_result);
+                  | ({32{op_mul       }} & mul_result[31:0])
+                  | ({32{op_mulh      }} & mul_result[63:32])
+                  | ({32{op_mulhu     }} & mul_result[63:32]);
 
 endmodule
