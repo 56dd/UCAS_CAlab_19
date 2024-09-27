@@ -80,8 +80,20 @@ module IDreg(
     wire        inst_beq;
     wire        inst_bne;
     wire        inst_lu12i_w;
+    wire        inst_slti;
+    wire        inst_sltui;
+    wire        inst_andi;
+    wire        inst_ori;
+    wire        inst_xori;
+    wire        inst_sll_w;
+    wire        inst_srl_w;
+    wire        inst_sra_w;
+    wire        inst_pcaddu12i;
+
+
 
     wire        need_ui5;
+    wire        need_ui12;
     wire        need_si12;
     wire        need_si16;
     wire        need_si20;
@@ -195,31 +207,45 @@ module IDreg(
     assign inst_beq    = op_31_26_d[6'h16];
     assign inst_bne    = op_31_26_d[6'h17];
     assign inst_lu12i_w= op_31_26_d[6'h05] & ~ds_inst[25];
+    assign inst_slti   = op_31_26_d[6'h00] & op_25_22_d[4'h8];
+    assign inst_sltui  = op_31_26_d[6'h00] & op_25_22_d[4'h9];
+    assign inst_andi   = op_31_26_d[6'h00] & op_25_22_d[4'hd];
+    assign inst_ori    = op_31_26_d[6'h00] & op_25_22_d[4'he];
+    assign inst_xori   = op_31_26_d[6'h00] & op_25_22_d[4'hf];
+    assign inst_sll_w  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h1] & op_19_15_d[5'h0e];
+    assign inst_srl_w  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h1] & op_19_15_d[5'h0f];
+    assign inst_sra_w  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h1] & op_19_15_d[5'h10];
+    assign inst_pcaddu12i= op_31_26_d[6'h07] & ~ds_inst[25];
+
+
 
     assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_st_w
-                        | inst_jirl | inst_bl;
+                        | inst_jirl | inst_bl|inst_pcaddu12i;
+                        //inst_pcaddu12i复用bl和lu12i.w 在译码和执行源操作数准备流水阶段的数据通道
     assign ds_alu_op[ 1] = inst_sub_w;
-    assign ds_alu_op[ 2] = inst_slt;
-    assign ds_alu_op[ 3] = inst_sltu;
-    assign ds_alu_op[ 4] = inst_and;
+    assign ds_alu_op[ 2] = inst_slt|inst_slti;
+    assign ds_alu_op[ 3] = inst_sltu|inst_sltui;
+    assign ds_alu_op[ 4] = inst_and | inst_andi;
     assign ds_alu_op[ 5] = inst_nor;
-    assign ds_alu_op[ 6] = inst_or;
-    assign ds_alu_op[ 7] = inst_xor;
-    assign ds_alu_op[ 8] = inst_slli_w;
-    assign ds_alu_op[ 9] = inst_srli_w;
-    assign ds_alu_op[10] = inst_srai_w;
+    assign ds_alu_op[ 6] = inst_or|inst_ori;
+    assign ds_alu_op[ 7] = inst_xor|inst_xori;
+    assign ds_alu_op[ 8] = inst_slli_w|inst_sll_w;
+    assign ds_alu_op[ 9] = inst_srli_w|inst_srl_w;
+    assign ds_alu_op[10] = inst_srai_w|inst_sra_w;
     assign ds_alu_op[11] = inst_lu12i_w;
 
     assign need_ui5   =  inst_slli_w | inst_srli_w | inst_srai_w;
-    assign need_si12  =  inst_addi_w | inst_ld_w | inst_st_w;
+    assign need_ui12  =  inst_andi | inst_ori |inst_xori;
+    assign need_si12  =  inst_addi_w | inst_ld_w | inst_st_w | inst_slti | inst_sltui;
     assign need_si16  =  inst_jirl | inst_beq | inst_bne;
-    assign need_si20  =  inst_lu12i_w;
+    assign need_si20  =  inst_lu12i_w|inst_pcaddu12i;
     assign need_si26  =  inst_b | inst_bl;
     assign src2_is_4  =  inst_jirl | inst_bl;
 
     assign imm = src2_is_4 ? 32'h4                      :
                 need_si20 ? {i20[19:0], 12'b0}         :
-    /*need_ui5 || need_si12*/{{20{i12[11]}}, i12[11:0]} ;
+                (need_ui5 || need_si12)?{{20{i12[11]}}, i12[11:0]} :
+    /*need_ui12*/             {20'b0, i12[11:0]};
 
     assign br_offs = need_si26 ? {{ 4{i26[25]}}, i26[25:0], 2'b0} :
                                 {{14{i16[15]}}, i16[15:0], 2'b0} ;
@@ -228,7 +254,7 @@ module IDreg(
 
     assign src_reg_is_rd = inst_beq | inst_bne | inst_st_w;
 
-    assign ds_src1_is_pc    = inst_jirl | inst_bl;
+    assign ds_src1_is_pc    = inst_jirl | inst_bl|inst_pcaddu12i;
 
     assign ds_src2_is_imm   = inst_slli_w |
                         inst_srli_w |
@@ -238,7 +264,13 @@ module IDreg(
                         inst_st_w   |
                         inst_lu12i_w|
                         inst_jirl   |
-                        inst_bl     ;
+                        inst_bl     |
+                        inst_slti   |
+                        inst_sltui  |
+                        inst_andi   |
+                        inst_ori    |
+                        inst_xori   |
+                        inst_pcaddu12i;
 
     assign ds_alu_src1 = ds_src1_is_pc  ? ds_pc[31:0] : rj_value;
     assign ds_alu_src2 = ds_src2_is_imm ? imm : rkd_value;
