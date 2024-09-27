@@ -40,7 +40,7 @@ module mycpu_top(
 
     wire [32:0] br_zip;
     wire [31:0] fs_inst;
-    wire [115:0] ds2es_bus;
+    wire [122:0] ds2es_bus;
 
 
     IFreg my_ifReg(

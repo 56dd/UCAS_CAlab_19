@@ -4,7 +4,7 @@ module EXEreg(
     // ds and es interface
     output wire        es_allowin,
     input  wire        ds2es_valid,
-    input  wire [115:0] ds2es_bus,
+    input  wire [122:0] ds2es_bus,
     input  wire [31:0] ds_pc,
     
     // exe and mem state interface
@@ -22,7 +22,7 @@ module EXEreg(
     wire        es_ready_go;
     reg         es_valid;
 
-    reg  [11:0] es_alu_op     ;
+    reg  [18:0] es_alu_op     ;
     reg  [31:0] es_alu_src1   ;
     reg  [31:0] es_alu_src2   ;
     wire [31:0] es_alu_result ; 
@@ -49,7 +49,7 @@ module EXEreg(
     always @(posedge clk) begin
         if(~resetn)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
-             es_mem_we, es_rf_we, es_rf_waddr, es_rkd_value, es_pc} <= {148{1'b0}};
+             es_mem_we, es_rf_we, es_rf_waddr, es_rkd_value, es_pc} <= {119{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_mem_we, es_rf_we, es_rf_waddr, es_rkd_value, es_pc} <= {ds2es_bus,ds_pc};    
