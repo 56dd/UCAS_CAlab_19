@@ -21,6 +21,7 @@ module EXEreg(
 
     wire        es_ready_go;
     reg         es_valid;
+    wire        complete;
 
     reg  [18:0] es_alu_op     ;
     reg  [31:0] es_alu_src1   ;
@@ -35,7 +36,7 @@ module EXEreg(
 
 //------------------------------state control signal---------------------------------------
 
-    assign es_ready_go      = 1'b1;
+    assign es_ready_go      = complete;
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
     assign es2ms_valid  = es_valid & es_ready_go;
     always @(posedge clk) begin
@@ -63,7 +64,8 @@ module EXEreg(
         .alu_op     (es_alu_op    ),
         .alu_src1   (es_alu_src1  ),
         .alu_src2   (es_alu_src2  ),
-        .alu_result (es_alu_result)
+        .alu_result (es_alu_result),
+        .complete   (complete     )
     );
 //------------------------------data sram interface---------------------------------------
     assign data_sram_en     = (es_res_from_mem || es_mem_we) && es_valid;

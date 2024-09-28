@@ -4,7 +4,8 @@ module alu(
   input  wire [18:0] alu_op,
   input  wire [31:0] alu_src1,
   input  wire [31:0] alu_src2,
-  output wire [31:0] alu_result
+  output wire [31:0] alu_result,
+  output wire        complete
 );
 
 wire op_add;   //add operation
@@ -19,11 +20,13 @@ wire op_sll;   //logic left shift
 wire op_srl;   //logic right shift
 wire op_sra;   //arithmetic right shift
 wire op_lui;   //Load Upper Immediate
-//以下是我的修改部分
 wire op_div;   //division
 wire op_mod;   //modulus
 wire op_divu;  //unsigned division
 wire op_modu;  //unsigned modulus
+wire op_mul;   //multiplication
+wire op_mulh;  //multiplication high
+wire op_mulhu; //unsigned multiplication
 
 // control code decomposition
 assign op_add  = alu_op[ 0];
@@ -59,8 +62,6 @@ wire [63:0] sr64_result;
 wire [31:0] sr_result;
 wire [31:0] div_result;
 wire [31:0] mod_result;
-wire [31:0] divu_result;
-wire [31:0] modu_result;
 wire [63:0] mul_result;
 
 // 32-bit adder
@@ -112,25 +113,17 @@ mul u_mul(
 );
 
 // DIV, MOD result
-wire   [31:0] div_src1;
-wire   [31:0] div_src2;
-wire   [30:0] div_resultu;
-wire   [31:0] mod_resultu;
-wire   [31:0] div_result_sign;
-wire          mod_result_sign;
-
-assign div_src1 =  (op_divu | op_modu) ? alu_src1 : (alu_src1[31] ? ~alu_src1 + 1 : alu_src1);
-assign div_src2 =  (op_divu | op_modu) ? alu_src2 : (alu_src2[31] ? ~alu_src2 + 1 : alu_src2);
-assign div_result_sign = alu_src1[31] ^ alu_src2[31];
-assign div_resultu = div_src1 / div_src2;
-assign div_result[30:0] = div_result[31] ? ~div_resultu + 1 : div_resultu;
-assign div_result[31] = div_resultu == 31'h00000000 ? 1'b0 : div_result_sign;
-assign mod_result_sign =  alu_src1[31];
-assign mod_resultu = div_src1 % div_src2;
-assign mod_result[30:0] = mod_result[31] ? ~mod_resultu + 1 : mod_resultu;
-assign mod_result[31] = mod_resultu == 32'h00000000 ? 1'b0 : mod_result_sign;
-assign divu_result = div_src1 / div_src2;
-assign modu_result = div_src1 % div_src2;
+div u_div(
+    .div_clk(clk),
+    .resetn(resetn),
+    .div(op_div|op_mod|op_divu|op_modu),
+    .div_signed(op_div|op_mod),
+    .x(alu_src1),
+    .y(alu_src2),
+    .s(div_result),
+    .r(mod_result),
+    .complete(complete)
+);
 
 // final result mux
 assign alu_result = ({32{op_add|op_sub}} & add_sub_result)
@@ -145,8 +138,8 @@ assign alu_result = ({32{op_add|op_sub}} & add_sub_result)
                   | ({32{op_srl|op_sra}} & sr_result)
                   | ({32{op_div       }} & div_result)
                   | ({32{op_mod       }} & mod_result)
-                  | ({32{op_divu      }} & divu_result)
-                  | ({32{op_modu      }} & modu_result)
+                  | ({32{op_divu      }} & div_result)
+                  | ({32{op_modu      }} & mod_result)
                   | ({32{op_mul       }} & mul_result[31:0])
                   | ({32{op_mulh      }} & mul_result[63:32])
                   | ({32{op_mulhu     }} & mul_result[63:32]);
