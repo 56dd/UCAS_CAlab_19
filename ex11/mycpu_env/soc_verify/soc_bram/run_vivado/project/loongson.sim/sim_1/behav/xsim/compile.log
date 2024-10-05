@@ -1,0 +1,12 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex11/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/clk_pll/clk_pll_clk_wiz.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll_clk_wiz
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex11/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/clk_pll/clk_pll.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex11/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/data_ram/sim/data_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module data_ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex11/mycpu_env/soc_verify/soc_bram/rtl/xilinx_ip/inst_ram/sim/inst_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module inst_ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/ex11/mycpu_env/myCPU/EXEreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module EXEreg
+ERROR: [VRFC 10-3236] concurrent assignment to a non-net 'es_mem_we' is not permitted [d:/calab/UCAS_CAlab_19/ex11/mycpu_env/myCPU/EXEreg.v:75]
+ERROR: [VRFC 10-2865] module 'EXEreg' ignored due to previous errors [d:/calab/UCAS_CAlab_19/ex11/mycpu_env/myCPU/EXEreg.v:1]

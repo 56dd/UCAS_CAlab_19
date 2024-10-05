@@ -76,6 +76,10 @@ module IDreg(
     wire        inst_srai_w;
     wire        inst_addi_w;
     wire        inst_ld_w;
+    wire        inst_ld_b;
+    wire        inst_ld_h;
+    wire        inst_ld_bu;
+    wire        inst_ld_hu;
     wire        inst_st_w;
     wire        inst_st_b;
     wire        inst_st_h;
@@ -210,6 +214,10 @@ module IDreg(
     assign inst_srai_w = op_31_26_d[6'h00] & op_25_22_d[4'h1] & op_21_20_d[2'h0] & op_19_15_d[5'h11];
     assign inst_addi_w = op_31_26_d[6'h00] & op_25_22_d[4'ha];
     assign inst_ld_w   = op_31_26_d[6'h0a] & op_25_22_d[4'h2];
+    assign inst_ld_b   = op_31_26_d[6'h0a] & op_25_22_d[4'h0];
+    assign inst_ld_h   = op_31_26_d[6'h0a] & op_25_22_d[4'h1];
+    assign inst_ld_bu  = op_31_26_d[6'h0a] & op_25_22_d[4'h8];
+    assign inst_ld_hu  = op_31_26_d[6'h0a] & op_25_22_d[4'h9];
     assign inst_st_w   = op_31_26_d[6'h0a] & op_25_22_d[4'h6];
     assign inst_st_b   = op_31_26_d[6'h0a] & op_25_22_d[4'h4];
     assign inst_st_h   = op_31_26_d[6'h0a] & op_25_22_d[4'h5];
@@ -237,8 +245,9 @@ module IDreg(
     assign inst_mod_wu = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h03];
 
 
-    assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_st_w|inst_st_b|inst_st_h
-                        | inst_jirl | inst_bl|inst_pcaddu12i;
+    assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu
+                        | inst_st_w   |inst_st_b    |inst_st_h
+                        | inst_jirl   | inst_bl     |inst_pcaddu12i;
                         //inst_pcaddu12i复用bl和lu12i.w 在译码和执行源操作数准备流水阶段的数据通道
     assign ds_alu_op[ 1] = inst_sub_w;
     assign ds_alu_op[ 2] = inst_slt|inst_slti;
@@ -261,7 +270,8 @@ module IDreg(
 
     assign need_ui5   =  inst_slli_w | inst_srli_w | inst_srai_w;
     assign need_ui12  =  inst_andi | inst_ori |inst_xori;
-    assign need_si12  =  inst_addi_w | inst_ld_w | inst_st_w |inst_st_b|inst_st_h| inst_slti | inst_sltui;
+    assign need_si12  =  inst_addi_w | inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu
+                        |inst_st_w   |inst_st_b  |inst_st_h  | inst_slti | inst_sltui;
     assign need_si16  =  inst_jirl | inst_beq | inst_bne;
     assign need_si20  =  inst_lu12i_w|inst_pcaddu12i;
     assign need_si26  =  inst_b | inst_bl;
@@ -286,6 +296,10 @@ module IDreg(
                         inst_srai_w |
                         inst_addi_w |
                         inst_ld_w   |
+                        inst_ld_b   |
+                        inst_ld_h   |
+                        inst_ld_bu  |
+                        inst_ld_hu  |
                         inst_st_w   |
                         inst_st_b   |
                         inst_st_h   |
@@ -306,7 +320,7 @@ module IDreg(
     assign ds_inst_st_b =inst_st_b ;
     assign ds_inst_st_h =inst_st_h ;
     assign ds_inst_st_w =inst_st_w ;
-    assign ds_res_from_mem  = inst_ld_w;
+    assign ds_res_from_mem  = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu;
     assign dst_is_r1     = inst_bl;
     assign gr_we         = ~inst_st_w & ~inst_st_b & ~inst_st_h & ~inst_beq & ~inst_bne & ~inst_b & ds_valid; 
     assign ds_mem_we        = inst_st_w & inst_st_b & inst_st_h & ds_valid;   
