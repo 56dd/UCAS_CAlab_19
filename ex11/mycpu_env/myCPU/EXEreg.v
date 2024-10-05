@@ -4,14 +4,16 @@ module EXEreg(
     // ds and es interface
     output wire        es_allowin,
     input  wire        ds2es_valid,
-    input  wire [122:0] ds2es_bus,
+    input  wire [124:0] ds2es_bus,
     input  wire [31:0] ds_pc,
+    input  wire  [4:0]  ds_res_from_mem_zip,
     
     // exe and mem state interface
     input  wire        ms_allowin,
     output wire [38:0] es_rf_zip, // {es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
     output wire        es2ms_valid,
-    output reg  [31:0] es_pc,    
+    output reg  [31:0] es_pc, 
+    output reg  [4 :0] es_res_from_mem_zip,   
     // data sram interface
     output wire        data_sram_en,
     output wire [ 3:0] data_sram_we,
@@ -29,7 +31,7 @@ module EXEreg(
     wire [31:0] es_alu_result ; 
     reg  [31:0] es_rkd_value  ;
     reg         es_res_from_mem;
-    reg  [ 3:0] es_mem_we     ;
+    wire  [ 3:0] es_mem_we     ;
     reg         es_inst_st_b  ;
     reg         es_inst_st_h  ;
     reg         es_inst_st_w  ;
@@ -54,10 +56,12 @@ module EXEreg(
     always @(posedge clk) begin
         if(~resetn)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
-             es_rf_we, es_rf_waddr, es_rkd_value,es_inst_st_b,es_inst_st_h,es_inst_st_w, es_pc} <= {121{1'b0}};
+             es_rf_we, es_rf_waddr, es_rkd_value,es_inst_st_b,es_inst_st_h,es_inst_st_w, es_pc,
+             es_res_from_mem_zip} <= {162{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
-             es_rf_we, es_rf_waddr, es_rkd_value,es_inst_st_b,es_inst_st_h,es_inst_st_w, es_pc} <= {ds2es_bus,ds_pc};    
+             es_rf_we, es_rf_waddr, es_rkd_value,es_inst_st_b,es_inst_st_h,es_inst_st_w, es_pc,
+             es_res_from_mem_zip} <= {ds2es_bus,ds_pc,ds_res_from_mem_zip};    
     end
 
 
@@ -82,7 +86,7 @@ module EXEreg(
                              4'b0000;
                              
     assign data_sram_en     = (es_res_from_mem || es_mem_we) && es_valid;
-    assign data_sram_we     = {4{es_mem_we & es_valid}};
+    assign data_sram_we     = es_mem_we & {4{es_valid}};
     assign data_sram_addr   = es_alu_result;
     assign data_sram_wdata  = es_inst_st_b?{4{es_rkd_value[7:0]}} :
                               es_inst_st_h?{2{es_rkd_value[15:0]}} :

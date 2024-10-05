@@ -40,7 +40,10 @@ module mycpu_top(
 
     wire [32:0] br_zip;
     wire [31:0] fs_inst;
-    wire [122:0] ds2es_bus;
+    wire [124:0] ds2es_bus;
+
+    wire [4:0]  ds_res_from_mem_zip;
+    wire [4:0]  es_res_from_mem_zip;
 
 
     IFreg my_ifReg(
@@ -74,6 +77,7 @@ module mycpu_top(
         .ds2es_valid(ds2es_valid),
         .ds_pc(ds_pc),
         .ds2es_bus(ds2es_bus),
+        .ds_res_from_mem_zip(ds_res_from_mem_zip),
 
         .ws_rf_zip(ws_rf_zip),
         .ms_rf_zip(ms_rf_zip),
@@ -88,11 +92,13 @@ module mycpu_top(
         .ds2es_valid(ds2es_valid),
         .ds2es_bus(ds2es_bus),
         .ds_pc(ds_pc),
+        .ds_res_from_mem_zip(ds_res_from_mem_zip),
 
         .ms_allowin(ms_allowin),
         .es_rf_zip(es_rf_zip),
         .es2ms_valid(es2ms_valid),
         .es_pc(es_pc),
+        .es_res_from_mem_zip(es_res_from_mem_zip),
         
         .data_sram_en(data_sram_en),
         .data_sram_we(data_sram_we),
@@ -108,6 +114,7 @@ module mycpu_top(
         .es_rf_zip(es_rf_zip),
         .es2ms_valid(es2ms_valid),
         .es_pc(es_pc),
+        .es_res_from_mem_zip(es_res_from_mem_zip),
 
         .ws_allowin(ws_allowin),
         .ms_rf_zip(ms_rf_zip),

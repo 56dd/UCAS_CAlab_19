@@ -12,6 +12,7 @@ module IDreg(
     output wire                   ds2es_valid,
     output wire [124:0]           ds2es_bus,
     output reg  [31 :0]           ds_pc,
+    output wire [4  :0]           ds_res_from_mem_zip,
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip, // {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
     input  wire [37:0] ms_rf_zip, // {ms_rf_we, ms_rf_waddr, ms_rf_wdata}
@@ -372,7 +373,9 @@ module IDreg(
                         ds_rf_waddr,        //5  bit
                         ds_rkd_value,       //32 bit
                         ds_inst_st_b,        //1
-                        ds_inst_st_h         //1
+                        ds_inst_st_h,         //1
                         ds_inst_st_w         //1                         
                         };
+
+    assign ds_res_from_mem_zip = {inst_ld_bu, inst_ld_hu, inst_ld_b, inst_ld_h, inst_ld_w};
 endmodule
