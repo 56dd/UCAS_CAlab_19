@@ -10,7 +10,7 @@ module IDreg(
     // ds and es interface
     input  wire                   es_allowin,
     output wire                   ds2es_valid,
-    output wire [122:0]           ds2es_bus,
+    output wire [124:0]           ds2es_bus,
     output reg  [31 :0]           ds_pc,
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip, // {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
@@ -31,6 +31,9 @@ module IDreg(
     wire        ds_res_from_mem;
     wire [31:0] ds_rkd_value;
     wire        ds_mem_we;
+    wire        ds_inst_st_b;
+    wire        ds_inst_st_h;
+    wire        ds_inst_st_w;
 
     wire        dst_is_r1;
     wire        gr_we;
@@ -74,6 +77,8 @@ module IDreg(
     wire        inst_addi_w;
     wire        inst_ld_w;
     wire        inst_st_w;
+    wire        inst_st_b;
+    wire        inst_st_h;
     wire        inst_jirl;
     wire        inst_b;
     wire        inst_bl;
@@ -206,6 +211,8 @@ module IDreg(
     assign inst_addi_w = op_31_26_d[6'h00] & op_25_22_d[4'ha];
     assign inst_ld_w   = op_31_26_d[6'h0a] & op_25_22_d[4'h2];
     assign inst_st_w   = op_31_26_d[6'h0a] & op_25_22_d[4'h6];
+    assign inst_st_b   = op_31_26_d[6'h0a] & op_25_22_d[4'h4];
+    assign inst_st_h   = op_31_26_d[6'h0a] & op_25_22_d[4'h5];
     assign inst_jirl   = op_31_26_d[6'h13];
     assign inst_b      = op_31_26_d[6'h14];
     assign inst_bl     = op_31_26_d[6'h15];
@@ -230,7 +237,7 @@ module IDreg(
     assign inst_mod_wu = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h03];
 
 
-    assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_st_w
+    assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_st_w|inst_st_b|inst_st_h
                         | inst_jirl | inst_bl|inst_pcaddu12i;
                         //inst_pcaddu12i复用bl和lu12i.w 在译码和执行源操作数准备流水阶段的数据通道
     assign ds_alu_op[ 1] = inst_sub_w;
@@ -254,7 +261,7 @@ module IDreg(
 
     assign need_ui5   =  inst_slli_w | inst_srli_w | inst_srai_w;
     assign need_ui12  =  inst_andi | inst_ori |inst_xori;
-    assign need_si12  =  inst_addi_w | inst_ld_w | inst_st_w | inst_slti | inst_sltui;
+    assign need_si12  =  inst_addi_w | inst_ld_w | inst_st_w |inst_st_b|inst_st_h| inst_slti | inst_sltui;
     assign need_si16  =  inst_jirl | inst_beq | inst_bne;
     assign need_si20  =  inst_lu12i_w|inst_pcaddu12i;
     assign need_si26  =  inst_b | inst_bl;
@@ -270,7 +277,7 @@ module IDreg(
 
     assign jirl_offs = {{14{i16[15]}}, i16[15:0], 2'b0};
 
-    assign src_reg_is_rd = inst_beq | inst_bne | inst_st_w;
+    assign src_reg_is_rd = inst_beq | inst_bne | inst_st_w|inst_st_b|inst_st_h;
 
     assign ds_src1_is_pc    = inst_jirl | inst_bl|inst_pcaddu12i;
 
@@ -280,6 +287,8 @@ module IDreg(
                         inst_addi_w |
                         inst_ld_w   |
                         inst_st_w   |
+                        inst_st_b   |
+                        inst_st_h   |
                         inst_lu12i_w|
                         inst_jirl   |
                         inst_bl     |
@@ -294,10 +303,13 @@ module IDreg(
     assign ds_alu_src2 = ds_src2_is_imm ? imm : rkd_value;
 
     assign ds_rkd_value = rkd_value;
+    assign ds_inst_st_b =inst_st_b ;
+    assign ds_inst_st_h =inst_st_h ;
+    assign ds_inst_st_w =inst_st_w ;
     assign ds_res_from_mem  = inst_ld_w;
     assign dst_is_r1     = inst_bl;
-    assign gr_we         = ~inst_st_w & ~inst_beq & ~inst_bne & ~inst_b & ds_valid; 
-    assign ds_mem_we        = inst_st_w & ds_valid;   
+    assign gr_we         = ~inst_st_w & ~inst_st_b & ~inst_st_h & ~inst_beq & ~inst_bne & ~inst_b & ds_valid; 
+    assign ds_mem_we        = inst_st_w & inst_st_b & inst_st_h & ds_valid;   
     assign dest          = dst_is_r1 ? 5'd1 : rd;
 
 //------------------------------regfile control---------------------------------------
@@ -341,9 +353,12 @@ module IDreg(
                         ds_res_from_mem,    //1  bit
                         ds_alu_src1,        //32 bit
                         ds_alu_src2,        //32 bit
-                        ds_mem_we,          //1  bit
+                        //ds_mem_we,          //1  bit
                         ds_rf_we,           //1  bit
                         ds_rf_waddr,        //5  bit
-                        ds_rkd_value        //32 bit                                    
+                        ds_rkd_value,       //32 bit
+                        ds_inst_st_b,        //1
+                        ds_inst_st_h         //1
+                        ds_inst_st_w         //1                         
                         };
 endmodule
