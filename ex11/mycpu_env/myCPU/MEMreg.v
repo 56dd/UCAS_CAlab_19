@@ -62,22 +62,22 @@ module MEMreg(
     end
 
     assign res_from_mem_position = ms_alu_result[1:0];
-    assign mem_byte = {8{res_from_mem_position == 2'b00}} && data_sram_rdata[7:0]
-                   || {8{res_from_mem_position == 2'b01}} && data_sram_rdata[15:8]
-                   || {8{res_from_mem_position == 2'b10}} && data_sram_rdata[23:16]
-                   || {8{res_from_mem_position == 2'b11}} && data_sram_rdata[31:24];
-    assign mem_half = {16{~res_from_mem_position[1]}} && data_sram_rdata[15:0]
-                   || {16{ res_from_mem_position[1]}} && data_sram_rdata[31:16];
+    assign mem_byte = {8{res_from_mem_position == 2'b00}} & data_sram_rdata[7:0]
+                   | {8{res_from_mem_position == 2'b01}} & data_sram_rdata[15:8]
+                   | {8{res_from_mem_position == 2'b10}} & data_sram_rdata[23:16]
+                   | {8{res_from_mem_position == 2'b11}} & data_sram_rdata[31:24];
+    assign mem_half = {16{~res_from_mem_position[1]}} & data_sram_rdata[15:0]
+                   | {16{ res_from_mem_position[1]}} & data_sram_rdata[31:16];
     assign mem_b_result = {{24{mem_byte[7]}}, mem_byte};
     assign mem_h_result = {{16{mem_half[15]}}, mem_half};
     assign mem_bu_result = {{24{1'b0}}, mem_byte};
     assign mem_hu_result = {{16{1'b0}}, mem_half};
 
-    assign ms_mem_result = {32{ms_inst_ld_w}} && data_sram_rdata
-                        || {32{ms_inst_ld_h}} && mem_h_result
-                        || {32{ms_inst_ld_b}} && mem_b_result
-                        || {32{ms_inst_st_hu}} && mem_hu_result
-                        || {32{ms_inst_st_bu}} && mem_bu_result;
+    assign ms_mem_result = {32{ms_inst_ld_w}} & data_sram_rdata
+                        | {32{ms_inst_ld_h}} & mem_h_result
+                        | {32{ms_inst_ld_b}} & mem_b_result
+                        | {32{ms_inst_st_hu}} & mem_hu_result
+                        | {32{ms_inst_st_bu}} & mem_bu_result;
     assign ms_rf_wdata = ms_res_from_mem ? ms_mem_result : ms_alu_result;
     assign ms_rf_zip  = {ms_rf_we & ms_valid, ms_rf_waddr, ms_rf_wdata};
 
