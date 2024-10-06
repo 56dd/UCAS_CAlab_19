@@ -239,8 +239,8 @@ module IDreg(
     assign inst_bne    = op_31_26_d[6'h17];
     assign inst_blt    = op_31_26_d[6'h18];
     assign inst_bge    = op_31_26_d[6'h19];
-    assign inst_bltu   = op_31_26_d[6'h20];
-    assign inst_bgeu   = op_31_26_d[6'h21];
+    assign inst_bltu   = op_31_26_d[6'h1a];
+    assign inst_bgeu   = op_31_26_d[6'h1b];
     assign inst_lu12i_w= op_31_26_d[6'h05] & ~ds_inst[25];
     assign inst_slti   = op_31_26_d[6'h00] & op_25_22_d[4'h8];
     assign inst_sltui  = op_31_26_d[6'h00] & op_25_22_d[4'h9];
