@@ -89,6 +89,10 @@ module IDreg(
     wire        inst_bl;
     wire        inst_beq;
     wire        inst_bne;
+    wire        inst_blt;
+    wire        inst_bge;
+    wire        inst_bltu;
+    wire        inst_bgeu;
     wire        inst_lu12i_w;
     wire        inst_slti;
     wire        inst_sltui;
@@ -172,20 +176,26 @@ module IDreg(
     end
 
     assign rj_eq_rd = (rj_value == rkd_value);
+    assign rj_lt_rd = ($signed(rj_value) < $signed(rkd_value));
+    assign rj_lt_rd_u = ($unsigned(rj_value) < $unsigned(rkd_value));
     assign br_taken = (inst_beq  &&  rj_eq_rd
                     || inst_bne  && !rj_eq_rd
+                    || inst_blt  &&  rj_lt_rd
+                    || inst_bge  && !rj_lt_rd
+                    || inst_bltu &&  rj_lt_rd_u
+                    || inst_bgeu && !rj_lt_rd_u
                     || inst_jirl
                     || inst_bl
                     || inst_b
                     ) && ds_valid;
-    assign br_target = (inst_beq || inst_bne || inst_bl || inst_b) ? (ds_pc + br_offs) :
+    assign br_target = (inst_beq || inst_bne || inst_blt || inst_bge || inst_bltu || inst_bgeu || inst_bl || inst_b) ? (ds_pc + br_offs) :
                                                    /*inst_jirl*/ (rj_value + jirl_offs);
     assign br_zip = {br_taken, br_target}; 
 //------------------------------decode instruction---------------------------------------
     
     assign op_31_26  = ds_inst[31:26];
     assign op_25_22  = ds_inst[25:22];
-    assign op_21_20  = ds_inst[21:20];
+    assign op_21_20  = ds_inst[21:20]; 
     assign op_19_15  = ds_inst[19:15];
 
     assign rd   = ds_inst[ 4: 0];
@@ -227,6 +237,10 @@ module IDreg(
     assign inst_bl     = op_31_26_d[6'h15];
     assign inst_beq    = op_31_26_d[6'h16];
     assign inst_bne    = op_31_26_d[6'h17];
+    assign inst_blt    = op_31_26_d[6'h18];
+    assign inst_bge    = op_31_26_d[6'h19];
+    assign inst_bltu   = op_31_26_d[6'h20];
+    assign inst_bgeu   = op_31_26_d[6'h21];
     assign inst_lu12i_w= op_31_26_d[6'h05] & ~ds_inst[25];
     assign inst_slti   = op_31_26_d[6'h00] & op_25_22_d[4'h8];
     assign inst_sltui  = op_31_26_d[6'h00] & op_25_22_d[4'h9];
@@ -273,7 +287,7 @@ module IDreg(
     assign need_ui12  =  inst_andi | inst_ori |inst_xori;
     assign need_si12  =  inst_addi_w | inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu
                         |inst_st_w   |inst_st_b  |inst_st_h  | inst_slti | inst_sltui;
-    assign need_si16  =  inst_jirl | inst_beq | inst_bne;
+    assign need_si16  =  inst_jirl | inst_beq | inst_bne | inst_blt | inst_bge | inst_bltu | inst_bgeu;
     assign need_si20  =  inst_lu12i_w|inst_pcaddu12i;
     assign need_si26  =  inst_b | inst_bl;
     assign src2_is_4  =  inst_jirl | inst_bl;
@@ -288,7 +302,7 @@ module IDreg(
 
     assign jirl_offs = {{14{i16[15]}}, i16[15:0], 2'b0};
 
-    assign src_reg_is_rd = inst_beq | inst_bne | inst_st_w|inst_st_b|inst_st_h;
+    assign src_reg_is_rd = inst_beq | inst_bne | inst_blt | inst_bge | inst_bltu | inst_bgeu | inst_st_w|inst_st_b|inst_st_h;
 
     assign ds_src1_is_pc    = inst_jirl | inst_bl|inst_pcaddu12i;
 
@@ -323,7 +337,7 @@ module IDreg(
     assign ds_inst_st_w =inst_st_w ;
     assign ds_res_from_mem  = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu;
     assign dst_is_r1     = inst_bl;
-    assign gr_we         = ~inst_st_w & ~inst_st_b & ~inst_st_h & ~inst_beq & ~inst_bne & ~inst_b & ds_valid; 
+    assign gr_we         = ~inst_st_w & ~inst_st_b & ~inst_st_h & ~inst_beq & ~inst_bne & ~inst_blt & ~inst_bge & ~inst_bltu & ~inst_bgeu & ~inst_b & ds_valid; 
     assign ds_mem_we        = inst_st_w & inst_st_b & inst_st_h & ds_valid;   
     assign dest          = dst_is_r1 ? 5'd1 : rd;
 
