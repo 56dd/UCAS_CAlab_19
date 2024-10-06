@@ -7,8 +7,8 @@ module Adder (
     output  [63:0] C,
     output  [63:0] S
 );
-    assign S  = in1 ^ in2 ^ in3;
-    assign C = {(in1 & in2 | in1 & in3 | in2 & in3), 1'b0} ;
+    assign S  = in1 ^ in2 ^ in3;//加
+    assign C = {(in1 & in2 | in1 & in3 | in2 & in3), 1'b0} ;//进位
 endmodule
 
 module mul (
