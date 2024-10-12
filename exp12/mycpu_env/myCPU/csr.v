@@ -16,8 +16,11 @@ module csr(
     input  wire [7:0]    hw_int_in ,
     input  wire [31:0]   wb_pc     ,
     input  wire [5:0]    wb_ecode  ,
-    input  wire [8:0]    wb_esubcode
+    input  wire [8:0]    wb_esubcode,
 
+    output wire          has_int   ,
+    output wire [31:0]   ex_entry  ,
+    output wire [31:0]   ertn_entry
 );
 
     `define CSR_CRMD   14'h0000
@@ -89,6 +92,12 @@ module csr(
     wire [31:0] csr_save1_rvalue;
     wire [31:0] csr_save2_rvalue;
     wire [31:0] csr_save3_rvalue;
+
+    wire        has_int;
+
+    assign has_int = ((csr_estat_is[12:0] & csr_ecfg_lie[12:0]) != 13'b0)
+                  && (csr_crmd_ie == 1'b1);
+
 
     always @(posedge clk) begin
         if (reset)
