@@ -10,7 +10,7 @@ module EXEreg(
     
     // exe and mem state interface
     input  wire        ms_allowin,
-    output wire [38:0] es_rf_zip, // {es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
+    output wire [40:0] es_rf_zip, // {es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
     output wire        es2ms_valid,
     output reg  [31:0] es_pc, 
     output reg  [4 :0] es_res_from_mem_zip,   
@@ -39,6 +39,10 @@ module EXEreg(
     reg         es_rf_we      ;
     reg  [4 :0] es_rf_waddr   ;
     wire [31:0] es_mem_result ;
+    
+    reg        es_int;
+    reg        es_csr_zip;
+    
 
 //------------------------------state control signal---------------------------------------
 
@@ -56,14 +60,22 @@ module EXEreg(
     always @(posedge clk) begin
         if(~resetn)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
-             es_rf_we, es_rf_waddr, es_rkd_value,es_inst_st_b,es_inst_st_h,es_inst_st_w, es_pc,
-             es_res_from_mem_zip} <= {162{1'b0}};
+             es_rf_we, es_rf_waddr, es_rkd_value,es_inst_st_b,es_inst_st_h,es_inst_st_w, es_int,es_csr_zip,
+             es_pc,
+             es_res_from_mem_zip} <= {163{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
-             es_rf_we, es_rf_waddr, es_rkd_value,es_inst_st_b,es_inst_st_h,es_inst_st_w, es_pc,
+             es_rf_we, es_rf_waddr, es_rkd_value,es_inst_st_b,es_inst_st_h,es_inst_st_w, es_int,es_csr_zip,
+             es_pc,
              es_res_from_mem_zip} <= {ds2es_bus,ds_pc,ds_res_from_mem_zip};    
     end
+///////////////////拆包
+    assign  {es_csr_re}=es_int;     
 
+ //------------------------------exe and mem state interface---------------------------------------
+    assign es2ms_bus = {
+                        es_csr_zip        
+                    };
 
 //------------------------------alu interface---------------------------------------
     alu u_alu(
@@ -91,7 +103,7 @@ module EXEreg(
     assign data_sram_wdata  = es_inst_st_b?{4{es_rkd_value[7:0]}} :
                               es_inst_st_h?{2{es_rkd_value[15:0]}} :
                               es_rkd_value;
-    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处理
-    assign es_rf_zip       = {es_res_from_mem & es_valid, es_rf_we & es_valid, es_rf_waddr, es_alu_result};    
+    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处�?
+    assign es_rf_zip       = {es2ms_bus,es_csr_re&es_valid,es_res_from_mem & es_valid, es_rf_we & es_valid, es_rf_waddr, es_alu_result};    
 
 endmodule

@@ -34,13 +34,13 @@ module mycpu_top(
     wire [31:0] es_pc;
     wire [31:0] ms_pc;
 
-    wire [38:0] es_rf_zip;
-    wire [37:0] ms_rf_zip;
+    wire [39:0] es_rf_zip;
+    wire [38:0] ms_rf_zip;
     wire [37:0] ws_rf_zip;
 
     wire [32:0] br_zip;
     wire [31:0] fs_inst;
-    wire [124:0] ds2es_bus;
+    wire [125:0] ds2es_bus;
 
     wire [4:0]  ds_res_from_mem_zip;
     wire [4:0]  es_res_from_mem_zip;
@@ -81,7 +81,9 @@ module mycpu_top(
 
         .ws_rf_zip(ws_rf_zip),
         .ms_rf_zip(ms_rf_zip),
-        .es_rf_zip(es_rf_zip)
+        .es_rf_zip(es_rf_zip),
+
+        .ds2es_int(ds2es_int)
     );
 
     EXEreg my_exeReg(

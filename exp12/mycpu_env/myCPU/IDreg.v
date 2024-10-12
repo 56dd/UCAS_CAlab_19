@@ -10,13 +10,14 @@ module IDreg(
     // ds and es interface
     input  wire                   es_allowin,
     output wire                   ds2es_valid,
-    output wire [124:0]           ds2es_bus,
+    output wire [125:0]           ds2es_bus,
     output reg  [31 :0]           ds_pc,
     output wire [4  :0]           ds_res_from_mem_zip,
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip, // {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
-    input  wire [37:0] ms_rf_zip, // {ms_rf_we, ms_rf_waddr, ms_rf_wdata}
+    input  wire [38:0] ms_rf_zip, // {ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     input  wire [38:0] es_rf_zip  // {es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
+    
 );
 
     wire        ds_ready_go;
@@ -46,6 +47,9 @@ module IDreg(
     wire [31:0] imm;
     wire [31:0] br_offs;
     wire [31:0] jirl_offs;
+
+    //中断信号定义
+    wire        ds_csr_re;
 
     wire [ 5:0] op_31_26;
     wire [ 3:0] op_25_22;
@@ -110,6 +114,11 @@ module IDreg(
     wire        inst_mod_w;
     wire        inst_div_wu;
     wire        inst_mod_wu;
+    //系统调用异常指令
+    wire        inst_csrrd;
+    wire        inst_csrwr;
+    wire        inst_csrxchg;
+    wire        inst_ertn;
 
     wire        need_ui5;
     wire        need_ui12;
@@ -149,6 +158,9 @@ module IDreg(
 
     wire        ds_rf_we   ;
     wire [ 4:0] ds_rf_waddr;
+/////////////传递的中断
+    wire        ds2es_int;//1
+
 
 
         
@@ -258,6 +270,12 @@ module IDreg(
     assign inst_mod_w  = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h01];
     assign inst_div_wu = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h02];
     assign inst_mod_wu = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h03];
+    //系统调用异常指令译码
+    assign inst_csrrd   = op_31_26_d[6'h01] & (op_25_22[3:2] == 2'b0) & (rj == 5'h00);
+    assign inst_csrwr   = op_31_26_d[6'h01] & (op_25_22[3:2] == 2'b0) & (rj == 5'h01);
+    assign inst_csrxchg = op_31_26_d[6'h01] & (op_25_22[3:2] == 2'b0) & ~inst_csrrd & ~inst_csrwr;
+    assign inst_ertn    = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h10] 
+                        & (rk == 5'h0e) & (~|rj) & (~|rd);
 
 
     assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu
@@ -302,7 +320,8 @@ module IDreg(
 
     assign jirl_offs = {{14{i16[15]}}, i16[15:0], 2'b0};
 
-    assign src_reg_is_rd = inst_beq | inst_bne | inst_blt | inst_bge | inst_bltu | inst_bgeu | inst_st_w|inst_st_b|inst_st_h;
+    assign src_reg_is_rd = inst_beq | inst_bne | inst_blt | inst_bge | inst_bltu | 
+                                inst_bgeu | inst_st_w|inst_st_b|inst_st_h| inst_csrwr|inst_csrxchg;
 
     assign ds_src1_is_pc    = inst_jirl | inst_bl|inst_pcaddu12i;
 
@@ -340,6 +359,13 @@ module IDreg(
     assign gr_we         = ~inst_st_w & ~inst_st_b & ~inst_st_h & ~inst_beq & ~inst_bne & ~inst_blt & ~inst_bge & ~inst_bltu & ~inst_bgeu & ~inst_b & ds_valid; 
     assign ds_mem_we        = inst_st_w & inst_st_b & inst_st_h & ds_valid;   
     assign dest          = dst_is_r1 ? 5'd1 : rd;
+//------------------------------系统调用异常相关信号的译码---------------------------------------
+    assign ds_csr_re    = inst_csrrd|inst_csrwr|inst_csrxchg ;//csr的读使能
+    assign ds_csr_we    = inst_csrwr|inst_csrxchg ;//csr写使能
+    assign ds_csr_wmask    = {32{inst_csrxchg}} & rj_value | {32{inst_csrwr}};//写掩码
+
+    assign ds2es_int={ds_csr_re};//1
+    assign ds_csr_zip={inst_ertn,ds_csr_we,ds_csr_wmask};//1
 
 //------------------------------regfile control---------------------------------------
     assign rf_raddr1 = rj;
@@ -348,7 +374,7 @@ module IDreg(
     assign ds_rf_waddr = dest; 
     //写回、访存、执行阶段传回数据处理
     assign {ws_rf_we, ws_rf_waddr, ws_rf_wdata} = ws_rf_zip;
-    assign {ms_rf_we, ms_rf_waddr, ms_rf_wdata} = ms_rf_zip;
+    assign {ms_csr_re ,ms_rf_we, ms_rf_waddr, ms_rf_wdata} = ms_rf_zip;
     assign {es_res_from_mem, es_rf_we, es_rf_waddr, es_rf_wdata} = es_rf_zip;
     regfile u_regfile(
         .clk    (clk      ),
@@ -388,8 +414,11 @@ module IDreg(
                         ds_rkd_value,       //32 bit
                         ds_inst_st_b,        //1
                         ds_inst_st_h,         //1
-                        ds_inst_st_w         //1                         
+                        ds_inst_st_w,         //1 
+                        ds2es_int,              //1  
+                        ds_csr_zip        
                         };
 
     assign ds_res_from_mem_zip = {inst_ld_bu, inst_ld_hu, inst_ld_b, inst_ld_h, inst_ld_w};
+    
 endmodule
