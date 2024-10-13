@@ -1,4 +1,4 @@
-`include "macro.h"
+
 module IDreg(
     input  wire        clk,
     input  wire        resetn,
@@ -176,13 +176,6 @@ module IDreg(
     wire        ds_csr_we;
     wire [31:0] ds_csr_wmask;
     wire [31:0] ds_csr_wvalue;
-    wire        ms_csr_re  ;//MEM阶段是否读取 CSR
-    wire        es_csr_re  ;
-    wire        ds_csr_re  ;
-    wire [13:0] ds_csr_num;//ID阶段访问的 CSR 编号
-    wire        ds_csr_we;//ID阶段是否写入 CSR
-    wire [31:0] ds_csr_wmask;//掩码
-    wire [31:0] ds_csr_wvalue;//写入 CSR 的具体值
     wire [ 6:0] ds_rf_zip;
     wire [81:0] ds_except_zip;  // {ds_csr_num, ds_csr_wmask, ds_csr_wvalue, inst_syscall, inst_ertn, ds_csr_we}
 //------------------------------state control signal---------------------------------------

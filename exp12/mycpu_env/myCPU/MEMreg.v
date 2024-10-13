@@ -1,4 +1,3 @@
-`include "macro.h"
 module MEMreg(
     input  wire        clk,
     input  wire        resetn,
@@ -56,7 +55,7 @@ module MEMreg(
 //------------------------------exe and mem state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {ms_ld_inst_zip, ms_pc, ms_except_zip} <= {`ES2MS_LEN{1'b0}};
+            {ms_ld_inst_zip, ms_pc, ms_except_zip} <= {119{1'b0}};
             {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, ms_alu_result} <= 39'b0;
         end
         if(es2ms_valid & ms_allowin) begin
@@ -77,8 +76,8 @@ module MEMreg(
                                      {16{op_ld_bu | op_ld_hu}} & 16'b0    |
                                      {16{op_ld_w}} & shift_rdata[31:16];
     assign ms_rf_wdata = {32{ms_res_from_mem}} & ms_mem_result | {32{~ms_res_from_mem}} & ms_alu_result;
-    
     assign ms_rf_zip  = {ms_csr_re & ms_valid, ms_rf_we & ms_valid, ms_rf_waddr, ms_rf_wdata};
+    
     assign ms2ws_bus = {
                         ms_pc,              // 32 bit
                         ms_except_zip       // 82 bit

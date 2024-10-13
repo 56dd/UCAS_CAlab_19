@@ -1,4 +1,3 @@
-`include "macro.h"
 module WBreg(
     input  wire        clk,
     input  wire        resetn,
@@ -52,7 +51,7 @@ module WBreg(
 //------------------------------mem and wb state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {wb_pc, ws_except_zip}  <= {`MS2WS_LEN{1'b0}};
+            {wb_pc, ws_except_zip}  <= {114{1'b0}};
             {csr_re, ws_rf_we, ws_rf_waddr, ws_rf_wdata_tmp} <= 39'b0;
         end
         if(ms2ws_valid & ws_allowin) begin

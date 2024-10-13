@@ -65,7 +65,7 @@ module EXEreg(
         if(~resetn)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
-             es_ld_inst_zip, es_except_zip} <= {245'b0};
+             es_ld_inst_zip, es_except_zip} <= {245{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
@@ -91,21 +91,19 @@ module EXEreg(
 
 
 //------------------------------data sram interface---------------------------------------
-    assign es_mem_we        =op_st_w ? 4'b1111:
-                             op_st_h ? (es_alu_result[1:0]==2'b00 ? 4'b0011 : 4'b1100):
-                             op_st_b ? (es_alu_result[1:0]==2'b00 ? 4'b0001 :
-                                            es_alu_result[1:0]==2'b01 ? 4'b0010 :
-                                            es_alu_result[1:0]==2'b10 ? 4'b0100 :
-                                            es_alu_result[1:0]==2'b11 ? 4'b1000 :
-                                            4'b0000):
-                             4'b0000;
+    assign es_mem_we[0]     = op_st_w | op_st_h & ~es_alu_result[1] | op_st_b & ~es_alu_result[0] & ~es_alu_result[1];   
+    assign es_mem_we[1]     = op_st_w | op_st_h & ~es_alu_result[1] | op_st_b &  es_alu_result[0] & ~es_alu_result[1];   
+    assign es_mem_we[2]     = op_st_w | op_st_h &  es_alu_result[1] | op_st_b & ~es_alu_result[0] &  es_alu_result[1];   
+    assign es_mem_we[3]     = op_st_w | op_st_h &  es_alu_result[1] | op_st_b &  es_alu_result[0] &  es_alu_result[1];       
     assign data_sram_en     = (es_res_from_mem | (|es_mem_we)) & es_valid;
     assign data_sram_we     = {4{es_valid & ~wb_ex & ~ms_ex & ~es_ex}} & es_mem_we;
-    //assign data_sram_addr   = {es_alu_result[31:2], 2'b0};
-    assign data_sram_addr   = es_alu_result;
-    assign data_sram_wdata  = op_st_b?{4{es_rkd_value[7:0]}} :
-                              op_st_h?{2{es_rkd_value[15:0]}} :
-                              es_rkd_value;
+    assign data_sram_addr   = {es_alu_result[31:2], 2'b0};
+    assign data_sram_wdata[ 7: 0]   = es_rkd_value[ 7: 0];
+    assign data_sram_wdata[15: 8]   = op_st_b ? es_rkd_value[ 7: 0] : es_rkd_value[15: 8];
+    assign data_sram_wdata[23:16]   = op_st_w ? es_rkd_value[23:16] : es_rkd_value[ 7: 0];
+    assign data_sram_wdata[31:24]   = op_st_w ? es_rkd_value[31:24] : 
+                                      op_st_h ? es_rkd_value[15: 8] : es_rkd_value[ 7: 0];
+
     //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处理
     assign es_rf_zip       = {es_csr_re & es_valid, es_res_from_mem & es_valid, es_rf_we & es_valid, es_rf_waddr, es_alu_result};    
 endmodule

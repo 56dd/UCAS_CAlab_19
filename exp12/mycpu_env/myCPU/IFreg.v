@@ -1,4 +1,3 @@
-`include "macro.h"
 module IFreg(
     input  wire   clk,
     input  wire   resetn,
@@ -59,11 +58,10 @@ module IFreg(
 
 //------------------------------pc relavant signals---------------------------------------
     
-    assign seq_pc           = fs_pc+ 3'h4;  
+    assign seq_pc           = fs_pc + 3'h4;  
     assign nextpc           = wb_ex? ex_entry:
                               ertn_flush? ertn_entry:
                               br_taken ? br_target : seq_pc;
-
 
 //------------------------------fs and ds state interface---------------------------------------
     //fs_pc存前一条指令的pc值
