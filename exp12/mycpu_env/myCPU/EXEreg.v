@@ -1,4 +1,3 @@
-`include "macro.h"
 module EXEreg(
     input  wire        clk,
     input  wire        resetn,
@@ -66,7 +65,7 @@ module EXEreg(
         if(~resetn)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
-             es_ld_inst_zip, es_except_zip} <= {`DS2ES_LEN{1'b0}};
+             es_ld_inst_zip, es_except_zip} <= {245'b0};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
@@ -104,8 +103,8 @@ module EXEreg(
     assign data_sram_we     = {4{es_valid & ~wb_ex & ~ms_ex & ~es_ex}} & es_mem_we;
     //assign data_sram_addr   = {es_alu_result[31:2], 2'b0};
     assign data_sram_addr   = es_alu_result;
-    assign data_sram_wdata  = es_inst_st_b?{4{es_rkd_value[7:0]}} :
-                              es_inst_st_h?{2{es_rkd_value[15:0]}} :
+    assign data_sram_wdata  = op_st_b?{4{es_rkd_value[7:0]}} :
+                              op_st_h?{2{es_rkd_value[15:0]}} :
                               es_rkd_value;
     //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处理
     assign es_rf_zip       = {es_csr_re & es_valid, es_res_from_mem & es_valid, es_rf_we & es_valid, es_rf_waddr, es_alu_result};    
