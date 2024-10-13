@@ -92,9 +92,9 @@ module EXEreg(
 
 
 //------------------------------data sram interface---------------------------------------
-    assign es_mem_we        =es_inst_st_w ? 4'b1111:
-                             es_inst_st_h ? (es_alu_result[1:0]==2'b00 ? 4'b0011 : 4'b1100):
-                             es_inst_st_b ? (es_alu_result[1:0]==2'b00 ? 4'b0001 :
+    assign es_mem_we        =op_st_w ? 4'b1111:
+                             op_st_h ? (es_alu_result[1:0]==2'b00 ? 4'b0011 : 4'b1100):
+                             op_st_b ? (es_alu_result[1:0]==2'b00 ? 4'b0001 :
                                             es_alu_result[1:0]==2'b01 ? 4'b0010 :
                                             es_alu_result[1:0]==2'b10 ? 4'b0100 :
                                             es_alu_result[1:0]==2'b11 ? 4'b1000 :
