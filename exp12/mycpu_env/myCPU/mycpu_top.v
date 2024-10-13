@@ -176,7 +176,7 @@ module mycpu_top(
         .csr_wvalue (csr_wvalue),
 
         .wb_ex      (wb_ex     ),
-        .ertn_flush (ertn_flush),
+        .ertn_flush  (ertn_flush),
         .ipi_int_in (ipi_int_in),
         .hw_int_in  (hw_int_in) ,
         .wb_pc      (wb_pc     ),
