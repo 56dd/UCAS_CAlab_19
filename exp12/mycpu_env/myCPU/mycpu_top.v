@@ -58,6 +58,11 @@ module mycpu_top(
     wire        wb_ex;
     wire [ 5:0] wb_ecode;
     wire [ 8:0] wb_esubcode;
+    wire        ipi_int_in;
+    wire [ 7:0] hw_int_in;
+
+    assign ipi_int_in = 1'b0;
+    assign hw_int_in  = 8'b0;
 
     IFreg my_ifReg(
         .clk(clk),
@@ -181,13 +186,16 @@ module mycpu_top(
         .csr_wmask  (csr_wmask ),
         .csr_wvalue (csr_wvalue),
 
-        .has_int    (has_int   ),
-        .ex_entry   (ex_entry  ),
-        .ertn_entry (ertn_entry),
-        .ertn_flush (ertn_flush),
         .wb_ex      (wb_ex     ),
+        .ertn_flush (ertn_flush),
+        .ipi_int_in (ipi_int_in),
+        .hw_int_in  (hw_int_in ),
         .wb_pc      (wb_pc     ),
         .wb_ecode   (wb_ecode  ),
-        .wb_esubcode(wb_esubcode)
+        .wb_esubcode(wb_esubcode),
+
+        .has_int    (has_int   ),
+        .ex_entry   (ex_entry  ),
+        .ertn_entry (ertn_entry)      
     );
 endmodule

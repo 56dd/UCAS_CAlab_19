@@ -190,7 +190,7 @@ module csr(
                        | ~csr_wmask[`CSR_ERA_PC]&csr_era_pc;
     end
 
-    assign ertn_entry = csr_era_pc; 
+    assign ertn_entry = csr_era_rvalue; 
 
     always @(posedge clk) begin
         if (csr_we && csr_num==`CSR_EENTRY)
@@ -198,7 +198,7 @@ module csr(
                           | ~csr_wmask[`CSR_EENTRY_VA]&csr_eentry_va;
     end
 
-    assign ex_entry = csr_eentry_va;
+    assign ex_entry = csr_eentry_rvalue;
 
     always @(posedge clk) begin
         if (csr_we && csr_num==`CSR_SAVE0)
@@ -264,7 +264,7 @@ module csr(
     assign csr_ecfg_rvalue = {19'b0, csr_ecfg_lie};
     assign csr_estat_rvalue = {1'b0,csr_estat_esubcode,csr_estat_ecode,3'b0,csr_estat_is};
     assign csr_era_rvalue = csr_era_pc;
-    assign csr_eentry_rvalue = {csr_eentry_va,5'b0};
+    assign csr_eentry_rvalue = {csr_eentry_va,6'b0};
     assign csr_save0_rvalue = csr_save0_data;
     assign csr_save1_rvalue = csr_save1_data;
     assign csr_save2_rvalue = csr_save2_data;
