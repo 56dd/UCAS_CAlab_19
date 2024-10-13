@@ -161,7 +161,7 @@ module IDreg(
 
     wire        ms_csr_re  ;//MEM阶段是否读取 CSR
     wire        es_csr_re  ;
-    wire        ds_csr_re;
+    wire        ds_csr_re  ;
     wire [13:0] ds_csr_num;//ID阶段访问的 CSR 编号
     wire        ds_csr_we;//ID阶段是否写入 CSR
     wire [31:0] ds_csr_wmask;//掩码
