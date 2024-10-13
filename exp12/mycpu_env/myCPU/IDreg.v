@@ -119,6 +119,7 @@ module IDreg(
     wire        inst_csrwr;
     wire        inst_csrxchg;
     wire        inst_ertn;
+    wire        inst_syscall;
 
     wire        need_ui5;
     wire        need_ui12;
@@ -213,6 +214,8 @@ module IDreg(
     assign rd   = ds_inst[ 4: 0];
     assign rj   = ds_inst[ 9: 5];
     assign rk   = ds_inst[14:10];
+    
+    assign syscall_code = ds_inst[14:0]; 
 
     assign i12  = ds_inst[21:10];
     assign i20  = ds_inst[24: 5];
@@ -276,6 +279,8 @@ module IDreg(
     assign inst_csrxchg = op_31_26_d[6'h01] & (op_25_22[3:2] == 2'b0) & ~inst_csrrd & ~inst_csrwr;
     assign inst_ertn    = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h10] 
                         & (rk == 5'h0e) & (~|rj) & (~|rd);
+    
+    assign inst_syscall = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h16];
 
 
     assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu
@@ -365,7 +370,7 @@ module IDreg(
     assign ds_csr_wmask    = {32{inst_csrxchg}} & rj_value | {32{inst_csrwr}};//写掩码
 
     assign ds2es_int={ds_csr_re};//1
-    assign ds_csr_zip={inst_ertn,ds_csr_we,ds_csr_wmask};//1
+    assign ds_csr_zip={inst_ertn,inst_syscall,ds_csr_we,ds_csr_wmask};//1
 
 //------------------------------regfile control---------------------------------------
     assign rf_raddr1 = rj;

@@ -126,6 +126,24 @@ module mycpu_top(
         .data_sram_rdata(data_sram_rdata)
     ) ;
 
+    wire          csr_re    ;
+    wire [13:0]   csr_num   ;
+    wire [31:0]   csr_rvalue;
+    wire          csr_we    ;
+    wire [31:0]   csr_wmask ;
+    wire [31:0]   csr_wvalue;
+    wire          wb_ex     ;
+    wire          ertn_flush;
+    wire          ipi_int_in;
+    wire [7:0]    hw_int_in ;
+    wire [31:0]   wb_pc     ;
+    wire [5:0]    wb_ecode  ;
+    wire [8:0]    wb_esubcode;
+
+    wire          has_int   ;
+    wire [31:0]   ex_entry  ;
+    wire [31:0]   ertn_entry;
+
     WBreg my_wbReg(
         .clk(clk),
         .resetn(resetn),
@@ -140,6 +158,34 @@ module mycpu_top(
         .debug_wb_rf_wnum(debug_wb_rf_wnum),
         .debug_wb_rf_wdata(debug_wb_rf_wdata),
 
-        .ws_rf_zip(ws_rf_zip)
+        .ws_rf_zip(ws_rf_zip),
+        .csr_we(csr_we),
+        .csr_re(csr_re)
+    );
+    
+    wire  ipi_int_in = 1'b0;
+    wire  hw_int_in  = 8'b0;
+    csr my_csr(
+        .clk        (clk       ),
+        .reset      (~resetn   ),
+        .csr_re     (csr_re    ),
+        .csr_num    (csr_num   ),
+        .csr_rvalue (csr_rvalue),
+        .csr_we     (csr_we    ),
+        .csr_wmask  (csr_wmask ),
+        .csr_wvalue (csr_wvalue),
+
+        .wb_ex      (wb_ex     ),
+        .ertn_flush (ertn_flush),
+        .ipi_int_in (ipi_int_in),
+        .hw_int_in  (hw_int_in) ,
+        .wb_pc      (wb_pc     ),
+        .wb_ecode   (wb_ecode  ),
+        .wb_esubcode(wb_esubcode),
+
+        .has_int    (has_int   ),
+        .ex_entry   (ex_entry  ),
+        .ertn_entry (ertn_entry)
+
     );
 endmodule

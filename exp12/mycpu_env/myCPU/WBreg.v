@@ -13,9 +13,22 @@ module WBreg(
     output wire [31:0] debug_wb_rf_wdata,
     // id and ws state interface
     output wire [37:0] ws_rf_zip,  // {ms_csr_re,ws_rf_we, ws_rf_waddr, ws_rf_wdata}
-    //
-    output wire        csr_we,
-    output reg         csr_re
+
+    // 读端口
+    output  wire          csr_re    ,
+    output  wire [13:0]   csr_num   ,
+    // 写端口
+    output  wire          csr_we    ,
+    output  wire [31:0]   csr_wmask ,
+    output  wire [31:0]   csr_wvalue,
+    // 与硬件电路交互的接口信号
+    output  wire          wb_ex     ,
+    output  wire          ertn_flush,
+    output  wire          ipi_int_in,
+    output  wire [7:0]    hw_int_in ,
+    output  wire [31:0]   wb_pc     ,
+    output  wire [5:0]    wb_ecode  ,
+    output  wire [8:0]    wb_esubcode
 );
     
     wire        ws_ready_go;
@@ -54,6 +67,9 @@ module WBreg(
 //------------------------------id and ws state interface---------------------------------------
     assign ws_rf_zip = {ws_rf_we & ws_valid, ws_rf_waddr, ws_rf_wdata};
     assign ws_rf_wdata = csr_re ? csr_rvalue : ws_rf_wdata_pre;
+
+    assign wb_ecode = {6{wb_ex}} & 6'hb;
+    assign wb_esubcode = 9'b0;
 //------------------------------trace debug interface---------------------------------------
     assign debug_wb_pc = ws_pc;
     assign debug_wb_rf_wdata = ws_rf_wdata;
