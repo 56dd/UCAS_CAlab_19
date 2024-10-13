@@ -211,8 +211,8 @@ module IDreg(
     end
 
     assign rj_eq_rd = rj_value == rkd_value;
-    assign rj_ge_rd = ($signed(rj_value) > $signed(rkd_value));
-    assign rj_ge_rd_u = ($unsigned(rj_value) > $unsigned(rkd_value));
+    assign rj_ge_rd = ($signed(rj_value) >= $signed(rkd_value));
+    assign rj_ge_rd_u = ($unsigned(rj_value) >= $unsigned(rkd_value));
     assign br_taken = (inst_beq  &  rj_eq_rd
                     | inst_bne   & !rj_eq_rd
                     | inst_bge   &  rj_ge_rd
@@ -325,13 +325,13 @@ module IDreg(
     assign ds_alu_op[ 9] = inst_srli_w | inst_srl_w;
     assign ds_alu_op[10] = inst_srai_w | inst_sra_w;
     assign ds_alu_op[11] = inst_lu12i_w;
-    assign ds_alu_op[12] = inst_mul_w ;
-    assign ds_alu_op[13] = inst_mulh_w;
-    assign ds_alu_op[14] = inst_mulh_wu;
-    assign ds_alu_op[15] = inst_div_w;
-    assign ds_alu_op[16] = inst_div_wu;
-    assign ds_alu_op[17] = inst_mod_w;
-    assign ds_alu_op[18] = inst_mod_wu;
+    assign ds_alu_op[12] = inst_div_w;
+    assign ds_alu_op[13] = inst_mod_w;
+    assign ds_alu_op[14] = inst_div_wu;
+    assign ds_alu_op[15] = inst_mod_wu;
+    assign ds_alu_op[16] = inst_mul_w ;
+    assign ds_alu_op[17] = inst_mulh_w;
+    assign ds_alu_op[18] = inst_mulh_wu;
 
 
     assign need_ui5   =  inst_slli_w | inst_srli_w | inst_srai_w;

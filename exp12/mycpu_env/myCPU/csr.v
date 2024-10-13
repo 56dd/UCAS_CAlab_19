@@ -40,7 +40,7 @@ module csr(
     `define CSR_TICLR  14'h0044
     
     `define CSR_CRMD_PLV  1:0
-    `define CSR_CRMD_IE   2
+    `define CSR_CRMD_PIE   2
     `define CSR_PRMD_PPLV 1:0
     `define CSR_PRMD_PIE  2
     `define CSR_ECFG_LIE  12:0
@@ -53,6 +53,7 @@ module csr(
     `define CSR_TCFG_EN   0
     `define CSR_TCFG_PERIOD 1
     `define CSR_TCFG_INITV 31:2
+    `define CSR_TCFG_INITVAL 31:2
 
     reg  [1:0]  csr_crmd_plv;
     reg         csr_crmd_ie;
@@ -79,6 +80,7 @@ module csr(
     wire [31:0] tcfg_next_value;
     wire [31:0] csr_tval;
     reg [31:0] timer_cnt;
+    wire  [31:0] coreid_in;
 
 
     wire [31:0] csr_crmd_rvalue;
@@ -213,7 +215,7 @@ module csr(
                            | ~csr_wmask[`CSR_SAVE_DATA]&csr_save3_data;
     end
 
-    always @(posedge clock) begin
+    always @(posedge clk) begin
         if (reset)
             csr_tid_tid <= coreid_in;
         else if (csr_we && csr_num==`CSR_TID)
@@ -221,7 +223,7 @@ module csr(
                         | ~csr_wmask[`CSR_TID_TID]&csr_tid_tid;
     end
     
-    always @(posedge clock) begin
+    always @(posedge clk) begin
         if (reset)
             csr_tcfg_en <= 1'b0;
         else if (csr_we && csr_num==`CSR_TCFG)
@@ -240,7 +242,7 @@ module csr(
                           | ~csr_wmask[31:0]&{csr_tcfg_initval,
                                               csr_tcfg_periodic, csr_tcfg_en};
     
-    always @(posedge clock) begin
+    always @(posedge clk) begin
         if (reset)
             timer_cnt <= 32'hffffffff;
         else if (csr_we && csr_num==`CSR_TCFG && tcfg_next_value[`CSR_TCFG_EN])
