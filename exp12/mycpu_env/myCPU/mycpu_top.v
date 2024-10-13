@@ -60,6 +60,7 @@ module mycpu_top(
     wire [ 8:0] wb_esubcode;
     wire        ipi_int_in;
     wire [ 7:0] hw_int_in;
+    wire [31:0] wb_vaddr;
 
     assign ipi_int_in = 1'b0;
     assign hw_int_in  = 8'b0;
@@ -193,6 +194,7 @@ module mycpu_top(
         .wb_pc      (wb_pc     ),
         .wb_ecode   (wb_ecode  ),
         .wb_esubcode(wb_esubcode),
+        .wb_vaddr   (ws_vaddr  ),
 
         .has_int    (has_int   ),
         .ex_entry   (ex_entry  ),

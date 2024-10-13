@@ -17,6 +17,7 @@ module csr(
     input  wire [31:0]   wb_pc     ,
     input  wire [5:0]    wb_ecode  ,
     input  wire [8:0]    wb_esubcode,
+    input  wire [31:0]   wb_vaddr  ,
 
     output wire          has_int   ,
     output wire [31:0]   ex_entry  ,
@@ -55,6 +56,10 @@ module csr(
     `define CSR_TCFG_INITV 31:2
     `define CSR_TCFG_INITVAL 31:2
 
+    `define ECODE_ADE    6'h08
+    `define ECODE_ALE    6'h09
+    `define ESUBCODE_ADEF 9'h00
+
     reg  [1:0]  csr_crmd_plv;
     reg         csr_crmd_ie;
     wire        csr_crmd_da;
@@ -69,6 +74,7 @@ module csr(
     reg  [8:0]  csr_estat_esubcode;
     reg  [31:0] csr_era_pc;
     reg  [25:0] csr_eentry_va;
+    reg  [31:0] csr_badv_vaddr;
     reg  [31:0] csr_save0_data;
     reg  [31:0] csr_save1_data;
     reg  [31:0] csr_save2_data;
@@ -81,6 +87,7 @@ module csr(
     wire [31:0] csr_tval;
     reg [31:0] timer_cnt;
     wire  [31:0] coreid_in;
+    wire    wb_ex_addr_err;
 
 
     wire [31:0] csr_crmd_rvalue;
@@ -191,6 +198,15 @@ module csr(
     end
 
     assign ertn_entry = csr_era_rvalue; 
+
+    assign wb_ex_addr_err = wb_ecode==`ECODE_ADE || wb_ecode==`ECODE_ALE;
+
+    always @(posedge clk) begin
+        if (wb_ex && wb_ex_addr_err)
+        csr_badv_vaddr <= (wb_ecode==`ECODE_ADE &&
+                           wb_esubcode==`ESUBCODE_ADEF) ? wb_pc : wb_vaddr;
+    end
+
 
     always @(posedge clk) begin
         if (csr_we && csr_num==`CSR_EENTRY)
