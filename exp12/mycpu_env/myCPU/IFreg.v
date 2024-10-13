@@ -14,7 +14,12 @@ module IFreg(
     // fs to ds interface
     output wire         fs2ds_valid,
     output wire [31:0]  fs_inst,
-    output reg  [31:0]  fs_pc
+    output reg  [31:0]  fs_pc,
+     // exception interface
+    input  wire         wb_ex,//写回阶段发生了异常
+    input  wire         ertn_flush,//发生了 ERET（异常返回)指令,从异常返回入口地址继续执行之前被打断的指令。
+    input  wire [31:0]  ex_entry,//异常处理的入口地址
+    input  wire [31:0]  ertn_entry//异常返回的入口地址
 );
 
     reg         fs_valid;
@@ -31,14 +36,13 @@ module IFreg(
     assign {br_taken, br_target} = br_zip;
 
     wire [31:0] fs_inst;
-
-    assign seq_pc       = fs_pc + 3'h4;
-    assign nextpc       = br_taken ? br_target : seq_pc;
+    reg  [31:0] fs_pc;
 
     //------------------------------state control signal---------------------------------------
     assign to_fs_valid      = resetn;
     assign fs_ready_go      = 1'b1;
-    assign fs_allowin       = ~fs_valid | fs_ready_go & ds_allowin;     
+    //assign fs_allowin       = ~fs_valid | fs_ready_go & ds_allowin; 
+    assign fs_allowin       = ~fs_valid | fs_ready_go & ds_allowin | ertn_flush | wb_ex; //发生异常和异常返回时需要更新指令        
     assign fs2ds_valid      = fs_valid & fs_ready_go;
     always @(posedge clk) begin
         if(~resetn)
@@ -55,8 +59,12 @@ module IFreg(
 
 //------------------------------pc relavant signals---------------------------------------
     
-    assign seq_pc           = fs_pc + 3'h4;  
-    assign nextpc           = br_taken ? br_target : seq_pc;
+    
+    assign seq_pc       = fs_pc + 3'h4;
+    //assign nextpc       = br_taken ? br_target : seq_pc;
+    assign nextpc       = wb_ex? ex_entry://发生异常，程序需要跳转到异常处理程序执行
+                            ertn_flush? ertn_entry://发生异常返回
+                            br_taken ? br_target : seq_pc;
 
 //------------------------------fs and ds state interface---------------------------------------
     //fs_pc存前一条指令的pc值

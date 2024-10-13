@@ -16,8 +16,9 @@ module IDreg(
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip, // {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
     input  wire [38:0] ms_rf_zip, // {ms_rf_we, ms_rf_waddr, ms_rf_wdata}
-    input  wire [38:0] es_rf_zip  // {es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
-    
+    input  wire [38:0] es_rf_zip, // {es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
+    // exception interface
+    input  wire        wb_ex//写回异常
 );
 
     wire        ds_ready_go;
@@ -48,8 +49,6 @@ module IDreg(
     wire [31:0] br_offs;
     wire [31:0] jirl_offs;
 
-    //中断信号定义
-    wire        ds_csr_re;
 
     wire [ 5:0] op_31_26;
     wire [ 3:0] op_25_22;
@@ -159,8 +158,16 @@ module IDreg(
 
     wire        ds_rf_we   ;
     wire [ 4:0] ds_rf_waddr;
-/////////////传递的中断
-    wire        ds2es_int;//1
+
+    wire        ms_csr_re  ;//MEM阶段是否读取 CSR
+    wire        es_csr_re  ;
+    wire        ds_csr_re;
+    wire [13:0] ds_csr_num;//ID阶段访问的 CSR 编号
+    wire        ds_csr_we;//ID阶段是否写入 CSR
+    wire [31:0] ds_csr_wmask;//掩码
+    wire [31:0] ds_csr_wvalue;//写入 CSR 的具体值
+    wire [ 6:0] ds_rf_zip;
+    wire [81:0] ds_except_zip;  // {ds_csr_num, ds_csr_wmask, ds_csr_wvalue, inst_syscall, inst_ertn, ds_csr_we}
 
 
 
@@ -168,10 +175,23 @@ module IDreg(
 //------------------------------state control signal---------------------------------------
     assign ds_ready_go      = ~ds_stall;
     assign ds_allowin       = ~ds_valid | ds_ready_go & es_allowin; 
-    assign ds_stall         = es_res_from_mem & (conflict_r1_exe & need_r1|conflict_r2_exe & need_r2);    
+    //assign ds_stall         = es_res_from_mem & (conflict_r1_exe & need_r1|conflict_r2_exe & need_r2); 
+    assign ds_stall         = (es_res_from_mem|es_csr_re) & (conflict_r1_exe & need_r1|conflict_r2_exe & need_r2)|
+                                ms_csr_re & (conflict_r1_mem | conflict_r2_mem);
+                                //EXE阶段冲突和MEM阶段冲突       
     assign ds2es_valid      = ds_valid & ds_ready_go;
+    // always @(posedge clk) begin
+    //     if(~resetn)
+    //         ds_valid <= 1'b0;
+    //     else if(br_taken)
+    //         ds_valid <= 1'b0;
+    //     else if(ds_allowin)
+    //         ds_valid <= fs2ds_valid;
+    // end
     always @(posedge clk) begin
         if(~resetn)
+            ds_valid <= 1'b0;
+        else if(wb_ex)
             ds_valid <= 1'b0;
         else if(br_taken)
             ds_valid <= 1'b0;
@@ -361,7 +381,8 @@ module IDreg(
     assign ds_inst_st_w =inst_st_w ;
     assign ds_res_from_mem  = inst_ld_w | inst_ld_b | inst_ld_h | inst_ld_bu | inst_ld_hu;
     assign dst_is_r1     = inst_bl;
-    assign gr_we         = ~inst_st_w & ~inst_st_b & ~inst_st_h & ~inst_beq & ~inst_bne & ~inst_blt & ~inst_bge & ~inst_bltu & ~inst_bgeu & ~inst_b & ds_valid; 
+    assign gr_we         = ~inst_st_w & ~inst_st_b & ~inst_st_h & ~inst_beq & ~inst_bne & ~inst_blt & ~inst_bge 
+                        & ~inst_bltu & ~inst_bgeu & ~inst_b & ds_valid; //这里没有& ~inst_syscall？
     assign ds_mem_we        = inst_st_w & inst_st_b & inst_st_h & ds_valid;   
     assign dest          = dst_is_r1 ? 5'd1 : rd;
 //------------------------------系统调用异常相关信号的译码---------------------------------------
@@ -369,9 +390,10 @@ module IDreg(
     assign ds_csr_we    = inst_csrwr|inst_csrxchg ;//csr写使能
     assign ds_csr_wmask    = {32{inst_csrxchg}} & rj_value | {32{inst_csrwr}};//写掩码
 
-    assign ds2es_int={ds_csr_re};//1
-    assign ds_csr_zip={inst_ertn,inst_syscall,ds_csr_we,ds_csr_wmask};//1
+    assign ds_csr_wvalue   = rkd_value;
+    assign ds_csr_num   = ds_inst[23:10];
 
+    assign ds_except_zip  = {ds_csr_num, ds_csr_wmask, ds_csr_wvalue, inst_syscall, inst_ertn, ds_csr_we};
 //------------------------------regfile control---------------------------------------
     assign rf_raddr1 = rj;
     assign rf_raddr2 = src_reg_is_rd ? rd :rk;
@@ -380,7 +402,7 @@ module IDreg(
     //写回、访存、执行阶段传回数据处理
     assign {ws_rf_we, ws_rf_waddr, ws_rf_wdata} = ws_rf_zip;
     assign {ms_csr_re ,ms_rf_we, ms_rf_waddr, ms_rf_wdata} = ms_rf_zip;
-    assign {es_res_from_mem, es_rf_we, es_rf_waddr, es_rf_wdata} = es_rf_zip;
+    assign {es_csr_re,es_res_from_mem, es_rf_we, es_rf_waddr, es_rf_wdata} = es_rf_zip;
     regfile u_regfile(
         .clk    (clk      ),
         .raddr1 (rf_raddr1),
@@ -420,8 +442,7 @@ module IDreg(
                         ds_inst_st_b,        //1
                         ds_inst_st_h,         //1
                         ds_inst_st_w,         //1 
-                        ds2es_int,              //1  
-                        ds_csr_zip        
+                        ds_except_zip       //82 bit    
                         };
 
     assign ds_res_from_mem_zip = {inst_ld_bu, inst_ld_hu, inst_ld_b, inst_ld_h, inst_ld_w};

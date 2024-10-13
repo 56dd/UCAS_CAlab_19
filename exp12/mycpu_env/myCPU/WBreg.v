@@ -3,6 +3,7 @@ module WBreg(
     input  wire        resetn,
     // mem and ws state interface
     output wire        ws_allowin,
+    input  wire [`MS2WS_LEN -1:0] ms2ws_bus,
     input  wire [38:0] ms_rf_zip, // {ms_csr_re,ms_rf_we, ms_rf_waddr, ms_rf_wdata_pre}
     input  wire        ms2ws_valid,
     input  wire [31:0] ms_pc,    
@@ -28,7 +29,9 @@ module WBreg(
     output  wire [7:0]    hw_int_in ,
     output  wire [31:0]   wb_pc     ,
     output  wire [5:0]    wb_ecode  ,
-    output  wire [8:0]    wb_esubcode
+    output  wire [8:0]    wb_esubcode,
+
+    input       [31:0] csr_rvalue,
 );
     
     wire        ws_ready_go;
@@ -37,6 +40,8 @@ module WBreg(
     reg  [31:0] ws_rf_wdata;
     reg  [4 :0] ws_rf_waddr;
     reg         ws_rf_we;
+
+    reg  [81:0] ws_except_zip;
 //------------------------------state control signal---------------------------------------
 
     assign ws_ready_go      = 1'b1;
@@ -44,7 +49,7 @@ module WBreg(
     always @(posedge clk) begin
         if(~resetn)
             ws_valid <= 1'b0;
-        else if(ertn_flush)
+        else if(wb_ex|ertn_flush)
             ws_valid <= 1'b0;
         else if(ws_allowin)
             ws_valid <= ms2ws_valid; 
@@ -54,17 +59,20 @@ module WBreg(
     always @(posedge clk) begin
         if(~resetn) begin
             ws_pc <= 32'b0;
+            {ws_except_zip}  <= 100'b0;//////要改大小
             {ws_bus,csr_re,ws_rf_we, ws_rf_waddr, ws_rf_wdata_pre} <= 38'b0;
         end
         if(ms2ws_valid & ws_allowin) begin
             ws_pc <= ms_pc;
+            {ws_except_zip}  <= ms2ws_bus;
             {ws_bus,csr_re,ws_rf_we, ws_rf_waddr, ws_rf_wdata_pre} <= ms_rf_zip;
         end
     end
-    ////////////////////////解包
-    assign {ertn_flush,csr_we,ws_csr_wmask}=ws_bus;
 
 //------------------------------id and ws state interface---------------------------------------
+    assign {csr_num, csr_wmask, csr_wvalue, wb_ex, ertn_flush, csr_we} = ws_except_zip & {82{ws_valid}};    
+    // wb_ex=inst_syscall, ertn_flush=inst_ertn，为什么要&valid
+    
     assign ws_rf_zip = {ws_rf_we & ws_valid, ws_rf_waddr, ws_rf_wdata};
     assign ws_rf_wdata = csr_re ? csr_rvalue : ws_rf_wdata_pre;
 
