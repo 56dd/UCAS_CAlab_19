@@ -188,6 +188,7 @@ module csr(
                        | ~csr_wmask[`CSR_ERA_PC]&csr_era_pc;
     end
 
+    assign ertn_entry = csr_era_pc; 
 
     always @(posedge clk) begin
         if (csr_we && csr_num==`CSR_EENTRY)
@@ -195,6 +196,7 @@ module csr(
                           | ~csr_wmask[`CSR_EENTRY_VA]&csr_eentry_va;
     end
 
+    assign ex_entry = csr_eentry_va;
 
     always @(posedge clk) begin
         if (csr_we && csr_num==`CSR_SAVE0)
