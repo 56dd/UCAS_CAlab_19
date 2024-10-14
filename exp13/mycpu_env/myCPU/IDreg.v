@@ -497,13 +497,13 @@ module IDreg(
                         ds_res_from_mem,    //1  bit
                         ds_alu_src1,        //32 bit
                         ds_alu_src2,        //32 bit
-                        ds_rf_zip,          //7  bit
+                        ds_rf_zip,          //7  bit  ds_csr_re, ds_rf_we, ds_rf_wadata
                         ds_rkd_value,       //32 bit
                         ds_pc,              //32 bit
                         ds_mem_inst_zip,    //8  bit
-                        inst_rdcntvh , 
-                        inst_rdcntvl,
+                        inst_rdcntvh ,      //1
+                        inst_rdcntvl,       //1
                         ds_except_zip       //84 bit
-                        };//247
+                        };//249
 
 endmodule

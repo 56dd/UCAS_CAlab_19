@@ -8,7 +8,7 @@ module EXEreg(
     input  wire [32:0] ds_except_zip, 
     // exe and mem state interface
     input  wire        ms_allowin,
-    output wire [119:0] es2ms_bus,
+    output wire [121:0] es2ms_bus,
     output wire [39:0] es_rf_zip, // {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
     output wire        es2ms_valid,
     output reg  [31:0] es_pc,    
@@ -54,7 +54,7 @@ module EXEreg(
     wire        inst_rdcntvh;
     wire        inst_rdcntvl;
 //------------------------------state control signal---------------------------------------
-    assign es_ex            = es_except_zip[6:1];
+    assign es_ex            = es_except_zip[5:0];
     assign es_ready_go      = alu_complete;
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
     assign es2ms_valid  = es_valid & es_ready_go;
@@ -92,9 +92,9 @@ module EXEreg(
     assign es2ms_bus = {
                         es_ld_inst_zip,     // 5  bit
                         es_pc,              // 32 bit
-                        es_except_zip,       // 82 bit
+                        es_except_zip,       // 84 bit
                         es_except_ale       //1
-                    };//120
+                    };//122
 //------------------------------alu interface---------------------------------------
     alu u_alu(
         .clk            (clk       ),
@@ -133,5 +133,10 @@ always @(posedge clk) begin
                               {32{~inst_rdcntvh & ~inst_rdcntvl}} & es_alu_result;
 
     //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处理
-    assign es_rf_zip       = {es_csr_re & es_valid, es_res_from_mem & es_valid, es_rf_we & es_valid, es_rf_waddr, es_rf_result_tmp};    
+    assign es_rf_zip       = {es_csr_re & es_valid, //1
+                                es_res_from_mem & es_valid, //1
+                                es_rf_we & es_valid, //1
+                                es_rf_waddr,// 5
+                                es_rf_result_tmp//32
+                                };    //40
 endmodule

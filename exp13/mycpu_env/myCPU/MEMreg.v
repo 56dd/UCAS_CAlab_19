@@ -3,12 +3,12 @@ module MEMreg(
     input  wire        resetn,
     // exe and mem state interface
     output wire        ms_allowin,
-    input  wire [118:0] es2ms_bus,
+    input  wire [121:0] es2ms_bus,
     input  wire [39:0] es_rf_zip, // {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_rf_wdata}
     input  wire        es2ms_valid, // {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w}
     // mem and wb state interface
     input  wire        ws_allowin,
-    output wire [146:0] ms2ws_bus,
+    output wire [149:0] ms2ws_bus,
     output wire [38:0] ms_rf_zip, // {ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     output wire        ms2ws_valid,
     // data sram interface
@@ -35,7 +35,7 @@ module MEMreg(
     wire [31:0] ms_mem_result ;
     wire [31:0] shift_rdata   ;
 
-    wire  [82:0] ms_except_zip;
+    wire  [84:0] ms_except_zip;
     wire  [31:0] ms_pc;
     wire  [31:0] es_rf_result_tmp;
     // wire         ds_except_adef;
@@ -64,7 +64,7 @@ module MEMreg(
 //------------------------------exe and mem state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {ms_ld_inst_zip, ms_pc, ms_except_zip} <= {119{1'b0}};
+            {ms_ld_inst_zip, ms_pc, ms_except_zip} <= {122{1'b0}};//ms_except_zip={es_except_zip,es_except_ale }
             {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, es_rf_result_tmp} <= 39'b0;
         end
         if(es2ms_valid & ms_allowin) begin
@@ -90,6 +90,6 @@ module MEMreg(
     assign ms2ws_bus = {
                         es_rf_result_tmp,//32
                         ms_pc,              // 32 bit
-                        ms_except_zip,       // 83 bit
-                    };//115
+                        ms_except_zip,       // 85 bit
+                    };//149
 endmodule
