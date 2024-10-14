@@ -25,7 +25,7 @@ module WBreg(
     output reg  [31:0] wb_pc,
     output      [ 5:0] wb_ecode,
     output      [ 8:0] wb_esubcode,
-    output wire [31:0] wb_vaddr,
+    output reg  [31:0] wb_vaddr
 );
     
     wire        ws_ready_go;
@@ -72,18 +72,20 @@ module WBreg(
     assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, 
             ws_except_sys, ws_except_ertn, ws_except_ale } = ws_except_zip & {85{ws_valid}};     //
     assign ertn_flush=ws_except_ertn;
-    assign wb_ex = (ws_except_adef |                   // 用错误地址取指已经发生，故不与ws_valid挂钩
+    assign wb_ex = (ws_except_adef |                   // 用错误地�?取指已经发生，故不与ws_valid挂钩
                     ws_except_int  |                    // 中断由状态寄存器中的计时器产生，不与ws_valid挂钩
                     ws_except_ale | ws_except_ine | ws_except_brk | ws_except_sys) & ws_valid;
     //assign wb_ecode = {6{wb_ex}} & 6'hb;
     assign wb_esubcode = 9'b0;
-    assign wb_ecode =  ws_except_int ? {6{wb_ex}} & 6'h0:
-                       ws_except_adef? {6{wb_ex}} & 6'h8:
-                       ws_except_ale? {6{wb_ex}} & 6'h9: 
-                       ws_except_sys? {6{wb_ex}} & 6'hb:
-                       ws_except_brk? {6{wb_ex}} & 6'hc:
-                       ws_except_ine? {6{wb_ex}} & 6'hd:
-                        6'b0;   // 未包含ADEM和TLBR
+    wire [5:0] debug_ecode;
+    assign debug_ecode ={6{ws_except_brk}}&({6{wb_ex}}&6'b001100);
+    assign wb_ecode =   {6{ws_except_int}} & ({6{wb_ex}} & 6'h0)
+                       |{6{ws_except_adef}}& ({6{wb_ex}} & 6'h8)
+                       |{6{ws_except_ale}} & ({6{wb_ex}} & 6'h9) 
+                       |{6{ws_except_sys}} & ({6{wb_ex}} & 6'hb)
+                       |{6{ws_except_brk}} & ({6{wb_ex}} & 6'b001100)
+                       |{6{ws_except_ine}} & ({6{wb_ex}} & 6'hd);
+                       // 未包含ADEM和TLBR
 //------------------------------id and ws state interface---------------------------------------
     assign ws_rf_wdata = csr_re ? csr_rvalue : ws_rf_wdata_tmp;
     assign ws_rf_zip = {ws_rf_we & ws_valid, ws_rf_waddr, ws_rf_wdata};
