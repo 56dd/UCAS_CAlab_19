@@ -59,7 +59,7 @@ module EXEreg(
     reg        inst_rdcntvh;
     reg        inst_rdcntvl;
 //------------------------------state control signal---------------------------------------
-    assign es_ex            = es_except_zip[5:0];
+    assign es_ex            = (|es_except_zip[5:0]) || es_except_ale;
     assign es_ready_go      = alu_complete;
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
     assign es2ms_valid  = es_valid & es_ready_go;
@@ -125,7 +125,7 @@ always @(posedge clk) begin
     assign es_mem_we[2]     = op_st_w | op_st_h &  es_alu_result[1] | op_st_b & ~es_alu_result[0] &  es_alu_result[1];   
     assign es_mem_we[3]     = op_st_w | op_st_h &  es_alu_result[1] | op_st_b &  es_alu_result[0] &  es_alu_result[1];       
     assign data_sram_en     = (es_res_from_mem | (|es_mem_we)) & es_valid;
-    assign data_sram_we     = {4{es_valid & ~wb_ex & ~ms_ex & ~es_ex}} & es_mem_we;
+    assign data_sram_we     = {4{es_valid & ~wb_ex & ~ms_ex & ~es_ex }} & es_mem_we;
     assign data_sram_addr   = {es_alu_result[31:2], 2'b0};
     assign data_sram_wdata[ 7: 0]   = es_rkd_value[ 7: 0];
     assign data_sram_wdata[15: 8]   = op_st_b ? es_rkd_value[ 7: 0] : es_rkd_value[15: 8];

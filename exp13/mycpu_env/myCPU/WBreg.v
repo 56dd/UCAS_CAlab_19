@@ -88,7 +88,7 @@ module WBreg(
                        // 未包含ADEM和TLBR
 //------------------------------id and ws state interface---------------------------------------
     assign ws_rf_wdata = csr_re ? csr_rvalue : ws_rf_wdata_tmp;
-    assign ws_rf_zip = {ws_rf_we & ws_valid, ws_rf_waddr, ws_rf_wdata};
+    assign ws_rf_zip = {ws_rf_we & ws_valid & ~wb_ex & ~ertn_flush, ws_rf_waddr, ws_rf_wdata};
 //------------------------------trace debug interface---------------------------------------
     assign debug_wb_pc = wb_pc;
     assign debug_wb_rf_wdata = ws_rf_wdata;

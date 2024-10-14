@@ -88,6 +88,7 @@ module csr(
     reg [31:0] timer_cnt;
     wire  [31:0] coreid_in;
     wire    wb_ex_addr_err;
+    wire    csr_ticlr_clr;
 
 
     wire [31:0] csr_crmd_rvalue;
@@ -101,6 +102,12 @@ module csr(
     wire [31:0] csr_save1_rvalue;
     wire [31:0] csr_save2_rvalue;
     wire [31:0] csr_save3_rvalue;
+    wire [31:0] csr_tid_rvalue;
+    wire [31:0] csr_tcfg_rvalue;
+    wire [31:0] csr_tval_rvalue;
+    wire [31:0] csr_ticlr_rvalue;
+    
+
 
     wire        has_int;
 
@@ -274,6 +281,8 @@ module csr(
     assign csr_tval = timer_cnt[31:0];
 
 
+    assign csr_ticlr_clr = 1'b0;
+
 
     assign csr_crmd_rvalue = {23'b0, csr_crmd_datm,csr_crmd_datf,csr_crmd_pg,csr_crmd_da,csr_crmd_ie,csr_crmd_plv};
     assign csr_prmd_rvalue = {29'b0, csr_prmd_pie,csr_prmd_pplv};
@@ -286,6 +295,11 @@ module csr(
     assign csr_save1_rvalue = csr_save1_data;
     assign csr_save2_rvalue = csr_save2_data;
     assign csr_save3_rvalue = csr_save3_data;
+    assign csr_tid_rvalue = csr_tid_tid;
+    assign csr_tcfg_rvalue = {csr_tcfg_initval,csr_tcfg_periodic,csr_tcfg_en};
+    assign csr_tval_rvalue = csr_tval;
+    assign csr_ticlr_rvalue = {31'b0,csr_ticlr_clr};
+
 
     assign csr_rvalue = {32{csr_num == `CSR_CRMD}} & csr_crmd_rvalue
                       | {32{csr_num == `CSR_PRMD}} & csr_prmd_rvalue
@@ -297,6 +311,12 @@ module csr(
                       | {32{csr_num == `CSR_SAVE0}} & csr_save0_rvalue
                       | {32{csr_num == `CSR_SAVE1}} & csr_save1_rvalue
                       | {32{csr_num == `CSR_SAVE2}} & csr_save2_rvalue
-                      | {32{csr_num == `CSR_SAVE3}} & csr_save3_rvalue;
+                      | {32{csr_num == `CSR_SAVE3}} & csr_save3_rvalue
+                      | {32{csr_num == `CSR_TID}} & csr_tid_rvalue
+                      | {32{csr_num == `CSR_TCFG}} & csr_tcfg_rvalue
+                      | {32{csr_num == `CSR_TVAL}} & csr_tval_rvalue
+                      | {32{csr_num == `CSR_TICLR}} & csr_ticlr_rvalue;
+                      
+
 
 endmodule

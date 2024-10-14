@@ -196,7 +196,7 @@ module mycpu_top(
         .wb_pc      (wb_pc     ),
         .wb_ecode   (wb_ecode  ),
         .wb_esubcode(wb_esubcode),
-        .wb_vaddr   (ws_vaddr  ),
+        .wb_vaddr   (wb_vaddr  ),
 
         .has_int    (has_int   ),
         .ex_entry   (ex_entry  ),
