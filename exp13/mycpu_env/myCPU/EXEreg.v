@@ -51,10 +51,10 @@ module EXEreg(
     reg         es_csr_re;
     wire        es_except_ale;
 
-    reg  [ 4:0] es_ld_inst_zip; // {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w}
-    reg  [83:0] es_except_zip;
-    reg  [31:0] es_rf_result_tmp;
-    reg  [63:0] es_timer_cnt;
+    reg   [ 4:0] es_ld_inst_zip; // {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w}
+    reg   [83:0] es_except_zip;
+    wire  [31:0] es_rf_result_tmp;
+    reg   [63:0] es_timer_cnt;
 
     reg        inst_rdcntvh;
     reg        inst_rdcntvl;
@@ -78,7 +78,7 @@ module EXEreg(
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
              es_ld_inst_zip,
              inst_rdcntvh , inst_rdcntvl,
-             es_except_zip} <= {247{1'b0}};
+             es_except_zip} <= {249{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 

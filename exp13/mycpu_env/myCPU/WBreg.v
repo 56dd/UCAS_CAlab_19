@@ -68,7 +68,8 @@ module WBreg(
         end
     end
 //-----------------------------wb and csr state interface---------------------------------------
-    assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, ws_except_sys, ws_except_ertn ,ws_except_ale} = ws_except_zip & {84{ws_valid}};     //
+    assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, 
+            ws_except_sys, ws_except_ertn } = ws_except_zip & {84{ws_valid}};     //
     assign ertn_flush=ws_except_ertn;
     assign wb_ex = (ws_except_adef |                   // 用错误地址取指已经发生，故不与ws_valid挂钩
                     ws_except_int  |                    // 中断由状态寄存器中的计时器产生，不与ws_valid挂钩
