@@ -116,7 +116,7 @@ always @(posedge clk) begin
         if(~resetn)
             es_timer_cnt <= 64'b0;
         else   
-            es_timer_cnt <= es_timer_cnt + 1'b0;
+            es_timer_cnt <= es_timer_cnt + 1'b1;
     end
 
 //------------------------------data sram interface---------------------------------------

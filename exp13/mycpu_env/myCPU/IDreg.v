@@ -180,7 +180,7 @@ module IDreg(
     wire [31:0] ds_csr_wmask;
     wire [31:0] ds_csr_wvalue;
     wire [ 6:0] ds_rf_zip;
-    wire [81:0] ds_except_zip;  // {ds_csr_num, ds_csr_wmask, ds_csr_wvalue, inst_syscall, inst_ertn, ds_csr_we}
+    wire [83:0] ds_except_zip;  // {ds_csr_num, ds_csr_wmask, ds_csr_wvalue, inst_syscall, inst_ertn, ds_csr_we}
 
     reg          ds_except_adef;
     wire         ds_except_ine;
@@ -497,7 +497,7 @@ module IDreg(
                         ds_res_from_mem,    //1  bit
                         ds_alu_src1,        //32 bit
                         ds_alu_src2,        //32 bit
-                        ds_rf_zip,          //7  bit  ds_csr_re, ds_rf_we, ds_rf_wadata
+                        ds_rf_zip,          //7  bit  ds_csr_re, ds_rf_we, ds_rf_waddr
                         ds_rkd_value,       //32 bit
                         ds_pc,              //32 bit
                         ds_mem_inst_zip,    //8  bit

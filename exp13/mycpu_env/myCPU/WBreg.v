@@ -24,7 +24,8 @@ module WBreg(
     output             wb_ex,
     output reg  [31:0] wb_pc,
     output      [ 5:0] wb_ecode,
-    output      [ 8:0] wb_esubcode
+    output      [ 8:0] wb_esubcode,
+    output wire [31:0] wb_vaddr,
 );
     
     wire        ws_ready_go;
@@ -35,7 +36,7 @@ module WBreg(
     reg         ws_rf_we;
 
     wire        ws_except_adef;
-    reg         ws_except_ale;
+    wire        ws_except_ale;
     wire        ws_except_brk;
     wire        ws_except_ine;
     wire        ws_except_int;
@@ -59,22 +60,22 @@ module WBreg(
 //------------------------------mem and wb state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {wb_pc, ws_except_zip,ws_except_ale}  <= {149{1'b0}};
+            {wb_vaddr, wb_pc, ws_except_zip}  <= {149{1'b0}};
             {csr_re, ws_rf_we, ws_rf_waddr, ws_rf_wdata_tmp} <= 39'b0;
         end
         if(ms2ws_valid & ws_allowin) begin
-            {wb_pc, ws_except_zip,ws_except_ale}  <= ms2ws_bus;
+            {wb_vaddr, wb_pc, ws_except_zip}  <= ms2ws_bus;
             {csr_re, ws_rf_we, ws_rf_waddr, ws_rf_wdata_tmp} <= ms_rf_zip;
         end
     end
 //-----------------------------wb and csr state interface---------------------------------------
     assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, 
-            ws_except_sys, ws_except_ertn } = ws_except_zip & {84{ws_valid}};     //
+            ws_except_sys, ws_except_ertn, ws_except_ale } = ws_except_zip & {85{ws_valid}};     //
     assign ertn_flush=ws_except_ertn;
     assign wb_ex = (ws_except_adef |                   // 用错误地址取指已经发生，故不与ws_valid挂钩
                     ws_except_int  |                    // 中断由状态寄存器中的计时器产生，不与ws_valid挂钩
                     ws_except_ale | ws_except_ine | ws_except_brk | ws_except_sys) & ws_valid;
-    assign wb_ecode = {6{wb_ex}} & 6'hb;
+    //assign wb_ecode = {6{wb_ex}} & 6'hb;
     assign wb_esubcode = 9'b0;
     assign wb_ecode =  ws_except_int ? {6{wb_ex}} & 6'h0:
                        ws_except_adef? {6{wb_ex}} & 6'h8:
