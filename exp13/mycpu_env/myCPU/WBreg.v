@@ -71,7 +71,7 @@ module WBreg(
 //-----------------------------wb and csr state interface---------------------------------------
     assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, 
             ws_except_sys, ws_except_ertn, ws_except_ale } = ws_except_zip & {85{ws_valid}};     //
-    assign ertn_flush=ws_except_ertn;
+    assign ertn_flush=ws_except_ertn & ws_valid;
     assign wb_ex = (ws_except_adef |                   // 用错误地�?取指已经发生，故不与ws_valid挂钩
                     ws_except_int  |                    // 中断由状态寄存器中的计时器产生，不与ws_valid挂钩
                     ws_except_ale | ws_except_ine | ws_except_brk | ws_except_sys) & ws_valid;
@@ -83,7 +83,7 @@ module WBreg(
                        |{6{ws_except_adef}}& ({6{wb_ex}} & 6'h8)
                        |{6{ws_except_ale}} & ({6{wb_ex}} & 6'h9) 
                        |{6{ws_except_sys}} & ({6{wb_ex}} & 6'hb)
-                       |{6{ws_except_brk}} & ({6{wb_ex}} & 6'b001100)
+                       |{6{ws_except_brk}} & ({6{wb_ex}} & 6'hc)
                        |{6{ws_except_ine}} & ({6{wb_ex}} & 6'hd);
                        // 未包含ADEM和TLBR
 //------------------------------id and ws state interface---------------------------------------
@@ -92,6 +92,6 @@ module WBreg(
 //------------------------------trace debug interface---------------------------------------
     assign debug_wb_pc = wb_pc;
     assign debug_wb_rf_wdata = ws_rf_wdata;
-    assign debug_wb_rf_we = {4{ws_rf_we & ws_valid}};
+    assign debug_wb_rf_we = {4{ws_rf_we & ws_valid & ~wb_ex & ~ertn_flush}};
     assign debug_wb_rf_wnum = ws_rf_waddr;
 endmodule

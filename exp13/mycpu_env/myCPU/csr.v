@@ -280,6 +280,7 @@ module csr(
     assign csr_ecfg_rvalue = {19'b0, csr_ecfg_lie};
     assign csr_estat_rvalue = {1'b0,csr_estat_esubcode,csr_estat_ecode,3'b0,csr_estat_is};
     assign csr_era_rvalue = csr_era_pc;
+    assign csr_badv_rvalue = csr_badv_vaddr;
     assign csr_eentry_rvalue = {csr_eentry_va,6'b0};
     assign csr_save0_rvalue = csr_save0_data;
     assign csr_save1_rvalue = csr_save1_data;

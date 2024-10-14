@@ -430,7 +430,7 @@ module IDreg(
     assign dst_is_rj     = inst_rdcntid;
     assign gr_we         = ~inst_st_w & ~inst_st_h & ~inst_st_b & ~inst_beq  & 
                            ~inst_bne  & ~inst_b    & ~inst_bge  & ~inst_bgeu & 
-                           ~inst_blt  & ~inst_bltu & ~inst_syscall; 
+                           ~inst_blt  & ~inst_bltu & ~inst_syscall;
     assign dest          = dst_is_r1 ? 5'd1 :
                             dst_is_rj ? rj  : rd;
 
@@ -482,7 +482,7 @@ module IDreg(
     //assign ds_csr_num   = ds_inst[23:10];
     assign ds_csr_num     = {14{inst_rdcntid}} & 14'h40 | {14{~inst_rdcntid}} & ds_inst[23:10];
 
-    assign ds_except_ine= ~(type_al | type_bj | type_ld_st | type_else | type_ex);
+    assign ds_except_ine= ~(type_al | type_bj | type_ld_st | type_else | type_ex) & ~ds_except_adef;
     assign ds_except_brk  = inst_break;
     assign ds_except_int  = has_int;
     assign ds_except_sys  = inst_syscall;

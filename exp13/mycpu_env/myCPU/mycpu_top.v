@@ -175,7 +175,8 @@ module mycpu_top(
         .wb_ex      (wb_ex     ),
         .wb_pc      (wb_pc     ),
         .wb_ecode   (wb_ecode  ),
-        .wb_esubcode(wb_esubcode)
+        .wb_esubcode(wb_esubcode),
+        .wb_vaddr   (wb_vaddr  )
     );
 
     csr u_csr(
