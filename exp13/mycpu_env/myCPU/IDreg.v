@@ -182,12 +182,12 @@ module IDreg(
     wire [ 6:0] ds_rf_zip;
     wire [81:0] ds_except_zip;  // {ds_csr_num, ds_csr_wmask, ds_csr_wvalue, inst_syscall, inst_ertn, ds_csr_we}
 
-    reg         ds_except_adef;
-    reg         ds_except_ine;
-    reg         ds_except_int;
-    reg         ds_except_brk;
-    reg         ds_except_sys;
-    reg         ds_except_ertn;
+    reg          ds_except_adef;
+    wire         ds_except_ine;
+    wire         ds_except_int;
+    wire         ds_except_brk;
+    wire         ds_except_sys;
+    wire         ds_except_ertn;
 
     //计数器指令
     wire        inst_rdcntid;
@@ -488,7 +488,7 @@ module IDreg(
     assign ds_except_sys  = inst_syscall;
     assign ds_except_ertn  = inst_ertn;
 
-    assign ds_except_zip  = {ds_csr_num, ds_csr_wmask, ds_csr_wvalue,ds_csr_we  //14+32+32+1=79
+    assign ds_except_zip  = {ds_csr_num, ds_csr_wmask, ds_csr_wvalue,ds_csr_we,  //14+32+32+1=79
                         ds_except_int,ds_except_brk,ds_except_ine,ds_except_adef, ds_except_sys, ds_except_ertn //[5:0] 5bit
                         };//84
 

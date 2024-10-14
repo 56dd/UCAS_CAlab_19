@@ -35,7 +35,7 @@ module WBreg(
     reg         ws_rf_we;
 
     wire        ws_except_adef;
-    wire        ws_except_ale;
+    reg         ws_except_ale;
     wire        ws_except_brk;
     wire        ws_except_ine;
     wire        ws_except_int;
