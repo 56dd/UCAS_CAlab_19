@@ -35,9 +35,9 @@ module MEMreg(
     wire [31:0] ms_mem_result ;
     wire [31:0] shift_rdata   ;
 
-    wire  [84:0] ms_except_zip;
-    wire  [31:0] ms_pc;
-    wire  [31:0] es_rf_result_tmp;
+    reg  [84:0] ms_except_zip;
+    reg  [31:0] ms_pc;
+    reg  [31:0] es_rf_result_tmp;
     // wire         ds_except_adef;
     // wire         ds_except_ine;
     // wire         ds_except_int;
@@ -90,6 +90,6 @@ module MEMreg(
     assign ms2ws_bus = {
                         es_rf_result_tmp,//32
                         ms_pc,              // 32 bit
-                        ms_except_zip,       // 85 bit
+                        ms_except_zip       // 85 bit
                     };//149
 endmodule

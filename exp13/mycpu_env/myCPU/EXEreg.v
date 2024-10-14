@@ -41,6 +41,11 @@ module EXEreg(
     wire       op_st_b;
     wire       op_st_h;
     wire       op_st_w;
+    wire       op_ld_b;
+    wire       op_ld_bu;
+    wire       op_ld_h;
+    wire       op_ld_hu;
+    wire       op_ld_w;
 
     wire        es_ex;
     reg         es_csr_re;
@@ -51,8 +56,8 @@ module EXEreg(
     reg  [31:0] es_rf_result_tmp;
     reg  [63:0] es_timer_cnt;
 
-    wire        inst_rdcntvh;
-    wire        inst_rdcntvl;
+    reg        inst_rdcntvh;
+    reg        inst_rdcntvl;
 //------------------------------state control signal---------------------------------------
     assign es_ex            = es_except_zip[5:0];
     assign es_ready_go      = alu_complete;
@@ -82,7 +87,7 @@ module EXEreg(
              es_except_zip} <= ds2es_bus;    
     end
     assign {op_st_b, op_st_h, op_st_w} = es_st_op_zip;
-
+    assign {op_ld_b, op_ld_bu, op_ld_h, op_ld_hu, op_ld_w} = es_ld_inst_zip;
     
     
 
