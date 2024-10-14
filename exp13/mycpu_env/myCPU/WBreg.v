@@ -3,7 +3,7 @@ module WBreg(
     input  wire        resetn,
     // mem and ws state interface
     output wire        ws_allowin,
-    input  wire [113:0] ms2ws_bus,
+    input  wire [146:0] ms2ws_bus,
     input  wire [38:0] ms_rf_zip, // {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     input  wire        ms2ws_valid,
     // trace debug interface
@@ -34,7 +34,15 @@ module WBreg(
     reg  [4 :0] ws_rf_waddr;
     reg         ws_rf_we;
 
-    reg  [81:0] ws_except_zip;
+    wire        ws_except_adef;
+    wire        ws_except_ale;
+    wire        ws_except_brk;
+    wire        ws_except_ine;
+    wire        ws_except_int;
+    wire        ws_except_sys;
+    wire        ws_except_ertn;
+
+    reg  [82:0] ws_except_zip;
 //------------------------------state control signal---------------------------------------
 
     assign ws_ready_go      = 1'b1;
@@ -51,18 +59,29 @@ module WBreg(
 //------------------------------mem and wb state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {wb_pc, ws_except_zip}  <= {114{1'b0}};
+            {wb_pc, ws_except_zip,ws_except_ale}  <= {114{1'b0}};
             {csr_re, ws_rf_we, ws_rf_waddr, ws_rf_wdata_tmp} <= 39'b0;
         end
         if(ms2ws_valid & ws_allowin) begin
-            {wb_pc, ws_except_zip}  <= ms2ws_bus;
+            {wb_pc, ws_except_zip,ws_except_ale}  <= ms2ws_bus;
             {csr_re, ws_rf_we, ws_rf_waddr, ws_rf_wdata_tmp} <= ms_rf_zip;
         end
     end
 //-----------------------------wb and csr state interface---------------------------------------
-    assign {csr_num, csr_wmask, csr_wvalue, wb_ex, ertn_flush, csr_we} = ws_except_zip & {82{ws_valid}};    // wb_ex=inst_syscall, ertn_flush=inst_ertn
+    assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, ws_except_sys, ws_except_ertn } = ws_except_zip & {82{ws_valid}};     //
+    assign ertn_flush=ws_except_ertn;
+    assign wb_ex = (ws_except_adef |                   // 用错误地址取指已经发生，故不与ws_valid挂钩
+                    ws_except_int  |                    // 中断由状态寄存器中的计时器产生，不与ws_valid挂钩
+                    ws_except_ale | ws_except_ine | ws_except_brk | ws_except_sys) & ws_valid;
     assign wb_ecode = {6{wb_ex}} & 6'hb;
     assign wb_esubcode = 9'b0;
+    assign wb_ecode =  ws_except_int ? {6{wb_ex}} & 6'h0:
+                       ws_except_adef? {6{wb_ex}} & 6'h8:
+                       ws_except_ale? {6{wb_ex}} & 6'h9: 
+                       ws_except_sys? {6{wb_ex}} & 6'hb:
+                       ws_except_brk? {6{wb_ex}} & 6'hc:
+                       ws_except_ine? {6{wb_ex}} & 6'hd:
+                        6'b0;   // 未包含ADEM和TLBR
 //------------------------------id and ws state interface---------------------------------------
     assign ws_rf_wdata = csr_re ? csr_rvalue : ws_rf_wdata_tmp;
     assign ws_rf_zip = {ws_rf_we & ws_valid, ws_rf_waddr, ws_rf_wdata};

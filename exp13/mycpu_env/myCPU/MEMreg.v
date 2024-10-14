@@ -8,7 +8,7 @@ module MEMreg(
     input  wire        es2ms_valid, // {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w}
     // mem and wb state interface
     input  wire        ws_allowin,
-    output wire [113:0] ms2ws_bus,
+    output wire [146:0] ms2ws_bus,
     output wire [38:0] ms_rf_zip, // {ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     output wire        ms2ws_valid,
     // data sram interface
@@ -35,8 +35,16 @@ module MEMreg(
     wire [31:0] ms_mem_result ;
     wire [31:0] shift_rdata   ;
 
-    reg  [81:0] ms_except_zip;
-    reg  [31:0] ms_pc;
+    wire  [82:0] ms_except_zip;
+    wire  [31:0] ms_pc;
+    wire  [31:0] es_rf_result_tmp;
+    // wire         ds_except_adef;
+    // wire         ds_except_ine;
+    // wire         ds_except_int;
+    // wire         ds_except_brk;
+    // wire         ds_except_sys;
+    // wire         ds_except_ertn;
+
 
 //------------------------------state control signal---------------------------------------
 
@@ -51,22 +59,23 @@ module MEMreg(
         else if(ms_allowin)
             ms_valid <= es2ms_valid; 
     end
-    assign ms_ex = ms_except_zip[2]; // inst_syscall
+    
+    assign ms_ex = |ms_except_zip[6:0] ; 
 //------------------------------exe and mem state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
             {ms_ld_inst_zip, ms_pc, ms_except_zip} <= {119{1'b0}};
-            {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, ms_alu_result} <= 39'b0;
+            {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, es_rf_result_tmp} <= 39'b0;
         end
         if(es2ms_valid & ms_allowin) begin
             {ms_ld_inst_zip, ms_pc, ms_except_zip} <= es2ms_bus;
-            {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, ms_alu_result} <= es_rf_zip;
+            {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, es_rf_result_tmp} <= es_rf_zip;
         end
     end
 //------------------------------mem and wb state interface---------------------------------------
     // 细粒度译码
     assign {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w} = ms_ld_inst_zip;
-    assign shift_rdata   = {24'b0, data_sram_rdata} >> {ms_alu_result[1:0], 3'b0};
+    assign shift_rdata   = {24'b0, data_sram_rdata} >> {es_rf_result_tmp[1:0], 3'b0};
     assign ms_mem_result[ 7: 0]   =  shift_rdata[ 7: 0];
     assign ms_mem_result[15: 8]   =  {8{op_ld_b}} & {8{shift_rdata[7]}} |
                                      {8{op_ld_bu}} & 8'b0               |
@@ -75,11 +84,12 @@ module MEMreg(
                                      {16{op_ld_h}} & {16{shift_rdata[15]}}|
                                      {16{op_ld_bu | op_ld_hu}} & 16'b0    |
                                      {16{op_ld_w}} & shift_rdata[31:16];
-    assign ms_rf_wdata = {32{ms_res_from_mem}} & ms_mem_result | {32{~ms_res_from_mem}} & ms_alu_result;
+    assign ms_rf_wdata = {32{ms_res_from_mem}} & ms_mem_result | {32{~ms_res_from_mem}} & es_rf_result_tmp;
     assign ms_rf_zip  = {ms_csr_re & ms_valid, ms_rf_we & ms_valid, ms_rf_waddr, ms_rf_wdata};
     
     assign ms2ws_bus = {
+                        es_rf_result_tmp,//32
                         ms_pc,              // 32 bit
-                        ms_except_zip       // 82 bit
-                    };
+                        ms_except_zip,       // 83 bit
+                    };//115
 endmodule

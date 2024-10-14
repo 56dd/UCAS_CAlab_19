@@ -12,7 +12,7 @@ module IFreg(
     input  wire [32:0]  br_zip,
     // fs to ds interface
     output wire         fs2ds_valid,
-    output wire [63:0]  fs2ds_bus,
+    output wire [64:0]  fs2ds_bus,
     // exception interface
     input  wire         wb_ex,
     input  wire         ertn_flush,
@@ -35,7 +35,6 @@ module IFreg(
 
     wire [31:0] fs_inst;
     reg  [31:0] fs_pc;
-    assign fs2ds_bus = {fs_inst, fs_pc};
 
 
 //------------------------------state control signal---------------------------------------
@@ -49,6 +48,11 @@ module IFreg(
         else if(fs_allowin)
             fs_valid <= to_fs_valid; // 在reset撤销的下一个时钟上升沿才开始取指
     end
+//------------------------------exception---------------------------------------
+    wire   fs_except_adef;
+    assign fs_except_adef=(|fs_pc[1:0])&fs_valid;
+
+
 //------------------------------inst sram interface---------------------------------------
     
     assign inst_sram_en     = fs_allowin & resetn;
@@ -73,5 +77,5 @@ module IFreg(
     end
 
     assign fs_inst    = inst_sram_rdata;
-    assign fs2ds_bus  = {fs_inst, fs_pc}; // 32+32
+    assign fs2ds_bus  = {fs_inst, fs_pc,fs_except_adef}; // 32+32+1=65
 endmodule

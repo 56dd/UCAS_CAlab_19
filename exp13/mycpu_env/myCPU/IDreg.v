@@ -3,20 +3,21 @@ module IDreg(
     input  wire        clk,
     input  wire        resetn,
     // fs and ds interface
-    input  wire                   fs2ds_valid,
-    output wire                   ds_allowin,
-    output wire [32:0]            br_zip,
-    input  wire [63:0] fs2ds_bus,
+    input  wire        fs2ds_valid,
+    output wire        ds_allowin,
+    output wire [32:0] br_zip,
+    input  wire [64:0] fs2ds_bus,
     // ds and es interface
-    input  wire                   es_allowin,
-    output wire                   ds2es_valid,
-    output wire [244:0] ds2es_bus,
+    input  wire        es_allowin,
+    output wire        ds2es_valid,
+    output wire [248:0] ds2es_bus,
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip, // {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
     input  wire [38:0] ms_rf_zip, // {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     input  wire [39:0] es_rf_zip, // {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
     // exception interface
-    input  wire        wb_ex
+    input  wire        wb_ex,
+    input  wire        has_int
 );
 
     wire [7 :0] ds_mem_inst_zip;
@@ -35,6 +36,7 @@ module IDreg(
     wire [31:0] ds_rkd_value;
 
     wire        dst_is_r1;
+    wire        dst_is_rj;
     wire        gr_we;
     wire        ds_src_reg_is_rd;
     wire        rj_eq_rd;
@@ -122,6 +124,7 @@ module IDreg(
     wire        inst_csrxchg;
     wire        inst_ertn;
     wire        inst_syscall;
+    wire        inst_break;
 
     wire        need_ui5;
     wire        need_ui12;
@@ -178,6 +181,20 @@ module IDreg(
     wire [31:0] ds_csr_wvalue;
     wire [ 6:0] ds_rf_zip;
     wire [81:0] ds_except_zip;  // {ds_csr_num, ds_csr_wmask, ds_csr_wvalue, inst_syscall, inst_ertn, ds_csr_we}
+
+    reg         ds_except_adef;
+    reg         ds_except_ine;
+    reg         ds_except_int;
+    reg         ds_except_brk;
+    reg         ds_except_sys;
+    reg         ds_except_ertn;
+
+    //计数器指令
+    wire        inst_rdcntid;
+    wire        inst_rdcntvl;
+    wire        inst_rdcntvh;
+    
+
 //------------------------------state control signal---------------------------------------
     // always @(posedge clk) begin
     //     if(~resetn | br_taken | inst_syscall | inst_ertn)
@@ -204,9 +221,9 @@ module IDreg(
 //------------------------------if and id state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn)
-            {ds_inst, ds_pc} <= 64'b0;
+            {ds_inst, ds_pc,ds_except_adef} <= 65'b0;
         if(fs2ds_valid & ds_allowin) begin
-            {ds_inst, ds_pc} <= fs2ds_bus;
+            {ds_inst, ds_pc,ds_except_adef} <= fs2ds_bus;
         end
     end
 
@@ -309,6 +326,27 @@ module IDreg(
 
     assign inst_ertn    = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h10] 
                         & (rk == 5'h0e) & (~|rj) & (~|rd);
+    assign inst_break   = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h2] & op_19_15_d[5'h14];
+
+    assign inst_rdcntid = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h00] & (rk == 5'h18) & (rd == 5'h00);
+    assign inst_rdcntvl = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h00] & (rk == 5'h18) & (rj == 5'h00);
+    assign inst_rdcntvh = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h00] & (rk == 5'h19) & (rj == 5'h00);
+
+    // 指令分类
+    assign type_al    = inst_add_w  | inst_sub_w  | inst_slti   | inst_slt   | inst_sltui  | inst_sltu  |
+                        inst_nor    | inst_and    | inst_andi   | inst_or    | inst_ori    | inst_xor   |
+                        inst_xori   | inst_sll_w  | inst_slli_w | inst_srl_w | inst_srli_w | inst_sra_w | inst_srai_w | inst_addi_w|
+                        // 复杂算数运算
+                        inst_mul_w  | inst_mulh_w | inst_mulh_wu| inst_div_w | inst_div_wu | inst_mod_w |
+                        inst_mod_wu;
+    assign type_ld_st = inst_ld_b   | inst_ld_h   | inst_ld_w   | inst_ld_bu | inst_ld_hu  | inst_st_b  |
+                        inst_st_h   | inst_st_w;
+    assign type_bj    = inst_jirl   | inst_b      | inst_bl     | inst_blt   | inst_bge    | inst_bltu  |
+                        inst_bgeu   | inst_beq    | inst_bne;
+    assign type_ex    = inst_csrrd  | inst_csrwr  | inst_csrxchg| inst_ertn  | inst_syscall| inst_break |
+                        inst_rdcntid;
+    assign type_else  = inst_rdcntvh| inst_rdcntvl| inst_lu12i_w| inst_pcaddul2i; 
+
 
     assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_ld_hu |
                         inst_ld_h  | inst_ld_bu  | inst_ld_b | inst_st_b  | 
@@ -389,10 +427,12 @@ module IDreg(
     assign ds_res_from_mem  = inst_ld_w | inst_ld_h | inst_ld_hu | inst_ld_b | inst_ld_bu;
     assign ds_rkd_value = rkd_value;
     assign dst_is_r1     = inst_bl;
+    assign dst_is_rj     = inst_rdcntid;
     assign gr_we         = ~inst_st_w & ~inst_st_h & ~inst_st_b & ~inst_beq  & 
                            ~inst_bne  & ~inst_b    & ~inst_bge  & ~inst_bgeu & 
                            ~inst_blt  & ~inst_bltu & ~inst_syscall; 
-    assign dest          = dst_is_r1 ? 5'd1 : rd;
+    assign dest          = dst_is_r1 ? 5'd1 :
+                            dst_is_rj ? rj  : rd;
 
 //------------------------------regfile control---------------------------------------
     assign rf_raddr1 = rj;
@@ -435,13 +475,22 @@ module IDreg(
                           inst_ld_bu,inst_ld_h, inst_ld_hu, inst_ld_w};
     
 
-    assign ds_csr_re    = inst_csrrd | inst_csrwr | inst_csrxchg;
+    assign ds_csr_re    = inst_csrrd | inst_csrwr | inst_csrxchg|inst_rdcntid;
     assign ds_csr_we    = inst_csrwr | inst_csrxchg;
     assign ds_csr_wmask    = {32{inst_csrxchg}} & rj_value | {32{inst_csrwr}};
     assign ds_csr_wvalue   = rkd_value;
-    assign ds_csr_num   = ds_inst[23:10];
+    //assign ds_csr_num   = ds_inst[23:10];
+    assign ds_csr_num     = {14{inst_rdcntid}} & 14'h40 | {14{~inst_rdcntid}} & ds_inst[23:10];//这个num怎么得到的？
 
-    assign ds_except_zip  = {ds_csr_num, ds_csr_wmask, ds_csr_wvalue, inst_syscall, inst_ertn, ds_csr_we};
+    assign ds_except_ine= ~(type_al | type_bj | type_ld_st | type_else | type_ex);
+    assign ds_except_brk  = inst_break;
+    assign ds_except_int  = has_int;
+    assign ds_except_sys  = inst_syscall;
+    assign ds_except_ertn  = inst_ertn;
+
+    assign ds_except_zip  = {ds_csr_num, ds_csr_wmask, ds_csr_wvalue,ds_csr_we  //14+32+32+1=79
+                        ds_except_int,ds_except_brk,ds_except_ine,ds_except_adef, ds_except_sys, ds_except_ertn //[5:0] 5bit
+                        };//84
 
 //------------------------------ds to es interface--------------------------------------
     assign ds2es_bus = {ds_alu_op,          //19 bit
@@ -452,7 +501,9 @@ module IDreg(
                         ds_rkd_value,       //32 bit
                         ds_pc,              //32 bit
                         ds_mem_inst_zip,    //8  bit
-                        ds_except_zip       //82 bit
-                        };
+                        inst_rdcntvh , 
+                        inst_rdcntvl,
+                        ds_except_zip       //84 bit
+                        };//247
 
 endmodule

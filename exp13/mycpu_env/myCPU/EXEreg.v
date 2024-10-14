@@ -4,11 +4,11 @@ module EXEreg(
     // id and exe interface
     output wire        es_allowin,
     input  wire        ds2es_valid,
-    input  wire [244:0] ds2es_bus,
+    input  wire [248:0] ds2es_bus,
     input  wire [32:0] ds_except_zip, 
     // exe and mem state interface
     input  wire        ms_allowin,
-    output wire [118:0] es2ms_bus,
+    output wire [119:0] es2ms_bus,
     output wire [39:0] es_rf_zip, // {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
     output wire        es2ms_valid,
     output reg  [31:0] es_pc,    
@@ -44,11 +44,17 @@ module EXEreg(
 
     wire        es_ex;
     reg         es_csr_re;
+    wire        es_except_ale;
 
     reg  [ 4:0] es_ld_inst_zip; // {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w}
     reg  [81:0] es_except_zip;
+    reg  [31:0] es_rf_result_tmp;
+    reg  [63:0] es_timer_cnt;
+
+    wire        inst_rdcntvh;
+    wire        inst_rdcntvl;
 //------------------------------state control signal---------------------------------------
-    assign es_ex            = es_except_zip[2];
+    assign es_ex            = es_except_zip[6:1];
     assign es_ready_go      = alu_complete;
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
     assign es2ms_valid  = es_valid & es_ready_go;
@@ -65,19 +71,30 @@ module EXEreg(
         if(~resetn)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
-             es_ld_inst_zip, es_except_zip} <= {245{1'b0}};
+             es_ld_inst_zip,
+             inst_rdcntvh , inst_rdcntvl,
+             es_except_zip} <= {247{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
-             es_ld_inst_zip, es_except_zip} <= ds2es_bus;    
+             es_ld_inst_zip, 
+             inst_rdcntvh , inst_rdcntvl,
+             es_except_zip} <= ds2es_bus;    
     end
     assign {op_st_b, op_st_h, op_st_w} = es_st_op_zip;
+
+    
+    
+
 //------------------------------exe and mem state interface---------------------------------------
+    assign es_except_ale = ((|es_alu_result[1:0]) & (op_st_w | op_ld_w)|
+                            es_alu_result[0] & (op_st_h|op_ld_hu|op_ld_h)) & es_valid;
     assign es2ms_bus = {
                         es_ld_inst_zip,     // 5  bit
                         es_pc,              // 32 bit
-                        es_except_zip       // 82 bit
-                    };
+                        es_except_zip,       // 82 bit
+                        es_except_ale       //1
+                    };//120
 //------------------------------alu interface---------------------------------------
     alu u_alu(
         .clk            (clk       ),
@@ -89,6 +106,13 @@ module EXEreg(
         .complete       (alu_complete)
     );
 
+//------------------------------clk------------------------------------------------------
+always @(posedge clk) begin
+        if(~resetn)
+            es_timer_cnt <= 64'b0;
+        else   
+            es_timer_cnt <= es_timer_cnt + 1'b0;
+    end
 
 //------------------------------data sram interface---------------------------------------
     assign es_mem_we[0]     = op_st_w | op_st_h & ~es_alu_result[1] | op_st_b & ~es_alu_result[0] & ~es_alu_result[1];   
@@ -104,6 +128,10 @@ module EXEreg(
     assign data_sram_wdata[31:24]   = op_st_w ? es_rkd_value[31:24] : 
                                       op_st_h ? es_rkd_value[15: 8] : es_rkd_value[ 7: 0];
 
+    assign es_rf_result_tmp = {32{inst_rdcntvh}} & es_timer_cnt[63:32] | 
+                              {32{inst_rdcntvl}} & es_timer_cnt[31: 0] |
+                              {32{~inst_rdcntvh & ~inst_rdcntvl}} & es_alu_result;
+
     //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处理
-    assign es_rf_zip       = {es_csr_re & es_valid, es_res_from_mem & es_valid, es_rf_we & es_valid, es_rf_waddr, es_alu_result};    
+    assign es_rf_zip       = {es_csr_re & es_valid, es_res_from_mem & es_valid, es_rf_we & es_valid, es_rf_waddr, es_rf_result_tmp};    
 endmodule
