@@ -47,7 +47,7 @@ module EXEreg(
     wire        es_except_ale;
 
     reg  [ 4:0] es_ld_inst_zip; // {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w}
-    reg  [81:0] es_except_zip;
+    reg  [83:0] es_except_zip;
     reg  [31:0] es_rf_result_tmp;
     reg  [63:0] es_timer_cnt;
 
