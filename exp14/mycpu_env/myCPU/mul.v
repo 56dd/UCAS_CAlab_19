@@ -7,11 +7,11 @@ module Adder (
     output  [63:0] C,
     output  [63:0] S
 );
-    assign S  = in1 ^ in2 ^ in3;
-    assign C = {(in1 & in2 | in1 & in3 | in2 & in3), 1'b0} ;
+    assign S  = in1 ^ in2 ^ in3;//加
+    assign C = {(in1 & in2 | in1 & in3 | in2 & in3), 1'b0} ;//进位
 endmodule
 
-module Wallace_Mul (
+module mul (
     input          mul_clk,
     input          resetn,
     input          mul_signed,
@@ -19,8 +19,6 @@ module Wallace_Mul (
     input   [31:0] B,
     output  [63:0] result
 );
-    reg  [31:0] A_reg;
-    reg  [31:0] B_reg;
     wire [63:0] A_add;  
     wire [63:0] A_sub;
     wire [63:0] A2_add;
@@ -40,18 +38,8 @@ module Wallace_Mul (
     wire [33:0] B_r;
     wire [33:0] B_m;
     wire [33:0] B_l;
-    wire [63:0] P [16:0];   // 未对齐的部分积
-
-    always @(posedge mul_clk) begin
-        if(~resetn)
-            {A_reg, B_reg} <= 64'b0;
-        else    
-            {A_reg, B_reg} <= {A, B};
-    end
-    assign A_add       = {{32{A[31] & mul_signed}}, A};
-    assign A_sub       = ~ A_add + 1'b1;
-    assign A2_add      = {A_add, 1'b0};
-    assign A2_sub      = ~A2_add + 1'b1; 
+    // 未对齐的部分积
+    wire [63:0] P [16:0];
     assign B_m  = {{2{B[31] & mul_signed}}, B};
     assign B_l  = {1'b0, B_m[33:1]};
     assign B_r  = {B_m[32:0], 1'b0};
@@ -61,7 +49,10 @@ module Wallace_Mul (
     assign sel_neg_2x  = ( B_l & ~B_m & ~B_r) ;                      //  100
     assign sel_2x      = (~B_l & B_m & B_r);                         // 011
     assign sel_0       = (B_l & B_m & B_r) | (~B_l & ~B_m & ~B_r);     // 000, 111
-
+    assign A_add       = {{32{A[31] & mul_signed}}, A};
+    assign A_sub       = ~ A_add + 1'b1;
+    assign A2_add      = {A_add, 1'b0};
+    assign A2_sub      = ~A2_add + 1'b1; 
     // 奇数位才是有效的选取信号
     assign sel_x_val    = { sel_x[32], sel_x[30], sel_x[28], sel_x[26], sel_x[24],
                             sel_x[22], sel_x[20], sel_x[18], sel_x[16],
@@ -107,6 +98,7 @@ module Wallace_Mul (
                 {64{sel_neg_2x_val[ 7]}}, {64{sel_neg_2x_val[ 6]}}, {64{sel_neg_2x_val[ 5]}}, {64{sel_neg_2x_val[ 4]}},
                 {64{sel_neg_2x_val[ 3]}}, {64{sel_neg_2x_val[ 2]}}, {64{sel_neg_2x_val[ 1]}}, {64{sel_neg_2x_val[ 0]}}} & {17{A2_sub}}; 
 
+//华莱士树
 //-----------------------------------------Level 1--------------------------------------------- 
     wire [63:0] level_1 [11:0];
     Adder adder1_1 (
@@ -194,7 +186,6 @@ module Wallace_Mul (
     );
     assign level_3[4] = level_2[6];
     assign level_3[5] = level_2[7];
-    
 //-----------------------------------------Level 4--------------------------------------------- 
     wire [63:0] level_4 [3:0];
     Adder adder4_1 (
@@ -230,13 +221,6 @@ module Wallace_Mul (
         .C(level_6[0]),
         .S(level_6[1])
     );
-//-----------------------------------------流水级切分-------------------------------------------
-    reg  [63:0] level_6_r [1:0];
-    always @(posedge mul_clk) begin
-        if(~resetn)
-            {level_6_r[0],level_6_r[1]} <= {2{64'b0}};
-        else
-            {level_6_r[0],level_6_r[1]} <= {level_6[0],level_6[1]};
-    end
-    assign result = level_6_r[0] + level_6_r[1];
+   // assign result = (level_6[0] + level_6[1]) & {64{resetn}};
+   assign result = (level_6[0] + level_6[1]) ;
 endmodule

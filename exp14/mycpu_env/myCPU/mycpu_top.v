@@ -50,7 +50,7 @@ module mycpu_top(
     wire [64:0] fs2ds_bus;
     wire [248:0] ds2es_bus;
     wire [122:0] es2ms_bus;
-    wire [147:0] ms2ws_bus;
+    wire [148:0] ms2ws_bus;
 
     wire        csr_re;
     wire [13:0] csr_num;
