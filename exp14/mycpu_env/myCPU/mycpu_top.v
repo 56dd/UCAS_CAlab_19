@@ -2,17 +2,25 @@ module mycpu_top(
     input  wire        clk,
     input  wire        resetn,
     // inst sram interface
-    output wire        inst_sram_en,
-    output wire [ 3:0] inst_sram_we,
-    output wire [31:0] inst_sram_addr,
-    output wire [31:0] inst_sram_wdata,
-    input  wire [31:0] inst_sram_rdata,
+    output wire         inst_sram_req,
+    output wire         inst_sram_wr,
+    output wire [ 1:0]  inst_sram_size,
+    output wire [ 3:0]  inst_sram_wstrb,
+    output wire [31:0]  inst_sram_addr,
+    output wire [31:0]  inst_sram_wdata,
+    input  wire         inst_sram_addr_ok,
+    input  wire         inst_sram_data_ok,
+    input  wire [31:0]  inst_sram_rdata,
     // data sram interface
-    output wire        data_sram_en,
-    output wire [ 3:0] data_sram_we,
-    output wire [31:0] data_sram_addr,
-    output wire [31:0] data_sram_wdata,
-    input  wire [31:0] data_sram_rdata,
+    output wire         data_sram_req,
+    output wire         data_sram_wr,
+    output wire [ 1:0]  data_sram_size,
+    output wire [ 3:0]  data_sram_wstrb,
+    output wire [31:0]  data_sram_addr,
+    output wire [31:0]  data_sram_wdata,
+    input  wire         data_sram_addr_ok,
+    input  wire         data_sram_data_ok,
+    input  wire [31:0]  data_sram_rdata,
     // trace debug interface
     output wire [31:0] debug_wb_pc,
     output wire [ 3:0] debug_wb_rf_we,
@@ -37,12 +45,12 @@ module mycpu_top(
     wire [38:0] ms_rf_zip;
     wire [37:0] ws_rf_zip;
 
-    wire [32:0] br_zip;
+    wire [33:0] br_zip;
     wire [ 4:0] es_ld_inst_zip;
     wire [64:0] fs2ds_bus;
     wire [248:0] ds2es_bus;
     wire [121:0] es2ms_bus;
-    wire [149:0] ms2ws_bus;
+    wire [147:0] ms2ws_bus;
 
     wire        csr_re;
     wire [13:0] csr_num;
@@ -69,10 +77,13 @@ module mycpu_top(
         .clk(clk),
         .resetn(resetn),
 
-        .inst_sram_en(inst_sram_en),
-        .inst_sram_we(inst_sram_we),
+        .inst_sram_req(inst_sram_req),
+        .inst_sram_wr(inst_sram_wr),
+        .inst_sram_size(inst_sram_size),
+        .inst_sram_wstrb(inst_sram_wstrb),
         .inst_sram_addr(inst_sram_addr),
-        .inst_sram_wdata(inst_sram_wdata),
+        .inst_sram_addr_ok(inst_sram_addr_ok),
+        .inst_sram_data_ok(inst_sram_data_ok),
         .inst_sram_rdata(inst_sram_rdata),
         
         .ds_allowin(ds_allowin),
@@ -103,8 +114,8 @@ module mycpu_top(
         .ms_rf_zip(ms_rf_zip),
         .es_rf_zip(es_rf_zip),
 
-        .wb_ex(wb_ex|ertn_flush),
-        .has_int(has_int)
+        .has_int(has_int),
+        .wb_ex(wb_ex|ertn_flush)
     );
 
     EXEreg my_exeReg(
@@ -119,11 +130,15 @@ module mycpu_top(
         .es2ms_bus(es2ms_bus),
         .es_rf_zip(es_rf_zip),
         .es2ms_valid(es2ms_valid),
+        // .ms_wait_data_ok(ms_wait_data_ok),
         
-        .data_sram_en(data_sram_en),
-        .data_sram_we(data_sram_we),
-        .data_sram_addr(data_sram_addr),
+        .data_sram_req(data_sram_req),
+        .data_sram_wr(data_sram_wr),
+        .data_sram_size(data_sram_size),
+        .data_sram_wstrb(data_sram_wstrb),
         .data_sram_wdata(data_sram_wdata),
+        .data_sram_addr(data_sram_addr),
+        .data_sram_addr_ok(data_sram_addr_ok),
 
         .ms_ex(ms_ex),
         .wb_ex(wb_ex|ertn_flush)
@@ -137,12 +152,14 @@ module mycpu_top(
         .es2ms_bus(es2ms_bus),
         .es_rf_zip(es_rf_zip),
         .es2ms_valid(es2ms_valid),
-
+        // .ms_wait_data_ok(ms_wait_data_ok),
+        
         .ws_allowin(ws_allowin),
         .ms_rf_zip(ms_rf_zip),
         .ms2ws_valid(ms2ws_valid),
         .ms2ws_bus(ms2ws_bus),
 
+        .data_sram_data_ok(data_sram_data_ok),
         .data_sram_rdata(data_sram_rdata),
 
         .ms_ex(ms_ex),
@@ -174,9 +191,9 @@ module mycpu_top(
         .ertn_flush (ertn_flush),
         .wb_ex      (wb_ex     ),
         .wb_pc      (wb_pc     ),
+        .wb_vaddr   (wb_vaddr  ),
         .wb_ecode   (wb_ecode  ),
-        .wb_esubcode(wb_esubcode),
-        .wb_vaddr   (wb_vaddr  )
+        .wb_esubcode(wb_esubcode)
     );
 
     csr u_csr(

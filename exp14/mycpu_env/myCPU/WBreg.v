@@ -1,31 +1,31 @@
 module WBreg(
-    input  wire        clk,
-    input  wire        resetn,
+    input  wire        clk,             //1
+    input  wire        resetn,          //1
     // mem and ws state interface
-    output wire        ws_allowin,
-    input  wire [149:0] ms2ws_bus,
-    input  wire [38:0] ms_rf_zip, // {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata}
+    output wire        ws_allowin,      //1
+    input  wire [148:0] ms2ws_bus,      //149   {wb_vaddr, wb_pc, ws_except_zip}
+    input  wire [38:0] ms_rf_zip,       //39    {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     input  wire        ms2ws_valid,
     // trace debug interface
-    output wire [31:0] debug_wb_pc,
-    output wire [ 3:0] debug_wb_rf_we,
-    output wire [ 4:0] debug_wb_rf_wnum,
-    output wire [31:0] debug_wb_rf_wdata,
+    output wire [31:0] debug_wb_pc,     //32
+    output wire [ 3:0] debug_wb_rf_we,  //4
+    output wire [ 4:0] debug_wb_rf_wnum,//5
+    output wire [31:0] debug_wb_rf_wdata,//32
     // id and ws state interface
-    output wire [37:0] ws_rf_zip,  // {ws_rf_we, ws_rf_waddr, ws_rf_wdata_tmp}
+    output wire [37:0] ws_rf_zip,       //38     {ws_rf_we, ws_rf_waddr, ws_rf_wdata_tmp}
     // wb and csr interface
-    output reg         csr_re,
-    output      [13:0] csr_num,
-    input       [31:0] csr_rvalue,
-    output             csr_we,
-    output      [31:0] csr_wmask,
-    output      [31:0] csr_wvalue,
-    output             ertn_flush,
-    output             wb_ex,
-    output reg  [31:0] wb_pc,
-    output      [ 5:0] wb_ecode,
-    output      [ 8:0] wb_esubcode,
-    output reg  [31:0] wb_vaddr
+    output reg         csr_re,          //1
+    output      [13:0] csr_num,         //14
+    input       [31:0] csr_rvalue,      //32
+    output             csr_we,          //1
+    output      [31:0] csr_wmask,       //32
+    output      [31:0] csr_wvalue,      //32
+    output             ertn_flush,      //1
+    output             wb_ex,           //1
+    output reg  [31:0] wb_pc,           //32
+    output      [ 5:0] wb_ecode,        //6
+    output      [ 8:0] wb_esubcode,     //9
+    output reg  [31:0] wb_vaddr         //32
 );
     
     wire        ws_ready_go;
@@ -33,7 +33,9 @@ module WBreg(
     wire [31:0] ws_rf_wdata;
     reg  [31:0] ws_rf_wdata_tmp;
     reg  [4 :0] ws_rf_waddr;
-    reg         ws_rf_we;
+    wire        ws_rf_we;
+    reg         ws_rf_we_tmp;
+    
 
     wire        ws_except_adef;
     wire        ws_except_ale;
@@ -61,18 +63,18 @@ module WBreg(
     always @(posedge clk) begin
         if(~resetn) begin
             {wb_vaddr, wb_pc, ws_except_zip}  <= {149{1'b0}};
-            {csr_re, ws_rf_we, ws_rf_waddr, ws_rf_wdata_tmp} <= 39'b0;
+            {csr_re,ws_rf_we_tmp, ws_rf_waddr, ws_rf_wdata_tmp} <= 39'b0;
         end
         if(ms2ws_valid & ws_allowin) begin
-            {wb_vaddr, wb_pc, ws_except_zip}  <= ms2ws_bus;
-            {csr_re, ws_rf_we, ws_rf_waddr, ws_rf_wdata_tmp} <= ms_rf_zip;
+            {wb_vaddr, wb_pc, ws_except_zip} <= ms2ws_bus;
+            {csr_re,ws_rf_we_tmp, ws_rf_waddr, ws_rf_wdata_tmp} <= ms_rf_zip ;//1+1+5+32==39
         end
     end
 //-----------------------------wb and csr state interface---------------------------------------
     assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, 
             ws_except_sys, ws_except_ertn, ws_except_ale } = ws_except_zip & {85{ws_valid}};     //
     assign ertn_flush=ws_except_ertn & ws_valid;
-    assign wb_ex = (ws_except_adef |                   // 用错误地�?取指已经发生，故不与ws_valid挂钩
+    assign wb_ex = (ws_except_adef |                   // 用错误地�??取指已经发生，故不与ws_valid挂钩
                     ws_except_int  |                    // 中断由状态寄存器中的计时器产生，不与ws_valid挂钩
                     ws_except_ale | ws_except_ine | ws_except_brk | ws_except_sys) & ws_valid;
     //assign wb_ecode = {6{wb_ex}} & 6'hb;
@@ -86,7 +88,8 @@ module WBreg(
                        // 未包含ADEM和TLBR
 //------------------------------id and ws state interface---------------------------------------
     assign ws_rf_wdata = csr_re ? csr_rvalue : ws_rf_wdata_tmp;
-    assign ws_rf_zip = {ws_rf_we & ws_valid & ~wb_ex & ~ertn_flush, ws_rf_waddr, ws_rf_wdata};
+    assign ws_rf_we  = ws_rf_we_tmp & ws_valid & ~wb_ex;//???
+    assign ws_rf_zip = {ws_rf_we & ws_valid & ~wb_ex & ~ertn_flush, ws_rf_waddr, ws_rf_wdata};//1+5+32
 //------------------------------trace debug interface---------------------------------------
     assign debug_wb_pc = wb_pc;
     assign debug_wb_rf_wdata = ws_rf_wdata;

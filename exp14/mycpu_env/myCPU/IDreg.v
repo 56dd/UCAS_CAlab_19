@@ -1,22 +1,22 @@
 module IDreg(
-    input  wire        clk,
-    input  wire        resetn,
+    input  wire        clk,             //1
+    input  wire        resetn,          //1
     // fs and ds interface
-    input  wire        fs2ds_valid,
-    output wire        ds_allowin,
-    output wire [32:0] br_zip,
-    input  wire [64:0] fs2ds_bus,
+    input  wire        fs2ds_valid,     //1
+    output wire        ds_allowin,      //1
+    output wire [33:0] br_zip,          //34    {br_stall,br_taken, br_target}
+    input  wire [64:0] fs2ds_bus,       //65     {fs_inst, fs_pc,fs_except_adef}
     // ds and es interface
-    input  wire        es_allowin,
-    output wire        ds2es_valid,
-    output wire [248:0] ds2es_bus,
+    input  wire        es_allowin,      //1
+    output wire        ds2es_valid,     //1
+    output wire [248:0] ds2es_bus,      //249   {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
     // signals to determine whether confict occurs
-    input  wire [37:0] ws_rf_zip, // {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
-    input  wire [38:0] ms_rf_zip, // {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata}
-    input  wire [39:0] es_rf_zip, // {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
+    input  wire [37:0] ws_rf_zip,       //38            {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
+    input  wire [38:0] ms_rf_zip,       //39            {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata}
+    input  wire [39:0] es_rf_zip,       //40            {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
     // exception interface
-    input  wire        wb_ex,
-    input  wire        has_int
+    input  wire        wb_ex,           //1
+    input  wire        has_int          //1
 );
 
     wire [7 :0] ds_mem_inst_zip;
@@ -48,6 +48,7 @@ module IDreg(
     wire [31:0] br_offs;
     wire [31:0] jirl_offs;
     wire        br_taken;
+    wire        br_stall;
     wire [31:0] br_target;
 
     wire [ 5:0] op_31_26;
@@ -125,6 +126,17 @@ module IDreg(
     wire        inst_syscall;
     wire        inst_break;
 
+
+
+
+
+
+    wire        type_al;        // 算术逻辑类，arithmatic or logic
+    wire        type_ld_st;     // 访存类， load or store
+    wire        type_bj;        // 分支跳转类，branch or jump
+    wire        type_ex;        // 例外相关类，exception
+    wire        type_else;      // 不知道啥类
+
     wire        need_ui5;
     wire        need_ui12;
     wire        need_si12;
@@ -133,15 +145,6 @@ module IDreg(
     wire        need_si26;
     wire        src2_is_4;
 
-
-
-    // wire        wb_ex;
-    // wire [31:0] wb_pc;
-    // wire [ 5:0] wb_ecode;
-    // wire [ 8:0] wb_esubcode;
-    // wire [31:0] ex_entry;
-    // wire [31:0] ertn_entry;
-    // wire        ertn_flush;
 
     wire [ 4:0] rf_raddr1;
     wire [31:0] rf_rdata1;
@@ -154,6 +157,13 @@ module IDreg(
     wire        conflict_r2_mem;
     wire        conflict_r1_exe;
     wire        conflict_r2_exe;
+    reg         conflict_r1_wb_r;
+    reg         conflict_r2_wb_r;
+    reg         conflict_r1_mem_r;
+    reg         conflict_r2_mem_r;
+    reg         conflict_r1_exe_r;
+    reg         conflict_r2_exe_r;
+
     wire        need_r1;
     wire        need_r2;
 
@@ -169,10 +179,18 @@ module IDreg(
     wire [ 4:0] es_rf_waddr;
     wire [31:0] es_rf_wdata;
     wire        es_res_from_mem;
+    wire        ms_res_from_mem;
+    wire        ms2ws_valid;
 
     wire        ds_rf_we   ;
     wire [ 4:0] ds_rf_waddr;
 
+    reg          ds_except_adef;
+    wire         ds_except_ine;
+    wire         ds_except_int;
+    wire         ds_except_brk;
+    wire         ds_except_sys;
+    wire         ds_except_ertn;
     wire        ds_csr_re;
     wire [13:0] ds_csr_num;
     wire        ds_csr_we;
@@ -181,13 +199,7 @@ module IDreg(
     wire [ 6:0] ds_rf_zip;
     wire [83:0] ds_except_zip;  // {ds_csr_num, ds_csr_wmask, ds_csr_wvalue, inst_syscall, inst_ertn, ds_csr_we}
 
-    reg          ds_except_adef;
-    wire         ds_except_ine;
-    wire         ds_except_int;
-    wire         ds_except_brk;
-    wire         ds_except_sys;
-    wire         ds_except_ertn;
-
+    
     //计数器指令
     wire        inst_rdcntid;
     wire        inst_rdcntvl;
@@ -203,8 +215,11 @@ module IDreg(
     // end
     assign ds_ready_go      = ~ds_stall;
     assign ds_allowin       = ~ds_valid | ds_ready_go & es_allowin; 
-    assign ds_stall         = (es_res_from_mem|es_csr_re) & (conflict_r1_exe & need_r1|conflict_r2_exe & need_r2)|
-                                ms_csr_re & (conflict_r1_mem | conflict_r2_mem);    
+    // assign ds_stall         = (es_res_from_mem|es_csr_re) & (conflict_r1_exe & need_r1|conflict_r2_exe & need_r2)|
+    //                             ms_csr_re & (conflict_r1_mem | conflict_r2_mem);   
+    assign ds_stall         = (es_res_from_mem|es_csr_re) & (conflict_r1_exe & need_r1| conflict_r2_exe & need_r2)|
+                              (ms_res_from_mem|ms_csr_re) & (conflict_r1_mem & need_r1| conflict_r2_mem & need_r2);     
+    assign br_stall         = ds_stall & type_bj;
     assign ds2es_valid      = ds_valid & ds_ready_go;
     always @(posedge clk) begin
         if(~resetn)
@@ -238,11 +253,11 @@ module IDreg(
                     | inst_jirl
                     | inst_bl
                     | inst_b
-                    ) & ds_valid;
+                    ) & ds_valid & ~br_stall;
     assign br_target = (inst_beq || inst_bne || inst_bl || inst_b || 
                         inst_bge || inst_bgeu|| inst_blt|| inst_bltu) ? (ds_pc + br_offs) :
                                                     /*inst_jirl*/ (rj_value + jirl_offs);
-    assign br_zip = {br_taken, br_target}; 
+    assign br_zip = {br_stall,br_taken, br_target}; 
 //------------------------------decode instruction---------------------------------------
     
     assign op_31_26  = ds_inst[31:26];
@@ -441,7 +456,7 @@ module IDreg(
     assign ds_rf_zip   = {ds_csr_re, ds_rf_we, ds_rf_waddr};
     //写回、访存、执行阶段传回数据处理
     assign {ws_rf_we, ws_rf_waddr, ws_rf_wdata} = ws_rf_zip;
-    assign {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata} = ms_rf_zip;
+    assign {ms_res_from_mem,ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata} = ms_rf_zip;
     assign {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_rf_wdata} = es_rf_zip;
     regfile u_regfile(
     .clk    (clk      ),
@@ -472,7 +487,6 @@ module IDreg(
                         conflict_r2_wb  ? ws_rf_wdata : rf_rdata2; 
     assign ds_mem_inst_zip = {inst_st_b, inst_st_h, inst_st_w, inst_ld_b, 
                           inst_ld_bu,inst_ld_h, inst_ld_hu, inst_ld_w};
-    
 
     assign ds_csr_re    = inst_csrrd | inst_csrwr | inst_csrxchg|inst_rdcntid;
     assign ds_csr_we    = inst_csrwr | inst_csrxchg;
