@@ -13,7 +13,7 @@ module MEMreg(
     output wire        ms2ws_valid,         //1
     // data sram interface
     input  wire         data_sram_data_ok,  //1
-    input  wire [31:0] data_sram_rdata,     //32
+    input  wire [31:0]  data_sram_rdata,     //32
     // exception signal
     output wire        ms_ex,               //1
     input  wire        wb_ex                //1
@@ -32,7 +32,7 @@ module MEMreg(
     reg         ms_rf_we      ;
     reg         ms_csr_re     ;
     reg  [4 :0] ms_rf_waddr   ;
-    reg  [7 :0] ms_ld_inst_zip;
+    reg  [4 :0] ms_ld_inst_zip;
     wire [31:0] ms_rf_wdata   ;
     wire [31:0] ms_mem_result ;
     wire [31:0] shift_rdata   ;
