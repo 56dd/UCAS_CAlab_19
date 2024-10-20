@@ -158,7 +158,7 @@ always @(posedge clk) begin
                               {32{inst_rdcntvl}} & es_timer_cnt[31: 0] |
                               {32{~inst_rdcntvh & ~inst_rdcntvl}} & es_alu_result;
 
-    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处理
+    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处�?
     assign es_rf_zip       = {es_csr_re & es_valid, //1
                                 es_res_from_mem & es_valid, //1
                                 es_rf_we & es_valid, //1

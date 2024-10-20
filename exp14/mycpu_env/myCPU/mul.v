@@ -1,5 +1,5 @@
-// 32位Booth两位乘需要生成16个部分积
-// 32位无符号数乘法→34位有符号数乘法，需17个部分积
+// 32位Booth两位乘需要生�?16个部分积
+// 32位无符号数乘法→34位有符号数乘法，�?17个部分积
 module Adder (
     input   [63:0] in1,
     input   [63:0] in2,
@@ -7,7 +7,7 @@ module Adder (
     output  [63:0] C,
     output  [63:0] S
 );
-    assign S  = in1 ^ in2 ^ in3;//加
+    assign S  = in1 ^ in2 ^ in3;//�?
     assign C = {(in1 & in2 | in1 & in3 | in2 & in3), 1'b0} ;//进位
 endmodule
 
@@ -34,11 +34,11 @@ module mul (
     wire [16:0] sel_neg_2x_val;
     wire [16:0] sel_0_val;
     wire [18:0] debug;
-    // 扩展成34位以兼容无符号数乘法（偶数位易于处理）
+    // 扩展�?34位以兼容无符号数乘法（偶数位易于处理�?
     wire [33:0] B_r;
     wire [33:0] B_m;
     wire [33:0] B_l;
-    // 未对齐的部分积
+    // 未对齐的部分�?
     wire [63:0] P [16:0];
     assign B_m  = {{2{B[31] & mul_signed}}, B};
     assign B_l  = {1'b0, B_m[33:1]};
@@ -221,6 +221,6 @@ module mul (
         .C(level_6[0]),
         .S(level_6[1])
     );
-   // assign result = (level_6[0] + level_6[1]) & {64{resetn}};
-   assign result = (level_6[0] + level_6[1]) ;
+    //assign result = (level_6[0] + level_6[1]) & {64{resetn}};
+    assign result = (level_6[0] + level_6[1]) ;
 endmodule
