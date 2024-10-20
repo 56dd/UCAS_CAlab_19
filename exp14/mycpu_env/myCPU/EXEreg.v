@@ -71,6 +71,7 @@ module EXEreg(
 //------------------------------state control signal---------------------------------------
     assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale)& es_valid;
     //assign es_ready_go      = alu_complete;
+    //指令在发起访存的那一级，都要完成地址请求的握手（addr_ok正在或已经为1）才能进入下一级流水。
     assign es_ready_go      = alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok);
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
     assign es2ms_valid      = es_valid & es_ready_go;
