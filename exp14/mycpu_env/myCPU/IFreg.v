@@ -68,7 +68,7 @@ module IFreg(
     // assign inst_sram_wdata  = 32'b0;
     //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，因为在给出nextpc时的值都是正确的，因为pre_if没有寄存器，所以不会有需要清空的指令，之后删掉吧
     //为了防止出现pr_if阶段ready_go=1,if_allowin=0的情况，直接只有fs_allowin=1时才发出取地址请求
-    assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_cancel;
+    assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_cancel;//只有IF阶段allowin才发出请求
     assign inst_sram_wr     = |inst_sram_wstrb;
     assign inst_sram_wstrb  = 4'b0;
     assign inst_sram_addr   = nextpc;
@@ -77,13 +77,13 @@ module IFreg(
 //------------------------------prIF control signal---------------------------------------
 //pre-IF 级生成 nextPC，并对外发起取指的地址请求，等addr_ok来置ready_go，
 //当 ready_go 为 1 且 IF 级 allowin 为 1 时，pre-IF 级的指令流向 IF 级，pre-IF 级维护下一条指令的取指地址请求。
-    assign pf_ready_go      = inst_sram_req & inst_sram_addr_ok; 
+    assign pf_ready_go      = inst_sram_req & inst_sram_addr_ok; //握手
     //如果结果为0，说明没有收到addr_ok返回，req直接更改是合法的，如果为1，那就要注意if阶段之后接收到的第一个指令要被cancel
-    assign to_fs_valid      = pf_ready_go;//to_fs_valid表示地址是否被cpu外部接收,
+    assign to_fs_valid      = pf_ready_go;//to_fs_valid表示地址是否被cpu外部接收
     assign seq_pc           = fs_pc + 3'h4;  
     // assign nextpc           = wb_ex? ex_entry :
-    //                           ertn_flush? ertn_entry :
-    //                           br_taken ? br_target : seq_pc;
+    //                            ertn_flush? ertn_entry :
+    //                            br_taken ? br_target : seq_pc;
     assign nextpc           = wb_ex_r? ex_entry_r: wb_ex? ex_entry:
                               ertn_flush_r? ertn_entry_r: ertn_flush? ertn_entry:
                               br_taken_r? br_target_r: br_taken ? br_target : seq_pc;
@@ -116,8 +116,8 @@ module IFreg(
     // assign fs_ready_go      = inst_sram_req & inst_sram_addr_ok; //req & addr_ok;
     // assign fs_allowin       = ~fs_valid | fs_ready_go & ds_allowin | ertn_flush | wb_ex;     
     // assign fs2ds_valid      = fs_valid & fs_ready_go;
-    assign fs_ready_go      = (inst_sram_data_ok | inst_buf_valid) & ~inst_discard;
-    assign fs_allowin       = (~fs_valid) | fs_ready_go & ds_allowin;     
+    assign fs_ready_go      = (inst_sram_data_ok | inst_buf_valid) & ~inst_discard;//已经取得指令，并且不丢弃，进行握手。
+    assign fs_allowin       = (~fs_valid) | fs_ready_go & ds_allowin;//指令无效|IF_readygo,ID_allowin     
     assign fs2ds_valid      = fs_valid & fs_ready_go;
     always @(posedge clk) begin
         if(~resetn)
@@ -132,7 +132,7 @@ module IFreg(
     wire   fs_except_adef;
     assign fs_except_adef=(|fs_pc[1:0])&fs_valid;
 //------------------------------cancel relevant---------------------------------------
-    assign fs_cancel = wb_ex | ertn_flush | br_taken;
+    assign fs_cancel = wb_ex | ertn_flush | br_taken;//如果有异常就会清空指令流
     assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的
     always @(posedge clk) begin
         if(~resetn)

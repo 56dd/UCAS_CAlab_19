@@ -55,7 +55,7 @@ module MEMreg(
 //------------------------------state control signal---------------------------------------
 
     //assign ms_ready_go      = 1'b1;
-    assign ms_wait_data_ok  = ms_wait_data_ok_r & ms_valid & ~wb_ex;
+    assign ms_wait_data_ok  = ms_wait_data_ok_r & ms_valid & ~wb_ex;//
     //指令在接收数据的那一级，都要等待数据返回握手完成（data_ok正在或已经为1）才能进入下一级流水。
     assign ms_ready_go      = ~ms_wait_data_ok | ms_wait_data_ok & data_sram_data_ok;
     assign ms_allowin       = ~ms_valid | ms_ready_go & ws_allowin;     
@@ -74,20 +74,20 @@ module MEMreg(
 //------------------------------data buffer----------------------------------------------
     // 设置寄存器，暂存数据，并用valid信号表示其内数据是否有效
     //对于已经被接收的访存请求，如果其对应的指令因为异常清空流水线而被取消时，一定要记录下这些访存请求，进而在它们的数据返回时将其丢弃。
-    always @(posedge clk) begin
-        if(~resetn) begin
-            ms_data_buf <= 32'b0;
-            data_buf_valid <= 1'b0;
-        end
-        else if(ms2ws_valid & ws_allowin)   // 缓存已经流向下一流水�?对于某指令访存请求被接收后数据已返回，而该指令却因为下一级反馈的allowin无效而无
-                                            //法进入下一级的情况，建议在看到下一级反馈的allowin有效时才发出访存请求以简化设计。
-            data_buf_valid <= 1'b0;
-        else if(~data_buf_valid & data_sram_data_ok & ms_valid) begin
-            ms_data_buf <= data_sram_rdata;
-            data_buf_valid <= 1'b1;
-        end
+    // always @(posedge clk) begin
+    //     if(~resetn) begin
+    //         ms_data_buf <= 32'b0;
+    //         data_buf_valid <= 1'b0;
+    //     end
+    //     else if(ms2ws_valid & ws_allowin)   // 缓存已经流向下一流水�?对于某指令访存请求被接收后数据已返回，而该指令却因为下一级反馈的allowin无效而无
+    //                                         //法进入下一级的情况，建议在看到下一级反馈的allowin有效时才发出访存请求以简化设计。
+    //         data_buf_valid <= 1'b0;
+    //     else if(~data_buf_valid & data_sram_data_ok & ms_valid) begin
+    //         ms_data_buf <= data_sram_rdata;
+    //         data_buf_valid <= 1'b1;
+    //     end
 
-    end
+    // end
 //------------------------------exe and mem state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
@@ -102,8 +102,8 @@ module MEMreg(
 //------------------------------mem and wb state interface---------------------------------------
     // 细粒度译�?
     assign {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w} = ms_ld_inst_zip;
-    //assign shift_rdata   = {24'b0, data_sram_rdata} >> {es_rf_result_tmp[1:0], 3'b0};
-    assign shift_rdata   = {24'b0, {32{data_buf_valid}} & ms_data_buf | {32{~data_buf_valid}} & data_sram_rdata} >> {ms_rf_result_tmp[1:0], 3'b0};
+    assign shift_rdata   = {24'b0, data_sram_rdata} >> {ms_rf_result_tmp[1:0], 3'b0};
+    //assign shift_rdata   = {24'b0, {32{data_buf_valid}} & ms_data_buf | {32{~data_buf_valid}} & data_sram_rdata} >> {ms_rf_result_tmp[1:0], 3'b0};
     assign ms_mem_result[ 7: 0]   =  shift_rdata[ 7: 0];
     assign ms_mem_result[15: 8]   =  {8{op_ld_b}} & {8{shift_rdata[7]}} |
                                      {8{op_ld_bu}} & 8'b0               |

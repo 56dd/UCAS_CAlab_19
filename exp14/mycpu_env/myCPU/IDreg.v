@@ -207,16 +207,9 @@ module IDreg(
     
 
 //------------------------------state control signal---------------------------------------
-    // always @(posedge clk) begin
-    //     if(~resetn | br_taken | inst_syscall | inst_ertn)
-    //         ds_valid <= 1'b0;
-    //     else if(ds_allowin)
-    //         ds_valid <= if_to_ds_valid; 
-    // end
+    
     assign ds_ready_go      = ~ds_stall;
     assign ds_allowin       = ~ds_valid | ds_ready_go & es_allowin; 
-    // assign ds_stall         = (es_res_from_mem|es_csr_re) & (conflict_r1_exe & need_r1|conflict_r2_exe & need_r2)|
-    //                             ms_csr_re & (conflict_r1_mem | conflict_r2_mem);   
     assign ds_stall         = (es_res_from_mem|es_csr_re) & (conflict_r1_exe & need_r1| conflict_r2_exe & need_r2)|
                               (ms_res_from_mem|ms_csr_re) & (conflict_r1_mem & need_r1| conflict_r2_mem & need_r2);     
     assign br_stall         = ds_stall & type_bj;
