@@ -1,0 +1,32 @@
+#-----------------------------------------------------------
+# Vivado v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Sat Oct 26 01:06:41 2024
+# Process ID: 22116
+# Current directory: d:/calab/UCAS_CAlab_19/exp15/mycpu_env/soc_verify/soc_axi/run_vivado/project/loongson.runs/axi_ram_synth_1
+# Command line: vivado.exe -log axi_ram.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source axi_ram.tcl
+# Log file: d:/calab/UCAS_CAlab_19/exp15/mycpu_env/soc_verify/soc_axi/run_vivado/project/loongson.runs/axi_ram_synth_1/axi_ram.vds
+# Journal file: d:/calab/UCAS_CAlab_19/exp15/mycpu_env/soc_verify/soc_axi/run_vivado/project/loongson.runs/axi_ram_synth_1\vivado.jou
+#-----------------------------------------------------------
+source axi_ram.tcl -notrace
+Command: synth_design -top axi_ram -part xc7a200tfbg676-1 -mode out_of_context
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7a200t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a200t'
+INFO: [Device 21-403] Loading part xc7a200tfbg676-1
+INFO: Launching helper process for spawning children vivado processes
+INFO: Helper process launched with PID 23940 
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:07 . Memory (MB): peak = 899.395 ; gain = 234.945
+---------------------------------------------------------------------------------
+ERROR: [Synth 8-439] module 'axi_ram' not found
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:11 . Memory (MB): peak = 1062.812 ; gain = 398.363
+---------------------------------------------------------------------------------
+RTL Elaboration failed
+INFO: [Common 17-83] Releasing license: Synthesis
+3 Infos, 0 Warnings, 0 Critical Warnings and 2 Errors encountered.
+synth_design failed
+ERROR: [Common 17-69] Command failed: Synthesis failed - please see the console or run log file for details
+INFO: [Common 17-206] Exiting Vivado at Sat Oct 26 01:07:00 2024...

@@ -1,0 +1,29 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  --include "../../../../../../rtl/xilinx_ip/clk_pll" --include "../../../../loongson.ip_user_files/ipstatic/hdl" \
+"../../../../../../rtl/xilinx_ip/clk_pll/clk_pll_clk_wiz.v" \
+"../../../../../../rtl/xilinx_ip/clk_pll/clk_pll.v" \
+"d:/calab/UCAS_CAlab_19/exp15/mycpu_env/soc_verify/soc_axi/rtl/xilinx_ip/axi_ram/axi_ram_sim_netlist.v" \
+"../../../../../../rtl/xilinx_ip/axi_crossbar_1x2/sim/axi_crossbar_1x2.v" \
+"../../../../../../../../myCPU/EXEreg.v" \
+"../../../../../../../../myCPU/IDreg.v" \
+"../../../../../../../../myCPU/IFreg.v" \
+"../../../../../../../../myCPU/MEMreg.v" \
+"../../../../../../../../myCPU/WBreg.v" \
+"../../../../../../../../myCPU/alu.v" \
+"../../../../../../rtl/axi_wrap/axi_wrap.v" \
+"../../../../../../rtl/ram_wrap/axi_wrap_ram.v" \
+"../../../../../../rtl/CONFREG/confreg.v" \
+"../../../../../../../../myCPU/csr.v" \
+"../../../../../../../../myCPU/div.v" \
+"../../../../../../../../myCPU/mul.v" \
+"../../../../../../../../myCPU/mycpu_top.v" \
+"../../../../../../../../myCPU/reg_file.v" \
+"../../../../../../rtl/soc_lite_top.v" \
+"../../../../../../../../myCPU/tools.v" \
+"../../../../../../testbench/mycpu_tb.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort
