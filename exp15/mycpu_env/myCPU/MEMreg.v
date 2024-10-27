@@ -9,7 +9,7 @@ module MEMreg(
     // mem and wb state interface
     input  wire        ws_allowin,          //1
     output wire [148:0] ms2ws_bus,          //149
-    output wire [38:0] ms_rf_zip,           //39     {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata}
+    output wire [39:0] ms_rf_zip,           //39     {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     output wire        ms2ws_valid,         //1
     // data sram interface
     input  wire         data_sram_data_ok,  //1

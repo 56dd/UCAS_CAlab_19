@@ -1,222 +1,168 @@
 module mycpu_top(
-    input  wire        clk,
-    input  wire        resetn,
-    // inst sram interface
-    output wire         inst_sram_req,
-    output wire         inst_sram_wr,
-    output wire [ 1:0]  inst_sram_size,
-    output wire [ 3:0]  inst_sram_wstrb,
-    output wire [31:0]  inst_sram_addr,
-    output wire [31:0]  inst_sram_wdata,
-    input  wire         inst_sram_addr_ok,
-    input  wire         inst_sram_data_ok,
-    input  wire [31:0]  inst_sram_rdata,
-    // data sram interface
-    output wire         data_sram_req,
-    output wire         data_sram_wr,
-    output wire [ 1:0]  data_sram_size,
-    output wire [ 3:0]  data_sram_wstrb,
-    output wire [31:0]  data_sram_addr,
-    output wire [31:0]  data_sram_wdata,
-    input  wire         data_sram_addr_ok,
-    input  wire         data_sram_data_ok,
-    input  wire [31:0]  data_sram_rdata,
+    input  aclk   ,
+    input  aresetn,
+    // read req channel
+    output [ 3:0] arid   , // 读请求ID
+    output [31:0] araddr , // 读请求地址
+    output [ 7:0] arlen  , // 读请求传输长度（数据传输拍数）
+    output [ 2:0] arsize , // 读请求传输大小（数据传输每拍的字节数）
+    output [ 1:0] arburst, // 传输类型
+    output [ 1:0] arlock , // 原子锁
+    output [ 3:0] arcache, // Cache属性
+    output [ 2:0] arprot , // 保护属性
+    output        arvalid, // 读请求地址有效
+    input         arready, // 读请求地址握手信号
+    // read response channel
+    input [ 3:0]  rid    , // 读请求ID号，同一请求rid与arid一致
+    input [31:0]  rdata  , // 读请求读出的数据
+    input [ 1:0]  rresp  , // 读请求是否完成                        [可忽略]
+    input         rlast  , // 读请求最后一拍数据的指示信号           [可忽略]
+    input         rvalid , // 读请求数据有效
+    output        rready , // Master端准备好接受数据
+    // write req channel
+    output [ 3:0] awid   , // 写请求的ID号
+    output [31:0] awaddr , // 写请求的地址
+    output [ 7:0] awlen  , // 写请求传输长度（拍数）
+    output [ 2:0] awsize , // 写请求传输每拍字节数
+    output [ 1:0] awburst, // 写请求传输类型
+    output [ 1:0] awlock , // 原子锁
+    output [ 3:0] awcache, // Cache属性
+    output [ 2:0] awprot , // 保护属性
+    output        awvalid, // 写请求地址有效
+    input         awready, // Slave端准备好接受地址传输   
+    // write data channel
+    output [ 3:0] wid    , // 写请求的ID号
+    output [31:0] wdata  , // 写请求的写数据
+    output [ 3:0] wstrb  , // 写请求字节选通位
+    output        wlast  , // 写请求的最后一拍数据的指示信号
+    output        wvalid , // 写数据有效
+    input         wready , // Slave端准备好接受写数据传输   
+    // write response channel
+    input  [ 3:0] bid    , // 写请求的ID号            [可忽略]
+    input  [ 1:0] bresp  , // 写请求完成信号          [可忽略]
+    input         bvalid , // 写请求响应有效
+    output        bready , // Master端准备好接收响应信号
     // trace debug interface
     output wire [31:0] debug_wb_pc,
     output wire [ 3:0] debug_wb_rf_we,
     output wire [ 4:0] debug_wb_rf_wnum,
     output wire [31:0] debug_wb_rf_wdata
 );
-    wire        ds_allowin;
-    wire        es_allowin;
-    wire        ms_allowin;
-    wire        ws_allowin;
 
-    wire        fs2ds_valid;
-    wire        ds2es_valid;
-    wire        es2ms_valid;
-    wire        ms2ws_valid;
+    // inst sram interface
+    wire        inst_sram_req;
+    wire        inst_sram_wr;
+    wire [ 1:0] inst_sram_size;
+    wire [ 3:0] inst_sram_wstrb;
+    wire [31:0] inst_sram_addr;
+    wire [31:0] inst_sram_wdata;
+    wire        inst_sram_addr_ok;
+    wire        inst_sram_data_ok;
+    wire [31:0] inst_sram_rdata;
+    // data sram interface
+    wire        data_sram_req;
+    wire        data_sram_wr;
+    wire [ 1:0] data_sram_size;
+    wire [ 3:0] data_sram_wstrb;
+    wire [31:0] data_sram_addr;
+    wire [31:0] data_sram_wdata;
+    wire        data_sram_addr_ok;
+    wire        data_sram_data_ok;
+    wire [31:0] data_sram_rdata;
 
-    wire [31:0] es_pc;
-    wire [31:0] ms_pc;
-    wire [31:0] wb_pc;
+    mycpu_core my_core(
+        .clk            (aclk       ),
+        .resetn         (aresetn    ),
+        // inst sram interface
+        .inst_sram_req      (inst_sram_req      ),
+        .inst_sram_wr       (inst_sram_wr       ),
+        .inst_sram_size     (inst_sram_size     ),
+        .inst_sram_wstrb    (inst_sram_wstrb    ),
+        .inst_sram_addr     (inst_sram_addr     ),
+        .inst_sram_wdata    (inst_sram_wdata    ),
+        .inst_sram_addr_ok  (inst_sram_addr_ok  ),
+        .inst_sram_data_ok  (inst_sram_data_ok  ),
+        .inst_sram_rdata    (inst_sram_rdata    ),
+        .axi_arid           (arid               ),
+        // data sram interface
+        .data_sram_req      (data_sram_req      ),
+        .data_sram_wr       (data_sram_wr       ),
+        .data_sram_size     (data_sram_size     ),
+        .data_sram_wstrb    (data_sram_wstrb    ),
+        .data_sram_addr     (data_sram_addr     ),
+        .data_sram_wdata    (data_sram_wdata    ),
+        .data_sram_addr_ok  (data_sram_addr_ok  ),
+        .data_sram_data_ok  (data_sram_data_ok  ),
+        .data_sram_rdata    (data_sram_rdata    ),
+        // trace debug interface
+        .debug_wb_pc        (debug_wb_pc        ),
+        .debug_wb_rf_we     (debug_wb_rf_we     ),
+        .debug_wb_rf_wnum   (debug_wb_rf_wnum   ),
+        .debug_wb_rf_wdata  (debug_wb_rf_wdata  )
+    ); 
 
-    wire [39:0] es_rf_zip;
-    wire [38:0] ms_rf_zip;
-    wire [37:0] ws_rf_zip;
+    bridge_sram_axi my_bridge_sram_axi(
+    .aclk               (aclk               ),
+    .aresetn            (aresetn            ),
 
-    wire [33:0] br_zip;
-    wire [ 4:0] es_ld_inst_zip;
-    wire [64:0] fs2ds_bus;
-    wire [248:0] ds2es_bus;
-    wire [122:0] es2ms_bus;
-    wire [148:0] ms2ws_bus;
+    .arid               (arid               ),
+    .araddr             (araddr             ),
+    .arlen              (arlen              ),
+    .arsize             (arsize             ),
+    .arburst            (arburst            ),
+    .arlock             (arlock             ),
+    .arcache            (arcache            ),
+    .arprot             (arprot             ),
+    .arvalid            (arvalid            ),
+    .arready            (arready            ),
 
-    wire        csr_re;
-    wire [13:0] csr_num;
-    wire [31:0] csr_rvalue;
-    wire        csr_we;
-    wire [31:0] csr_wmask;
-    wire [31:0] csr_wvalue;
-    wire [31:0] ex_entry;
-    wire [31:0] ertn_entry;
-    wire        has_int;
-    wire        ertn_flush;
-    wire        ms_ex;
-    wire        wb_ex;
-    wire [ 5:0] wb_ecode;
-    wire [ 8:0] wb_esubcode;
-    wire        ipi_int_in;
-    wire [ 7:0] hw_int_in;
-    wire [31:0] wb_vaddr;
+    .rid                (rid                ),
+    .rdata              (rdata              ),
+    .rvalid             (rvalid             ),
+    .rlast              (rlast              ),
+    .rready             (rready             ),
 
-    assign ipi_int_in = 1'b0;
-    assign hw_int_in  = 8'b0;
+    .awid               (awid               ),
+    .awaddr             (awaddr             ),
+    .awlen              (awlen              ),
+    .awsize             (awsize             ),
+    .awburst            (awburst            ),
+    .awlock             (awlock             ),
+    .awcache            (awcache            ),
+    .awprot             (awprot             ),
+    .awvalid            (awvalid            ),
+    .awready            (awready            ),
 
-    IFreg my_ifReg(
-        .clk(clk),
-        .resetn(resetn),
+    .wid                (wid                ),
+    .wdata              (wdata              ),
+    .wstrb              (wstrb              ),
+    .wlast              (wlast              ),
+    .wvalid             (wvalid             ),
+    .wready             (wready             ),
 
-        .inst_sram_req(inst_sram_req),
-        .inst_sram_wr(inst_sram_wr),
-        .inst_sram_size(inst_sram_size),
-        .inst_sram_wstrb(inst_sram_wstrb),
-        .inst_sram_addr(inst_sram_addr),
-        .inst_sram_addr_ok(inst_sram_addr_ok),
-        .inst_sram_data_ok(inst_sram_data_ok),
-        .inst_sram_rdata(inst_sram_rdata),
-        
-        .ds_allowin(ds_allowin),
-        .br_zip(br_zip),
-        .fs2ds_valid(fs2ds_valid),
-        .fs2ds_bus(fs2ds_bus),
+    .bid                (bid                ),
+    .bvalid             (bvalid             ),
+    .bready             (bready             ),
 
-        .wb_ex(wb_ex),
-        .ertn_flush(ertn_flush),
-        .ex_entry(ex_entry),
-        .ertn_entry(ertn_entry)
-    );
+    .inst_sram_req      (inst_sram_req      ),
+    .inst_sram_wr       (inst_sram_wr       ),
+    .inst_sram_size     (inst_sram_size     ),
+    .inst_sram_addr     (inst_sram_addr     ),
+    .inst_sram_wstrb    (inst_sram_wstrb    ),
+    .inst_sram_wdata    (inst_sram_wdata    ),
+    .inst_sram_addr_ok  (inst_sram_addr_ok  ),
+    .inst_sram_data_ok  (inst_sram_data_ok  ),
+    .inst_sram_rdata    (inst_sram_rdata    ),
 
-    IDreg my_idReg(
-        .clk(clk),
-        .resetn(resetn),
+    .data_sram_req      (data_sram_req      ),
+    .data_sram_wr       (data_sram_wr       ),
+    .data_sram_size     (data_sram_size     ),
+    .data_sram_addr     (data_sram_addr     ),
+    .data_sram_wstrb    (data_sram_wstrb    ),
+    .data_sram_wdata    (data_sram_wdata    ),
+    .data_sram_addr_ok  (data_sram_addr_ok  ),
+    .data_sram_data_ok  (data_sram_data_ok  ),
+    .data_sram_rdata    (data_sram_rdata    )
+);
 
-        .ds_allowin(ds_allowin),
-        .br_zip(br_zip),
-        .fs2ds_valid(fs2ds_valid),
-        .fs2ds_bus(fs2ds_bus),
-
-        .es_allowin(es_allowin),
-        .ds2es_valid(ds2es_valid),
-        .ds2es_bus(ds2es_bus),
-
-        .ws_rf_zip(ws_rf_zip),
-        .ms_rf_zip(ms_rf_zip),
-        .es_rf_zip(es_rf_zip),
-
-        .has_int(has_int),
-        .wb_ex(wb_ex|ertn_flush)
-    );
-
-    EXEreg my_exeReg(
-        .clk(clk),
-        .resetn(resetn),
-        
-        .es_allowin(es_allowin),
-        .ds2es_valid(ds2es_valid),
-        .ds2es_bus(ds2es_bus),
-
-        .ms_allowin(ms_allowin),
-        .es2ms_bus(es2ms_bus),
-        .es_rf_zip(es_rf_zip),
-        .es2ms_valid(es2ms_valid),
-        // .ms_wait_data_ok(ms_wait_data_ok),
-        
-        .data_sram_req(data_sram_req),
-        .data_sram_wr(data_sram_wr),
-        .data_sram_size(data_sram_size),
-        .data_sram_wstrb(data_sram_wstrb),
-        .data_sram_wdata(data_sram_wdata),
-        .data_sram_addr(data_sram_addr),
-        .data_sram_addr_ok(data_sram_addr_ok),
-
-        .ms_ex(ms_ex),
-        .wb_ex(wb_ex|ertn_flush)
-    );
-
-    MEMreg my_memReg(
-        .clk(clk),
-        .resetn(resetn),
-
-        .ms_allowin(ms_allowin),
-        .es2ms_bus(es2ms_bus),
-        .es_rf_zip(es_rf_zip),
-        .es2ms_valid(es2ms_valid),
-        // .ms_wait_data_ok(ms_wait_data_ok),
-        
-        .ws_allowin(ws_allowin),
-        .ms_rf_zip(ms_rf_zip),
-        .ms2ws_valid(ms2ws_valid),
-        .ms2ws_bus(ms2ws_bus),
-
-        .data_sram_data_ok(data_sram_data_ok),
-        .data_sram_rdata(data_sram_rdata),
-
-        .ms_ex(ms_ex),
-        .wb_ex(wb_ex|ertn_flush)
-    ) ;
-
-    WBreg my_wbReg(
-        .clk(clk),
-        .resetn(resetn),
-
-        .ws_allowin(ws_allowin),
-        .ms_rf_zip(ms_rf_zip),
-        .ms2ws_valid(ms2ws_valid),
-        .ms2ws_bus(ms2ws_bus),
-
-        .debug_wb_pc(debug_wb_pc),
-        .debug_wb_rf_we(debug_wb_rf_we),
-        .debug_wb_rf_wnum(debug_wb_rf_wnum),
-        .debug_wb_rf_wdata(debug_wb_rf_wdata),
-
-        .ws_rf_zip(ws_rf_zip),
-
-        .csr_re     (csr_re    ),
-        .csr_num    (csr_num   ),
-        .csr_rvalue (csr_rvalue),
-        .csr_we     (csr_we    ),
-        .csr_wmask  (csr_wmask ),
-        .csr_wvalue (csr_wvalue),
-        .ertn_flush (ertn_flush),
-        .wb_ex      (wb_ex     ),
-        .wb_pc      (wb_pc     ),
-        .wb_vaddr   (wb_vaddr  ),
-        .wb_ecode   (wb_ecode  ),
-        .wb_esubcode(wb_esubcode)
-    );
-
-    csr u_csr(
-        .clk        (clk       ),
-        .reset      (~resetn   ),
-        .csr_re     (csr_re    ),
-        .csr_num    (csr_num   ),
-        .csr_rvalue (csr_rvalue),
-        .csr_we     (csr_we    ),
-        .csr_wmask  (csr_wmask ),
-        .csr_wvalue (csr_wvalue),
-
-        .wb_ex      (wb_ex     ),
-        .ertn_flush (ertn_flush),
-        .ipi_int_in (ipi_int_in),
-        .hw_int_in  (hw_int_in ),
-        .wb_pc      (wb_pc     ),
-        .wb_ecode   (wb_ecode  ),
-        .wb_esubcode(wb_esubcode),
-        .wb_vaddr   (wb_vaddr  ),
-
-        .has_int    (has_int   ),
-        .ex_entry   (ex_entry  ),
-        .ertn_entry (ertn_entry)      
-    );
 endmodule

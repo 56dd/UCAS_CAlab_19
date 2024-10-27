@@ -11,6 +11,7 @@ module IFreg(
     input  wire         inst_sram_addr_ok,              //1
     input  wire         inst_sram_data_ok,              //1
     input  wire [31:0]  inst_sram_rdata,                //32
+    input  wire [ 3:0]  axi_arid,
     
     // ds to fs interface
     input  wire         ds_allowin,                     //1
@@ -56,10 +57,11 @@ module IFreg(
     wire        fs_cancel;
     wire        pf_cancel;
     reg         inst_discard;   // 判断cancel之后是否需要丢掉一条指令
+    reg         pf_block;
 
 //------------------------------prIF control signal---------------------------------------
     assign pf_ready_go      = inst_sram_req & inst_sram_addr_ok; 
-    assign to_fs_valid      = pf_ready_go;
+    assign to_fs_valid      = pf_ready_go & ~pf_block & ~pf_cancel;
     assign seq_pc           = fs_pc + 3'h4;  
     // assign nextpc           = wb_ex? ex_entry :
     //                           ertn_flush? ertn_entry :
@@ -73,15 +75,15 @@ module IFreg(
             {ex_entry_r, ertn_entry_r, br_target_r} <= {3{32'b0}};
         end
         // 当前仅当遇到fs_cancel时未等到pf_ready_go，需要将cancel相关信号存储在寄存器
-        else if(wb_ex & ~pf_ready_go) begin
+        else if(wb_ex  ) begin
             ex_entry_r <= ex_entry;
             wb_ex_r <= 1'b1;
         end
-        else if(ertn_flush & ~pf_ready_go) begin
+        else if(ertn_flush ) begin
             ertn_entry_r <= ertn_entry;
             ertn_flush_r <= 1'b1;
         end    
-        else if(br_taken & ~pf_ready_go) begin
+        else if(br_taken ) begin
             br_target_r <= br_target;
             br_taken_r <= 1'b1;
         end
@@ -89,6 +91,15 @@ module IFreg(
         else if(pf_ready_go) begin
             {wb_ex_r, ertn_flush_r, br_taken_r} <= 3'b0;
         end
+    end
+
+    always @(posedge clk) begin
+        if(~resetn)
+            pf_block <= 1'b0;
+        else if(pf_cancel & ~pf_block & ~axi_arid[0])
+            pf_block <= 1'b1;
+        else if(inst_sram_data_ok)
+            pf_block <= 1'b0;
     end
 //------------------------------IF control signal---------------------------------------
     //assign to_fs_valid      = resetn;
@@ -117,20 +128,21 @@ module IFreg(
     // assign inst_sram_wr     = 4'b0;
     // assign inst_sram_addr   = nextpc;
     // assign inst_sram_wdata  = 32'b0;
-    assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的
-    assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_cancel;
+    //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的
+    assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_block;
     assign inst_sram_wr     = |inst_sram_wstrb;
     assign inst_sram_wstrb  = 4'b0;
     assign inst_sram_addr   = nextpc;
     assign inst_sram_wdata  = 32'b0;
 //------------------------------cancel relevant---------------------------------------
     assign fs_cancel = wb_ex | ertn_flush | br_taken;
-    assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的
+    //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的
+    assign pf_cancel = fs_cancel;
     always @(posedge clk) begin
         if(~resetn)
             inst_discard <= 1'b0;
         // 流水级取消：当pre-IF阶段发送错误地址请求已被指令SRAM接受 or IF内有有效指令且正在等待数据返回时，需要丢弃一条指令
-        else if(fs_cancel & ~fs_allowin & ~fs_ready_go | pf_cancel & to_fs_valid)
+        else if(fs_cancel & ~fs_allowin & ~fs_ready_go | pf_cancel & inst_sram_req)
             inst_discard <= 1'b1;
         else if(inst_discard & inst_sram_data_ok)
             inst_discard <= 1'b0;
