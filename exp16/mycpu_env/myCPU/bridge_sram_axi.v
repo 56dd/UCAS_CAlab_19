@@ -99,7 +99,7 @@ module bridge_sram_axi(
 	always @(*) begin
 		case(ar_current_state)
 			IDLE:begin
-				if((~read_block) & (data_sram_req & ~data_sram_wr | inst_sram_req & ~inst_sram_wr | inst_sram_req_r & ~inst_sram_wr_r))	// 读请求
+				if((~read_block) & (data_sram_req & ~data_sram_wr | inst_sram_req & ~inst_sram_wr))	// 读请求
 					ar_next_state = AR_REQ_START;
 				else
 					ar_next_state = IDLE;
@@ -116,30 +116,18 @@ module bridge_sram_axi(
 		endcase
 	end
 	//第三段
-	reg inst_sram_req_r;
-	reg inst_sram_wr_r;
-	reg [31:0] inst_sram_addr_r;
-	reg [2 :0] inst_sram_size_r;
 	assign arvalid = ar_current_state[1];
 	always  @(posedge aclk) begin
 		if(~aresetn) begin
 			arid <= 4'b0;
 			araddr <= 32'b0;
 			arsize <= 3'b0;
-			inst_sram_req_r <= 1'b0;
-			inst_sram_wr_r <= 1'b0;
-			inst_sram_addr_r <= 32'b0;
-			inst_sram_size_r <= 3'b0;
 			{arlen, arburst, arlock, arcache, arprot} <= {8'b0, 2'b1, 1'b0, 1'b0, 1'b0};	// 常值
 		end
 		else if(ar_current_state[0]) begin	// 读请求状态机为空闲状态，更新数据
 			arid <= {3'b0, data_sram_req & ~data_sram_wr};	// 数据RAM请求优先于指令RAM
-			araddr <= data_sram_req & ~data_sram_wr? data_sram_addr : inst_sram_req_r & ~inst_sram_wr_r? inst_sram_addr_r : inst_sram_addr;
-			arsize <= data_sram_req & ~data_sram_wr? {1'b0, data_sram_size} : inst_sram_req_r & ~inst_sram_wr_r? {1'b0, inst_sram_size_r} : {1'b0, inst_sram_size};
-			inst_sram_req_r <= data_sram_req & ~data_sram_wr ?  inst_sram_req : 1'b0;
-			inst_sram_wr_r <= data_sram_req & ~data_sram_wr ?  inst_sram_wr : 1'b0;
-			inst_sram_addr_r <= data_sram_req & ~data_sram_wr ? inst_sram_addr : 32'b0;
-			inst_sram_size_r <= data_sram_req & ~data_sram_wr ? inst_sram_size : 3'b0;
+			araddr <= data_sram_req & ~data_sram_wr? data_sram_addr : inst_sram_addr;
+			arsize <= data_sram_req & ~data_sram_wr? {1'b0, data_sram_size} : {1'b0, inst_sram_size};
 		end
 	end
 //--------------------------------state machine for read response channel-------------------------------------------
