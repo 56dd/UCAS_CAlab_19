@@ -11,7 +11,6 @@ module IFreg(
     input  wire         inst_sram_addr_ok,              //1
     input  wire         inst_sram_data_ok,              //1
     input  wire [31:0]  inst_sram_rdata,                //32
-    input  wire [ 3:0]  axi_arid,
     
     // ds to fs interface
     input  wire         ds_allowin,                     //1
@@ -60,6 +59,20 @@ module IFreg(
     reg         inst_discard;   // 判断cancel之后是否需要丢掉一条指令
     reg         pf_block;
 
+
+//------------------------------inst sram interface---------------------------------------
+    
+    // assign inst_sram_req     = fs_allowin & resetn;
+    // assign inst_sram_wr     = 4'b0;
+    // assign inst_sram_addr   = nextpc;
+    // assign inst_sram_wdata  = 32'b0;
+    //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的
+    assign inst_sram_req    = fs_allowin & resetn & (~br_stall | wb_ex | ertn_flush) & ~pf_block & ~inst_sram_addr_ack;
+    assign inst_sram_wr     = |inst_sram_wstrb;
+    assign inst_sram_wstrb  = 4'b0;
+    assign inst_sram_addr   = nextpc;
+    assign inst_sram_wdata  = 32'b0;
+
 //------------------------------prIF control signal---------------------------------------
     assign pf_ready_go      = inst_sram_req & inst_sram_addr_ok; 
     assign to_fs_valid      = pf_ready_go & ~pf_block & ~pf_cancel;
@@ -97,7 +110,7 @@ module IFreg(
     always @(posedge clk) begin
         if(~resetn)
             pf_block <= 1'b0;
-        else if(pf_cancel & ~pf_block & ~axi_arid[0] & ~inst_sram_data_ok)
+        else if(pf_cancel  & ~inst_sram_data_ok)
             pf_block <= 1'b1;
         else if(inst_sram_data_ok)
             pf_block <= 1'b0;
@@ -133,18 +146,6 @@ module IFreg(
     wire   fs_except_adef;
     assign fs_except_adef=(|fs_pc[1:0])&fs_valid;
 
-//------------------------------inst sram interface---------------------------------------
-    
-    // assign inst_sram_req     = fs_allowin & resetn;
-    // assign inst_sram_wr     = 4'b0;
-    // assign inst_sram_addr   = nextpc;
-    // assign inst_sram_wdata  = 32'b0;
-    //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的
-    assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_block & ~inst_sram_addr_ack;
-    assign inst_sram_wr     = |inst_sram_wstrb;
-    assign inst_sram_wstrb  = 4'b0;
-    assign inst_sram_addr   = nextpc;
-    assign inst_sram_wdata  = 32'b0;
 //------------------------------cancel relevant---------------------------------------
     assign fs_cancel = wb_ex | ertn_flush | br_taken;
     //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的

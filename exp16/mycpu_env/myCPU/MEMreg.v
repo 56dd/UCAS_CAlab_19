@@ -55,7 +55,7 @@ module MEMreg(
 //------------------------------state control signal---------------------------------------
 
     //assign ms_ready_go      = 1'b1;
-    assign ms_wait_data_ok  = ms_wait_data_ok_r & ms_valid & ~wb_ex;
+    assign ms_wait_data_ok  = ms_wait_data_ok_r & ms_valid & ~ms_ex & ~wb_ex;
     assign ms_ready_go      = ~ms_wait_data_ok | ms_wait_data_ok & data_sram_data_ok;
     assign ms_allowin       = ~ms_valid | ms_ready_go & ws_allowin;     
     assign ms2ws_valid      = ms_valid & ms_ready_go;

@@ -11,7 +11,6 @@ module mycpu_core(
     input  wire         inst_sram_addr_ok,
     input  wire         inst_sram_data_ok,
     input  wire [31:0]  inst_sram_rdata,
-    input  wire [ 3:0]  axi_arid,
     // data sram interface
     output wire         data_sram_req,
     output wire         data_sram_wr,
@@ -89,7 +88,6 @@ module mycpu_core(
         .inst_sram_data_ok(inst_sram_data_ok),
         .inst_sram_rdata(inst_sram_rdata),
         .inst_sram_wdata(inst_sram_wdata),
-        .axi_arid(axi_arid),
         
         .ds_allowin(ds_allowin),
         .br_zip(br_zip),

@@ -83,7 +83,6 @@ module mycpu_top(
         .inst_sram_addr_ok  (inst_sram_addr_ok  ),
         .inst_sram_data_ok  (inst_sram_data_ok  ),
         .inst_sram_rdata    (inst_sram_rdata    ),
-        .axi_arid           (arid               ),
         // data sram interface
         .data_sram_req      (data_sram_req      ),
         .data_sram_wr       (data_sram_wr       ),

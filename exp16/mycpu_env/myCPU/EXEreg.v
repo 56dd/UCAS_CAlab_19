@@ -139,7 +139,7 @@ always @(posedge clk) begin
     assign es_mem_we[3]     = op_st_w | op_st_h &  es_alu_result[1] | op_st_b &  es_alu_result[0] &  es_alu_result[1];       
     
     assign es_mem_req       = (es_res_from_mem | (|es_mem_we));
-    assign data_sram_req    = es_mem_req & es_valid & ms_allowin;
+    assign data_sram_req    = es_mem_req & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
     assign data_sram_wr     = (|data_sram_wstrb) & es_valid & ~wb_ex & ~ms_ex & ~es_ex;
     assign data_sram_wstrb  =  es_mem_we;
     assign data_sram_size   = {2{op_st_b}} & 2'b0 | {2{op_st_h}} & 2'b1 | {2{op_st_w}} & 2'd2;
