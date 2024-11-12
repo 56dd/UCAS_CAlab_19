@@ -5,24 +5,24 @@ module tlb
 (
     input wire clk,
 
-    //搜索端口 0（用于指令获取）
-    input  wire [              18:0] s0_vppn, // 虚拟页号
+    //搜索端口 0（用于取指）
+    input  wire [              18:0] s0_vppn, // 虚拟页号，访存虚地址的 31..13 位
     input  wire                      s0_va_bit12, // 第 12 位虚拟地址
     input  wire [               9:0] s0_asid,// 地址空间 ID
-    output wire                      s0_found, // TLB 是否命中
+    output wire                      s0_found, // 判定是否产生 TLB 重填异常
     output wire [$clog2(TLBNUM)-1:0] s0_index,// 命中 TLB 的索引
     output wire [              19:0] s0_ppn,// 物理页号
     output wire [               5:0] s0_ps,// 页大小
     output wire [               1:0] s0_plv,// 特权级
     output wire [               1:0] s0_mat, // 存储类型
-    output wire                      s0_d, // 可写标志，有效标志
-    output wire                      s0_v,
+    output wire                      s0_d, // 可写标志
+    output wire                      s0_v,// 有效标志
 
-    //搜索端口 1（用于数据加载/存储）
+    //搜索端口 1（用于访存）
     input  wire [              18:0] s1_vppn,
     input  wire                      s1_va_bit12,
     input  wire [               9:0] s1_asid,
-    output wire                      s1_found, // TLBSRCH, 记录到TLBIDX.NE位
+    output wire                      s1_found,
     output wire [$clog2(TLBNUM)-1:0] s1_index,
     output wire [              19:0] s1_ppn,
     output wire [               5:0] s1_ps,
@@ -154,7 +154,7 @@ generate for (i = 0; i < TLBNUM; i = i + 1) begin: gen_tlb
 //invtlb
 assign cond[i][0] = ~tlb_g[i];//tlb_g[i]: 表示第 i 个 TLB 条目的全局位, 条目不是全局的
 assign cond[i][1] = tlb_g[i];//条目是全局的
-assign cond[i][2] = (s1_asid == tlb_asid[i]);//确保只失效当前 ASID 的条目
+assign cond[i][2] = (s1_asid == tlb_asid[i]);
 assign cond[i][3] = (s1_vppn[18:9] == tlb_vppn[i][18:9]) 
                  && (tlb_ps4MB[i] || s1_vppn[8:0] == tlb_vppn[i][8:0]);//检查虚拟页号是否匹配
 //根据 invtlb_op 不同进行不同操作
