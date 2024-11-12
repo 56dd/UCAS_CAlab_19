@@ -1,0 +1,13 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  --include "../../../../../../rtl/xilinx_ip" \
+"../../../../../../rtl/xilinx_ip/clk_pll_clk_wiz.v" \
+"../../../../../../rtl/xilinx_ip/clk_pll.v" \
+"../../../../../../../../myCPU/tlb.v" \
+"../../../../../../rtl/tlb_top.v" \
+"../../../../../../testbench/testbench.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

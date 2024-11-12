@@ -1,0 +1,13 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/xilinx_ip/clk_pll_clk_wiz.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll_clk_wiz
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/xilinx_ip/clk_pll.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/myCPU/tlb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tlb
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/tlb_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tlb_top
+INFO: [VRFC 10-2458] undeclared symbol clk_g, assumed default net type wire [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/tlb_top.v:18]
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/testbench/testbench.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tb_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.sim/sim_1/behav/xsim/glbl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module glbl

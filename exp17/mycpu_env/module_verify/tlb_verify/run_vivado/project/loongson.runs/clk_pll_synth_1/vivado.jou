@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Mon Nov 11 19:24:03 2024
+# Process ID: 39176
+# Current directory: D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.runs/clk_pll_synth_1
+# Command line: vivado.exe -log clk_pll.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source clk_pll.tcl
+# Log file: D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.runs/clk_pll_synth_1/clk_pll.vds
+# Journal file: D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.runs/clk_pll_synth_1\vivado.jou
+#-----------------------------------------------------------
+source clk_pll.tcl -notrace

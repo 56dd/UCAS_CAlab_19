@@ -1,0 +1,718 @@
+#-----------------------------------------------------------
+# Vivado v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Mon Nov 11 19:26:38 2024
+# Process ID: 7360
+# Current directory: D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.runs/synth_1
+# Command line: vivado.exe -log tlb_top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source tlb_top.tcl
+# Log file: D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.runs/synth_1/tlb_top.vds
+# Journal file: D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.runs/synth_1\vivado.jou
+#-----------------------------------------------------------
+source tlb_top.tcl -notrace
+Command: synth_design -top tlb_top -part xc7a200tfbg676-1
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7a200t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a200t'
+INFO: [Device 21-403] Loading part xc7a200tfbg676-1
+INFO: Launching helper process for spawning children vivado processes
+INFO: Helper process launched with PID 51108 
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:02 ; elapsed = 00:00:03 . Memory (MB): peak = 832.430 ; gain = 233.059
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'tlb_top' [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/tlb_top.v:2]
+	Parameter TLBNUM bound to: 16 - type: integer 
+	Parameter SIMULATION bound to: 1'b0 
+INFO: [Synth 8-6157] synthesizing module 'clk_pll' [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-7360-LAPTOP-476JT8H0/realtime/clk_pll_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_pll' (1#1) [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.runs/synth_1/.Xil/Vivado-7360-LAPTOP-476JT8H0/realtime/clk_pll_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'tlb' [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/myCPU/tlb.v:1]
+	Parameter TLBNUM bound to: 16 - type: integer 
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_ppn0_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_ppn0_reg" dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_plv0_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_plv0_reg" dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_mat0_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_mat0_reg" dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_d0_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_d0_reg" dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_v0_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_v0_reg" dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_ppn1_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_ppn1_reg" dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_plv1_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_plv1_reg" dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_mat1_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_mat1_reg" dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_d1_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_d1_reg" dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+
+Warning: Trying to implement RAM in registers. Block RAM or DRAM implementation is not possible for one or more of the following reasons :
+	1: RAM's read address port stuck at constant. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM dissolved into registers
+WARNING: [Synth 8-4767] Trying to implement RAM 'gen_tlb[1].tlb_v1_reg' in registers. Block RAM or DRAM implementation is not possible; see log for reasons.
+Reason is one or more of the following :
+	1: Write port has constant address. 
+	2: Unable to determine number of words or word size in RAM. 
+	3: No valid read/write found for RAM. 
+RAM "gen_tlb[1].tlb_v1_reg" dissolved into registers
+INFO: [Synth 8-6155] done synthesizing module 'tlb' (2#1) [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/myCPU/tlb.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'tlb_top' (3#1) [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/tlb_top.v:2]
+WARNING: [Synth 8-3917] design tlb_top has port led[14] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[13] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[12] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[11] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[10] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[9] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[8] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[7] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[6] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[5] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[4] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[3] driven by constant 1
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:02 ; elapsed = 00:00:04 . Memory (MB): peak = 910.160 ; gain = 310.789
+---------------------------------------------------------------------------------
+
+Report Check Netlist: 
++------+------------------+-------+---------+-------+------------------+
+|      |Item              |Errors |Warnings |Status |Description       |
++------+------------------+-------+---------+-------+------------------+
+|1     |multi_driven_nets |      0|        0|Passed |Multi driven nets |
++------+------------------+-------+---------+-------+------------------+
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:02 ; elapsed = 00:00:05 . Memory (MB): peak = 910.160 ; gain = 310.789
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:02 ; elapsed = 00:00:05 . Memory (MB): peak = 910.160 ; gain = 310.789
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.031 . Memory (MB): peak = 910.160 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [d:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/xilinx_ip/clk_pll/clk_pll_in_context.xdc] for cell 'clk_pll'
+Finished Parsing XDC File [d:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/xilinx_ip/clk_pll/clk_pll_in_context.xdc] for cell 'clk_pll'
+Parsing XDC File [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/constraints/tlb_top.xdc]
+WARNING: [Constraints 18-619] A clock with name 'clk' already exists, overwriting the previous clock with the same name. [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/constraints/tlb_top.xdc:5]
+Finished Parsing XDC File [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/constraints/tlb_top.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/constraints/tlb_top.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/tlb_top_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/tlb_top_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1042.047 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.012 . Memory (MB): peak = 1042.047 ; gain = 0.000
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:04 ; elapsed = 00:00:10 . Memory (MB): peak = 1042.047 ; gain = 442.676
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7a200tfbg676-1
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:04 ; elapsed = 00:00:10 . Memory (MB): peak = 1042.047 ; gain = 442.676
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+Applied set_property IO_BUFFER_TYPE = NONE for clk. (constraint file  d:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/xilinx_ip/clk_pll/clk_pll_in_context.xdc, line 3).
+Applied set_property CLOCK_BUFFER_TYPE = NONE for clk. (constraint file  d:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/xilinx_ip/clk_pll/clk_pll_in_context.xdc, line 4).
+Applied set_property DONT_TOUCH = true for clk_pll. (constraint file  auto generated constraint, line ).
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:05 ; elapsed = 00:00:10 . Memory (MB): peak = 1042.047 ; gain = 442.676
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:05 ; elapsed = 00:00:11 . Memory (MB): peak = 1042.047 ; gain = 442.676
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input      4 Bit       Adders := 3     
++---XORs : 
+	   2 Input      1 Bit         XORs := 2     
++---Registers : 
+	               20 Bit    Registers := 32    
+	               19 Bit    Registers := 16    
+	               10 Bit    Registers := 16    
+	                8 Bit    Registers := 1     
+	                7 Bit    Registers := 1     
+	                4 Bit    Registers := 4     
+	                2 Bit    Registers := 64    
+	                1 Bit    Registers := 116   
++---Muxes : 
+	   2 Input    320 Bit        Muxes := 4     
+	   2 Input     32 Bit        Muxes := 8     
+	   2 Input     20 Bit        Muxes := 30    
+	   2 Input     16 Bit        Muxes := 8     
+	   8 Input      8 Bit        Muxes := 1     
+	  26 Input      6 Bit        Muxes := 2     
+	   2 Input      5 Bit        Muxes := 3     
+	  16 Input      5 Bit        Muxes := 2     
+	   2 Input      2 Bit        Muxes := 60    
+	   2 Input      1 Bit        Muxes := 81    
+	  16 Input      1 Bit        Muxes := 2     
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Hierarchical Component Statistics 
+---------------------------------------------------------------------------------
+Hierarchical RTL Component report 
+Module tlb_top 
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input      4 Bit       Adders := 3     
++---XORs : 
+	   2 Input      1 Bit         XORs := 2     
++---Registers : 
+	                8 Bit    Registers := 1     
+	                7 Bit    Registers := 1     
+	                4 Bit    Registers := 4     
+	                1 Bit    Registers := 4     
++---Muxes : 
+	   8 Input      8 Bit        Muxes := 1     
+	  26 Input      6 Bit        Muxes := 2     
+	  16 Input      5 Bit        Muxes := 2     
+	   2 Input      1 Bit        Muxes := 3     
+	  16 Input      1 Bit        Muxes := 2     
+Module tlb 
+Detailed RTL Component Info : 
++---Registers : 
+	               20 Bit    Registers := 32    
+	               19 Bit    Registers := 16    
+	               10 Bit    Registers := 16    
+	                2 Bit    Registers := 64    
+	                1 Bit    Registers := 112   
++---Muxes : 
+	   2 Input    320 Bit        Muxes := 4     
+	   2 Input     32 Bit        Muxes := 8     
+	   2 Input     20 Bit        Muxes := 30    
+	   2 Input     16 Bit        Muxes := 8     
+	   2 Input      5 Bit        Muxes := 3     
+	   2 Input      2 Bit        Muxes := 60    
+	   2 Input      1 Bit        Muxes := 78    
+---------------------------------------------------------------------------------
+Finished RTL Hierarchical Component Statistics
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 740 (col length:100)
+BRAMs: 730 (col length: RAMB18 100 RAMB36 50)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+Warning: Parallel synthesis criteria is not met 
+WARNING: [Synth 8-3917] design tlb_top has port led[14] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[13] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[12] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[11] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[10] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[9] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[8] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[7] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[6] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[5] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[4] driven by constant 1
+WARNING: [Synth 8-3917] design tlb_top has port led[3] driven by constant 1
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[15].tlb_vppn_reg[15][0]' (FDE) to 'tlb/gen_tlb[15].tlb_vppn_reg[15][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[14].tlb_vppn_reg[14][0]' (FDE) to 'tlb/gen_tlb[14].tlb_vppn_reg[14][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[13].tlb_vppn_reg[13][0]' (FDE) to 'tlb/gen_tlb[13].tlb_vppn_reg[13][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[12].tlb_vppn_reg[12][0]' (FDE) to 'tlb/gen_tlb[12].tlb_vppn_reg[12][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[11].tlb_vppn_reg[11][0]' (FDE) to 'tlb/gen_tlb[11].tlb_vppn_reg[11][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[10].tlb_vppn_reg[10][0]' (FDE) to 'tlb/gen_tlb[10].tlb_vppn_reg[10][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[9].tlb_vppn_reg[9][0]' (FDE) to 'tlb/gen_tlb[9].tlb_vppn_reg[9][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[8].tlb_vppn_reg[8][0]' (FDE) to 'tlb/gen_tlb[8].tlb_vppn_reg[8][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[7].tlb_vppn_reg[7][0]' (FDE) to 'tlb/gen_tlb[7].tlb_vppn_reg[7][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[6].tlb_vppn_reg[6][0]' (FDE) to 'tlb/gen_tlb[6].tlb_vppn_reg[6][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[5].tlb_vppn_reg[5][0]' (FDE) to 'tlb/gen_tlb[5].tlb_vppn_reg[5][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[4].tlb_vppn_reg[4][0]' (FDE) to 'tlb/gen_tlb[4].tlb_vppn_reg[4][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[3].tlb_vppn_reg[3][0]' (FDE) to 'tlb/gen_tlb[3].tlb_vppn_reg[3][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[2].tlb_vppn_reg[2][0]' (FDE) to 'tlb/gen_tlb[2].tlb_vppn_reg[2][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[1].tlb_vppn_reg[1][0]' (FDE) to 'tlb/gen_tlb[1].tlb_vppn_reg[1][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[0].tlb_vppn_reg[0][0]' (FDE) to 'tlb/gen_tlb[0].tlb_vppn_reg[0][4]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[15].tlb_vppn_reg[15][1]' (FDE) to 'tlb/gen_tlb[15].tlb_vppn_reg[15][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[14].tlb_vppn_reg[14][1]' (FDE) to 'tlb/gen_tlb[14].tlb_vppn_reg[14][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[13].tlb_vppn_reg[13][1]' (FDE) to 'tlb/gen_tlb[13].tlb_vppn_reg[13][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[12].tlb_vppn_reg[12][1]' (FDE) to 'tlb/gen_tlb[12].tlb_vppn_reg[12][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[11].tlb_vppn_reg[11][1]' (FDE) to 'tlb/gen_tlb[11].tlb_vppn_reg[11][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[10].tlb_vppn_reg[10][1]' (FDE) to 'tlb/gen_tlb[10].tlb_vppn_reg[10][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[9].tlb_vppn_reg[9][1]' (FDE) to 'tlb/gen_tlb[9].tlb_vppn_reg[9][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[8].tlb_vppn_reg[8][1]' (FDE) to 'tlb/gen_tlb[8].tlb_vppn_reg[8][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[7].tlb_vppn_reg[7][1]' (FDE) to 'tlb/gen_tlb[7].tlb_vppn_reg[7][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[6].tlb_vppn_reg[6][1]' (FDE) to 'tlb/gen_tlb[6].tlb_vppn_reg[6][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[5].tlb_vppn_reg[5][1]' (FDE) to 'tlb/gen_tlb[5].tlb_vppn_reg[5][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[4].tlb_vppn_reg[4][1]' (FDE) to 'tlb/gen_tlb[4].tlb_vppn_reg[4][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[3].tlb_vppn_reg[3][1]' (FDE) to 'tlb/gen_tlb[3].tlb_vppn_reg[3][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[2].tlb_vppn_reg[2][1]' (FDE) to 'tlb/gen_tlb[2].tlb_vppn_reg[2][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[1].tlb_vppn_reg[1][1]' (FDE) to 'tlb/gen_tlb[1].tlb_vppn_reg[1][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[0].tlb_vppn_reg[0][1]' (FDE) to 'tlb/gen_tlb[0].tlb_vppn_reg[0][5]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[15].tlb_vppn_reg[15][2]' (FDE) to 'tlb/gen_tlb[15].tlb_vppn_reg[15][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[14].tlb_vppn_reg[14][2]' (FDE) to 'tlb/gen_tlb[14].tlb_vppn_reg[14][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[13].tlb_vppn_reg[13][2]' (FDE) to 'tlb/gen_tlb[13].tlb_vppn_reg[13][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[12].tlb_vppn_reg[12][2]' (FDE) to 'tlb/gen_tlb[12].tlb_vppn_reg[12][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[11].tlb_vppn_reg[11][2]' (FDE) to 'tlb/gen_tlb[11].tlb_vppn_reg[11][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[10].tlb_vppn_reg[10][2]' (FDE) to 'tlb/gen_tlb[10].tlb_vppn_reg[10][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[9].tlb_vppn_reg[9][2]' (FDE) to 'tlb/gen_tlb[9].tlb_vppn_reg[9][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[8].tlb_vppn_reg[8][2]' (FDE) to 'tlb/gen_tlb[8].tlb_vppn_reg[8][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[7].tlb_vppn_reg[7][2]' (FDE) to 'tlb/gen_tlb[7].tlb_vppn_reg[7][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[6].tlb_vppn_reg[6][2]' (FDE) to 'tlb/gen_tlb[6].tlb_vppn_reg[6][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[5].tlb_vppn_reg[5][2]' (FDE) to 'tlb/gen_tlb[5].tlb_vppn_reg[5][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[4].tlb_vppn_reg[4][2]' (FDE) to 'tlb/gen_tlb[4].tlb_vppn_reg[4][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[3].tlb_vppn_reg[3][2]' (FDE) to 'tlb/gen_tlb[3].tlb_vppn_reg[3][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[2].tlb_vppn_reg[2][2]' (FDE) to 'tlb/gen_tlb[2].tlb_vppn_reg[2][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[1].tlb_vppn_reg[1][2]' (FDE) to 'tlb/gen_tlb[1].tlb_vppn_reg[1][6]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[0].tlb_vppn_reg[0][2]' (FDE) to 'tlb/gen_tlb[0].tlb_vppn_reg[0][6]'
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[15].tlb_e_reg[15] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[14].tlb_e_reg[14] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[13].tlb_e_reg[13] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[12].tlb_e_reg[12] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[11].tlb_e_reg[11] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[10].tlb_e_reg[10] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[9].tlb_e_reg[9] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[8].tlb_e_reg[8] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[7].tlb_e_reg[7] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[6].tlb_e_reg[6] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[5].tlb_e_reg[5] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[4].tlb_e_reg[4] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[3].tlb_e_reg[3] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[2].tlb_e_reg[2] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[1].tlb_e_reg[1] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (tlb/\gen_tlb[0].tlb_e_reg[0] )
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[15].tlb_asid_reg[15][4]' (FDE) to 'tlb/gen_tlb[15].tlb_vppn_reg[15][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[14].tlb_asid_reg[14][4]' (FDE) to 'tlb/gen_tlb[14].tlb_vppn_reg[14][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[13].tlb_asid_reg[13][4]' (FDE) to 'tlb/gen_tlb[13].tlb_vppn_reg[13][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[12].tlb_asid_reg[12][4]' (FDE) to 'tlb/gen_tlb[12].tlb_vppn_reg[12][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[11].tlb_asid_reg[11][4]' (FDE) to 'tlb/gen_tlb[11].tlb_vppn_reg[11][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[10].tlb_asid_reg[10][4]' (FDE) to 'tlb/gen_tlb[10].tlb_vppn_reg[10][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[9].tlb_asid_reg[9][4]' (FDE) to 'tlb/gen_tlb[9].tlb_vppn_reg[9][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[8].tlb_asid_reg[8][4]' (FDE) to 'tlb/gen_tlb[8].tlb_vppn_reg[8][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[7].tlb_asid_reg[7][4]' (FDE) to 'tlb/gen_tlb[7].tlb_vppn_reg[7][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[6].tlb_asid_reg[6][4]' (FDE) to 'tlb/gen_tlb[6].tlb_vppn_reg[6][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[5].tlb_asid_reg[5][4]' (FDE) to 'tlb/gen_tlb[5].tlb_vppn_reg[5][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[4].tlb_asid_reg[4][4]' (FDE) to 'tlb/gen_tlb[4].tlb_vppn_reg[4][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[3].tlb_asid_reg[3][4]' (FDE) to 'tlb/gen_tlb[3].tlb_vppn_reg[3][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[2].tlb_asid_reg[2][4]' (FDE) to 'tlb/gen_tlb[2].tlb_vppn_reg[2][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[1].tlb_asid_reg[1][4]' (FDE) to 'tlb/gen_tlb[1].tlb_vppn_reg[1][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[0].tlb_asid_reg[0][4]' (FDE) to 'tlb/gen_tlb[0].tlb_vppn_reg[0][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[15].tlb_asid_reg[15][5]' (FDE) to 'tlb/gen_tlb[15].tlb_vppn_reg[15][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[14].tlb_asid_reg[14][5]' (FDE) to 'tlb/gen_tlb[14].tlb_vppn_reg[14][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[13].tlb_asid_reg[13][5]' (FDE) to 'tlb/gen_tlb[13].tlb_vppn_reg[13][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[12].tlb_asid_reg[12][5]' (FDE) to 'tlb/gen_tlb[12].tlb_vppn_reg[12][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[11].tlb_asid_reg[11][5]' (FDE) to 'tlb/gen_tlb[11].tlb_vppn_reg[11][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[10].tlb_asid_reg[10][5]' (FDE) to 'tlb/gen_tlb[10].tlb_vppn_reg[10][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[9].tlb_asid_reg[9][5]' (FDE) to 'tlb/gen_tlb[9].tlb_vppn_reg[9][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[8].tlb_asid_reg[8][5]' (FDE) to 'tlb/gen_tlb[8].tlb_vppn_reg[8][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[7].tlb_asid_reg[7][5]' (FDE) to 'tlb/gen_tlb[7].tlb_vppn_reg[7][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[6].tlb_asid_reg[6][5]' (FDE) to 'tlb/gen_tlb[6].tlb_vppn_reg[6][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[5].tlb_asid_reg[5][5]' (FDE) to 'tlb/gen_tlb[5].tlb_vppn_reg[5][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[4].tlb_asid_reg[4][5]' (FDE) to 'tlb/gen_tlb[4].tlb_vppn_reg[4][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[3].tlb_asid_reg[3][5]' (FDE) to 'tlb/gen_tlb[3].tlb_vppn_reg[3][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[2].tlb_asid_reg[2][5]' (FDE) to 'tlb/gen_tlb[2].tlb_vppn_reg[2][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[1].tlb_asid_reg[1][5]' (FDE) to 'tlb/gen_tlb[1].tlb_vppn_reg[1][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[0].tlb_asid_reg[0][5]' (FDE) to 'tlb/gen_tlb[0].tlb_vppn_reg[0][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[15].tlb_asid_reg[15][6]' (FDE) to 'tlb/gen_tlb[15].tlb_vppn_reg[15][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[14].tlb_asid_reg[14][6]' (FDE) to 'tlb/gen_tlb[14].tlb_vppn_reg[14][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[13].tlb_asid_reg[13][6]' (FDE) to 'tlb/gen_tlb[13].tlb_vppn_reg[13][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[12].tlb_asid_reg[12][6]' (FDE) to 'tlb/gen_tlb[12].tlb_vppn_reg[12][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[11].tlb_asid_reg[11][6]' (FDE) to 'tlb/gen_tlb[11].tlb_vppn_reg[11][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[10].tlb_asid_reg[10][6]' (FDE) to 'tlb/gen_tlb[10].tlb_vppn_reg[10][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[9].tlb_asid_reg[9][6]' (FDE) to 'tlb/gen_tlb[9].tlb_vppn_reg[9][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[8].tlb_asid_reg[8][6]' (FDE) to 'tlb/gen_tlb[8].tlb_vppn_reg[8][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[7].tlb_asid_reg[7][6]' (FDE) to 'tlb/gen_tlb[7].tlb_vppn_reg[7][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[6].tlb_asid_reg[6][6]' (FDE) to 'tlb/gen_tlb[6].tlb_vppn_reg[6][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[5].tlb_asid_reg[5][6]' (FDE) to 'tlb/gen_tlb[5].tlb_vppn_reg[5][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[4].tlb_asid_reg[4][6]' (FDE) to 'tlb/gen_tlb[4].tlb_vppn_reg[4][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[3].tlb_asid_reg[3][6]' (FDE) to 'tlb/gen_tlb[3].tlb_vppn_reg[3][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[2].tlb_asid_reg[2][6]' (FDE) to 'tlb/gen_tlb[2].tlb_vppn_reg[2][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[1].tlb_asid_reg[1][6]' (FDE) to 'tlb/gen_tlb[1].tlb_vppn_reg[1][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[0].tlb_asid_reg[0][6]' (FDE) to 'tlb/gen_tlb[0].tlb_vppn_reg[0][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[15].tlb_asid_reg[15][7]' (FDE) to 'tlb/gen_tlb[15].tlb_vppn_reg[15][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[14].tlb_asid_reg[14][7]' (FDE) to 'tlb/gen_tlb[14].tlb_vppn_reg[14][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[13].tlb_asid_reg[13][7]' (FDE) to 'tlb/gen_tlb[13].tlb_vppn_reg[13][16]'
+INFO: [Synth 8-3886] merging instance 'tlb/gen_tlb[12].tlb_asid_reg[12][7]' (FDE) to 'tlb/gen_tlb[12].tlb_vppn_reg[12][16]'
+INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[15].tlb_vppn_reg[15][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[14].tlb_vppn_reg[14][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[13].tlb_vppn_reg[13][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[12].tlb_vppn_reg[12][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[11].tlb_vppn_reg[11][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[10].tlb_vppn_reg[10][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[9].tlb_vppn_reg[9][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[8].tlb_vppn_reg[8][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[7].tlb_vppn_reg[7][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[6].tlb_vppn_reg[6][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[5].tlb_vppn_reg[5][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[4].tlb_vppn_reg[4][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[3].tlb_vppn_reg[3][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[2].tlb_vppn_reg[2][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[1].tlb_vppn_reg[1][18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (tlb/\gen_tlb[0].tlb_vppn_reg[0][18] )
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:10 ; elapsed = 00:00:21 . Memory (MB): peak = 1042.047 ; gain = 442.676
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP and Shift Register Reporting
+---------------------------------------------------------------------------------
+
+ROM:
++------------+-----------------+---------------+----------------+
+|Module Name | RTL Object      | Depth x Width | Implemented As | 
++------------+-----------------+---------------+----------------+
+|tlb_top     | s_test_ppn      | 32x11         | LUT            | 
+|tlb_top     | s_test_found    | 32x1          | LUT            | 
+|tlb_top     | s_test_ppn      | 32x11         | LUT            | 
+|tlb_top     | s_test_found    | 32x1          | LUT            | 
+|tlb_top     | s_test_vppn     | 32x11         | LUT            | 
+|tlb_top     | s_test_va_bit12 | 32x1          | LUT            | 
+|tlb_top     | s_test_asid     | 32x4          | LUT            | 
+|tlb_top     | s_test_vppn     | 32x11         | LUT            | 
+|tlb_top     | s_test_va_bit12 | 32x1          | LUT            | 
+|tlb_top     | s_test_asid     | 32x4          | LUT            | 
+|tlb_top     | s_test_ppn      | 32x11         | LUT            | 
+|tlb_top     | s_test_found    | 32x1          | LUT            | 
+|tlb_top     | s_test_ppn      | 32x11         | LUT            | 
+|tlb_top     | s_test_found    | 32x1          | LUT            | 
+|tlb_top     | s_test_vppn     | 32x11         | LUT            | 
+|tlb_top     | s_test_va_bit12 | 32x1          | LUT            | 
+|tlb_top     | s_test_asid     | 32x4          | LUT            | 
+|tlb_top     | s_test_vppn     | 32x11         | LUT            | 
+|tlb_top     | s_test_va_bit12 | 32x1          | LUT            | 
+|tlb_top     | s_test_asid     | 32x4          | LUT            | 
++------------+-----------------+---------------+----------------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP and Shift Register Reporting
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-565] redefining clock 'clk'
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:12 ; elapsed = 00:00:27 . Memory (MB): peak = 1042.047 ; gain = 442.676
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:00:16 ; elapsed = 00:00:35 . Memory (MB): peak = 1217.418 ; gain = 618.047
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:00:16 ; elapsed = 00:00:36 . Memory (MB): peak = 1217.418 ; gain = 618.047
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:00:17 ; elapsed = 00:00:38 . Memory (MB): peak = 1217.418 ; gain = 618.047
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:17 ; elapsed = 00:00:38 . Memory (MB): peak = 1217.418 ; gain = 618.047
+---------------------------------------------------------------------------------
+
+Report RTL Partitions: 
++-+--------------+------------+----------+
+| |RTL Partition |Replication |Instances |
++-+--------------+------------+----------+
++-+--------------+------------+----------+
+
+Report Check Netlist: 
++------+------------------+-------+---------+-------+------------------+
+|      |Item              |Errors |Warnings |Status |Description       |
++------+------------------+-------+---------+-------+------------------+
+|1     |multi_driven_nets |      0|        0|Passed |Multi driven nets |
++------+------------------+-------+---------+-------+------------------+
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:17 ; elapsed = 00:00:38 . Memory (MB): peak = 1217.418 ; gain = 618.047
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:17 ; elapsed = 00:00:38 . Memory (MB): peak = 1217.418 ; gain = 618.047
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:17 ; elapsed = 00:00:38 . Memory (MB): peak = 1217.418 ; gain = 618.047
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:17 ; elapsed = 00:00:38 . Memory (MB): peak = 1217.418 ; gain = 618.047
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++------+--------------+----------+
+|      |BlackBox name |Instances |
++------+--------------+----------+
+|1     |clk_pll       |         1|
++------+--------------+----------+
+
+Report Cell Usage: 
++------+--------+------+
+|      |Cell    |Count |
++------+--------+------+
+|1     |clk_pll |     1|
+|2     |CARRY4  |   119|
+|3     |LUT1    |    53|
+|4     |LUT2    |    44|
+|5     |LUT3    |    34|
+|6     |LUT4    |   101|
+|7     |LUT5    |    93|
+|8     |LUT6    |   474|
+|9     |MUXF7   |    49|
+|10    |MUXF8   |    10|
+|11    |FDRE    |   368|
+|12    |FDSE    |    18|
+|13    |IBUF    |     1|
+|14    |OBUF    |    31|
++------+--------+------+
+
+Report Instance Areas: 
++------+---------+-------+------+
+|      |Instance |Module |Cells |
++------+---------+-------+------+
+|1     |top      |       |  1396|
+|2     |  tlb    |tlb    |  1140|
++------+---------+-------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:17 ; elapsed = 00:00:38 . Memory (MB): peak = 1217.418 ; gain = 618.047
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 13 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:13 ; elapsed = 00:00:36 . Memory (MB): peak = 1217.418 ; gain = 486.160
+Synthesis Optimization Complete : Time (s): cpu = 00:00:17 ; elapsed = 00:00:38 . Memory (MB): peak = 1217.418 ; gain = 618.047
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.011 . Memory (MB): peak = 1217.418 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 178 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+WARNING: [Netlist 29-101] Netlist 'tlb_top' is not ideal for floorplanning, since the cellview 'tlb' contains a large number of primitives.  Please consider enabling hierarchy in synthesis if you want to do floorplanning.
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00 . Memory (MB): peak = 1217.418 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+INFO: [Common 17-83] Releasing license: Synthesis
+151 Infos, 37 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:00:19 ; elapsed = 00:00:43 . Memory (MB): peak = 1217.418 ; gain = 920.566
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1217.418 ; gain = 0.000
+WARNING: [Constraints 18-5210] No constraints selected for write.
+Resolution: This message can indicate that there are no constraints for the design, or it can indicate that the used_in flags are set such that the constraints are ignored. This later case is used when running synth_design to not write synthesis constraints to the resulting checkpoint. Instead, project constraints are read when the synthesized design is opened.
+INFO: [Common 17-1381] The checkpoint 'D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.runs/synth_1/tlb_top.dcp' has been generated.
+INFO: [runtcl-4] Executing : report_utilization -file tlb_top_utilization_synth.rpt -pb tlb_top_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Mon Nov 11 19:27:24 2024...

@@ -1,0 +1,10 @@
+0.6
+2019.2
+Nov  6 2019
+21:57:16
+D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/tlb_top.v,1731323246,verilog,,D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/testbench/testbench.v,,tlb_top,,,../../../../../../rtl/xilinx_ip,,,,,
+D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/xilinx_ip/clk_pll.v,1731324235,verilog,,D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/myCPU/tlb.v,,clk_pll,,,../../../../../../rtl/xilinx_ip,,,,,
+D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/xilinx_ip/clk_pll_clk_wiz.v,1731324235,verilog,,D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/xilinx_ip/clk_pll.v,,clk_pll_clk_wiz,,,../../../../../../rtl/xilinx_ip,,,,,
+D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/run_vivado/project/loongson.sim/sim_1/behav/xsim/glbl.v,1573089660,verilog,,,,glbl,,,,,,,,
+D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/testbench/testbench.v,1731323246,verilog,,,,tb_top,,,../../../../../../rtl/xilinx_ip,,,,,
+D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/myCPU/tlb.v,1731323977,verilog,,D:/aaa/UCAS_CAlab_19/exp17/mycpu_env/module_verify/tlb_verify/rtl/tlb_top.v,,tlb,,,../../../../../../rtl/xilinx_ip,,,,,
