@@ -4,7 +4,7 @@ module WBreg(
     input  wire        resetn,          //1
     // mem and ws state interface
     output wire        ws_allowin,      //1
-    input  wire [148:0] ms2ws_bus,      //149   {wb_vaddr, wb_pc, ws_except_zip}
+    input  wire [`MS2WS_BUS -1:0] ms2ws_bus,      //149   {wb_vaddr, wb_pc, ws_except_zip}
     input  wire [38:0] ms_rf_zip,       //39    {ms_csr_re, ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     input  wire        ms2ws_valid,
     // trace debug interface

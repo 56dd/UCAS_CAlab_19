@@ -51,7 +51,7 @@ module mycpu_core(
     wire [64:0] fs2ds_bus;
     wire [`DS2ES_BUS -1:0] ds2es_bus;
     wire [`ES2MS_BUS -1:0] es2ms_bus;
-    wire [149:0] ms2ws_bus;
+    wire [`MS2WS_BUS -1:0] ms2ws_bus;
 
     wire        csr_re;
     wire [13:0] csr_num;

@@ -9,7 +9,7 @@ module MEMreg(
     input  wire        es2ms_valid,         //1      
     // mem and wb state interface
     input  wire        ws_allowin,          //1
-    output wire [148:0] ms2ws_bus,          //149
+    output wire [`MS2WS_BUS -1:0] ms2ws_bus,          //149
     output wire [39:0] ms_rf_zip,           //40      {ms_res_from_mem, ms_csr_re,  ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     output wire        ms2ws_valid,         //1
     output wire [`TLB_CONFLICT_BUS_LEN-1:0] ms_tlb_blk_zip,
@@ -42,17 +42,28 @@ module MEMreg(
     reg  [84:0] ms_except_zip;
     reg  [31:0] ms_pc;
     reg  [31:0] es_rf_result_tmp;
-    // wire         ds_except_adef;
-    // wire         ds_except_ine;
-    // wire         ds_except_int;
-    // wire         ds_except_brk;
-    // wire         ds_except_sys;
-    // wire         ds_except_ertn;
+    
 
     wire        ms_wait_data_ok;
     reg         ms_wait_data_ok_r;
     reg  [31:0] ms_data_buf;
     reg         data_buf_valid;  // 判断指令缓存是否有效
+
+    // TLB
+    reg  [ 9:0] es2ms_tlb_zip; // ZIP信号
+    wire        inst_tlbsrch;
+    wire        inst_tlbrd;
+    wire        inst_tlbwr;
+    wire        inst_tlbfill;
+    wire        ms_refetch_flag;
+    wire        tlbsrch_found;
+    wire [ 3:0] tlbsrch_idxgot;
+    wire [ 9:0] ms2wb_tlb_zip;
+    //csr
+    wire [13:0] ms_csr_num;
+    wire        ms_csr_we;
+    wire [31:0] ms_csr_wmask;
+    wire [31:0] ms_csr_wvalue;
 
 //------------------------------state control signal---------------------------------------
 
@@ -70,7 +81,7 @@ module MEMreg(
             ms_valid <= es2ms_valid; 
     end
     
-    assign ms_ex = |ms_except_zip[6:0] && ms_valid; 
+    assign ms_ex = |ms_except_zip[6:0] && ms_valid & ~ms_refetch_flag; 
 
 //------------------------------data buffer----------------------------------------------
     // 设置寄存器，暂存数据，并用valid信号表示其内数据是否有效
@@ -90,11 +101,11 @@ module MEMreg(
 //------------------------------exe and mem state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {ms_wait_data_ok_r,ms_ld_inst_zip, ms_pc, ms_except_zip} <= {123{1'b0}};//ms_except_zip={es_except_zip,es_except_ale }
+            {ms_wait_data_ok_r,ms_ld_inst_zip, ms_pc, ms_except_zip,es2ms_tlb_zip} <= {`ES2MS_BUS{1'b0}};//ms_except_zip={es_except_zip,es_except_ale }
             {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, ms_rf_result_tmp} <= 39'b0;
         end
         if(es2ms_valid & ms_allowin) begin
-            {ms_wait_data_ok_r,ms_ld_inst_zip, ms_pc, ms_except_zip} <= es2ms_bus;
+            {ms_wait_data_ok_r,ms_ld_inst_zip, ms_pc, ms_except_zip,es2ms_tlb_zip} <= es2ms_bus;
             {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, ms_rf_result_tmp} <= es_rf_zip;
         end
     end
@@ -117,6 +128,12 @@ module MEMreg(
     assign ms2ws_bus = {
                         ms_rf_result_tmp,   //32
                         ms_pc,              // 32 bit
-                        ms_except_zip       // 85 bit
-                    };//149
+                        ms_except_zip,      // 85 bit
+                        ms2wb_tlb_zip       //10
+                    };//159
+//---------------------------------- tlb --------------------------------------
+    assign {ms_refetch_flag, inst_tlbsrch, inst_tlbrd, inst_tlbwr, inst_tlbfill, tlbsrch_found, tlbsrch_idxgot} = es2ms_tlb_zip;
+    assign ms2wb_tlb_zip = es2ms_tlb_zip;
+    assign {ms_csr_num, ms_csr_wmask, ms_csr_wvalue, ms_csr_we} = ms_csr_zip;
+    assign ms_tlb_blk_zip = {inst_tlbrd & ms_valid, ms_csr_we & ms_valid, ms_csr_num};
 endmodule

@@ -85,7 +85,7 @@ module EXEreg(
     reg        inst_rdcntvl;
 
     wire        es_mem_req;
-    
+
     // TLB
     reg  [10:0] ds2es_tlb_zip; // ZIP信号
     wire        inst_tlbsrch;
@@ -185,10 +185,6 @@ always @(posedge clk) begin
     assign data_sram_wdata[23:16]   = op_st_w ? es_rkd_value[23:16] : es_rkd_value[ 7: 0];
     assign data_sram_wdata[31:24]   = op_st_w ? es_rkd_value[31:24] : 
                                       op_st_h ? es_rkd_value[15: 8] : es_rkd_value[ 7: 0];
-
-    //assign data_sram_en     = (es_res_from_mem | (|es_mem_we)) & es_valid;
-    //assign data_sram_we     = {4{es_valid & ~wb_ex & ~ms_ex & ~es_ex }} & es_mem_we;
-    //assign data_sram_addr   = {es_alu_result[31:2], 2'b0};
     
     assign es_rf_result_tmp = {32{inst_rdcntvh}} & es_timer_cnt[63:32] | 
                               {32{inst_rdcntvl}} & es_timer_cnt[31: 0] |
