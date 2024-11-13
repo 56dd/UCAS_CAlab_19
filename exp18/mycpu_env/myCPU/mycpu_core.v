@@ -49,8 +49,8 @@ module mycpu_core(
     wire [33:0] br_zip;
     wire [ 4:0] es_ld_inst_zip;
     wire [64:0] fs2ds_bus;
-    wire [DS2ES_BUS -1:0] ds2es_bus;
-    wire [123:0] es2ms_bus;
+    wire [`DS2ES_BUS -1:0] ds2es_bus;
+    wire [`ES2MS_BUS -1:0] es2ms_bus;
     wire [149:0] ms2ws_bus;
 
     wire        csr_re;
@@ -153,7 +153,7 @@ module mycpu_core(
         .data_sram_addr_ok(data_sram_addr_ok),
 
         .ms_ex(ms_ex),
-        .wb_ex(wb_ex|ertn_flush)
+        .wb_ex(wb_ex|ertn_flush),
 
         .invtlb_op   (invtlb_op),
         .inst_invtlb (invtlb_valid),

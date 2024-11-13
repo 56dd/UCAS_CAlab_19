@@ -4,7 +4,7 @@ module MEMreg(
     input  wire        resetn,              //1
     // exe and mem state interface
     output wire        ms_allowin,          //1
-    input  wire [122:0] es2ms_bus,          //123
+    input  wire [`ES2MS_BUS-1:0] es2ms_bus,          //123
     input  wire [39:0] es_rf_zip,           //40     {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_rf_wdata=ms_rf_result_tmp} 
     input  wire        es2ms_valid,         //1      
     // mem and wb state interface

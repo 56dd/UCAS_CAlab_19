@@ -20,3 +20,4 @@
 //zip&bus
 `define TLB_CONFLICT_BUS_LEN    16
 `define DS2ES_BUS               260
+`define ES2MS_BUS               133
