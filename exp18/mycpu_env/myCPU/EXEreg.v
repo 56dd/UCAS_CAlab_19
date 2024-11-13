@@ -1,10 +1,11 @@
+`include "head.h"
 module EXEreg(
     input  wire        clk,                 //1
     input  wire        resetn,              //1
     // id and exe interface
     output wire        es_allowin,          //1
     input  wire        ds2es_valid,         //1
-    input  wire [248:0] ds2es_bus,          //249    {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
+    input  wire [DS2ES_BUS -1:0] ds2es_bus,          //249    {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
     //input  wire [32:0] ds_except_zip, 
     // exe and mem state interface
     input  wire        ms_allowin,          //1
@@ -12,11 +13,8 @@ module EXEreg(
     output wire [39:0] es_rf_zip,           //40    {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
     output wire        es2ms_valid,         //1
     output reg  [31:0] es_pc,               //32
+    output wire [`TLB_CONFLICT_BUS_LEN-1:0] es_tlb_blk_zip,
     // data sram interface
-    // output wire        data_sram_en,
-    // output wire [ 3:0] data_sram_we,
-    // output wire [31:0] data_sram_addr,
-    // output wire [31:0] data_sram_wdata,
     output wire         data_sram_req,      //1
     output wire         data_sram_wr,       //1
     output wire [ 1:0]  data_sram_size,     //2
@@ -27,6 +25,24 @@ module EXEreg(
     // exception interface
     input  wire        ms_ex,               //1
     input  wire        wb_ex                //1
+    //TLB
+    output wire [ 4:0] invtlb_op,
+    output wire        inst_invtlb,
+    output wire [18:0] s1_vppn,
+    output wire        s1_va_bit12,
+    output wire [ 9:0] s1_asid,
+
+    input         s1_found,
+    input  [ 3:0] s1_index,
+    input  [19:0] s1_ppn,
+    input  [ 5:0] s1_ps,
+    input  [ 1:0] s1_plv,
+    input  [ 1:0] s1_mat,
+    input         s1_d,
+    input         s1_v,
+
+    input  wire [18:0] tlbehi_vppn_CSRoutput,
+    input  wire [ 9:0] asid_CSRoutput
 );
 
     wire        es_ready_go;
@@ -89,13 +105,15 @@ module EXEreg(
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
              es_ld_inst_zip,
              inst_rdcntvh , inst_rdcntvl,
-             es_except_zip} <= {249{1'b0}};
+             es_except_zip,
+             ds2es_tlb_zip} <= {DS2ES_BUS{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
              es_ld_inst_zip, 
              inst_rdcntvh , inst_rdcntvl,
-             es_except_zip} <= ds2es_bus;    
+             es_except_zip,
+             ds2es_tlb_zip} <= ds2es_bus;    
     end
     assign {op_st_b, op_st_h, op_st_w} = es_st_op_zip;
     assign {op_ld_b, op_ld_bu, op_ld_h, op_ld_hu, op_ld_w} = es_ld_inst_zip;

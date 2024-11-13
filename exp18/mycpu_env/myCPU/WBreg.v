@@ -1,3 +1,4 @@
+`include "head.h"
 module WBreg(
     input  wire        clk,             //1
     input  wire        resetn,          //1

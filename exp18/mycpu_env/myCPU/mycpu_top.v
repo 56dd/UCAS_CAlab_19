@@ -1,3 +1,4 @@
+`include "head.h"
 module mycpu_top(
     input  aclk   ,
     input  aresetn,

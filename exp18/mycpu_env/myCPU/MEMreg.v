@@ -1,3 +1,4 @@
+`include "head.h"
 module MEMreg(
     input  wire        clk,                 //1
     input  wire        resetn,              //1
@@ -11,6 +12,7 @@ module MEMreg(
     output wire [148:0] ms2ws_bus,          //149
     output wire [39:0] ms_rf_zip,           //40      {ms_res_from_mem, ms_csr_re,  ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     output wire        ms2ws_valid,         //1
+    output wire [`TLB_CONFLICT_BUS_LEN-1:0] ms_tlb_blk_zip,
     // data sram interface
     input  wire         data_sram_data_ok,  //1
     input  wire [31:0]  data_sram_rdata,     //32

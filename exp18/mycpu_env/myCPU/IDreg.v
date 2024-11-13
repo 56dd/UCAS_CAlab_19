@@ -1,3 +1,4 @@
+`include "head.h"
 module IDreg(
     input  wire        clk,             //1
     input  wire        resetn,          //1
@@ -7,13 +8,15 @@ module IDreg(
     output wire [33:0] br_zip,          //34    {br_stall,br_taken, br_target}
     input  wire [64:0] fs2ds_bus,       //65     {fs_inst, fs_pc,fs_except_adef}
     // ds and es interface
-    input  wire        es_allowin,      //1
-    output wire        ds2es_valid,     //1
-    output wire [248:0] ds2es_bus,      //249   {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
+    input  wire                  es_allowin,      //1
+    output wire                  ds2es_valid,     //1
+    output wire [DS2ES_BUS -1:0] ds2es_bus,      //249   {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip,       //38            {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
     input  wire [39:0] ms_rf_zip,       //40            {ms_res_from_mem, ms_csr_re,  ms_rf_we, ms_rf_waddr, ms_rf_wdata}
     input  wire [39:0] es_rf_zip,       //40            {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
+    input  wire [`TLB_CONFLICT_BUS_LEN-1:0] es_tlb_blk_zip,
+    input  wire [`TLB_CONFLICT_BUS_LEN-1:0] ms_tlb_blk_zip,
     // exception interface
     input  wire        wb_ex,           //1
     input  wire        has_int          //1
@@ -126,8 +129,27 @@ module IDreg(
     wire        inst_syscall;
     wire        inst_break;
 
-
-
+//TLB
+    wire        inst_tlbsrch;
+    wire        inst_tlbrd;
+    wire        inst_tlbwr;
+    wire        inst_tlbfill;
+    wire        inst_invtlb;
+    wire [ 4:0] invtlb_op;
+    wire        id_refetch_flag;
+    wire [10:0] ds2es_tlb_zip; // ZIP信号
+    //EXE
+    wire        es_tlb_blk;
+    wire        es_inst_tlbrd;
+    wire [13:0] es_csr_num;
+    wire        es_csr_we;
+    //MEM
+    wire        ms_tlb_blk;
+    wire        ms_inst_tlbrd;
+    wire [13:0] ms_csr_num;
+    wire        ms_csr_we;
+    //blk
+    wire        tlb_blk;
 
 
 
@@ -136,6 +158,7 @@ module IDreg(
     wire        type_bj;        // 分支跳转类，branch or jump
     wire        type_ex;        // 例外相关类，exception
     wire        type_else;      // 不知道啥类
+    wire        type_tlb;       // tlb指令
 
     wire        need_ui5;
     wire        need_ui12;
@@ -345,6 +368,13 @@ module IDreg(
     assign inst_rdcntid = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h00] & (rk == 5'h18) & (rd == 5'h00);
     assign inst_rdcntvl = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h00] & (rk == 5'h18) & (rj == 5'h00);
     assign inst_rdcntvh = op_31_26_d[6'h00] & op_25_22_d[4'h0] & op_21_20_d[2'h0] & op_19_15_d[5'h00] & (rk == 5'h19) & (rj == 5'h00);
+    // TLB
+    assign inst_tlbsrch = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h10] & rk == 5'h0a;
+    assign inst_tlbrd   = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h10] & rk == 5'h0b;
+    assign inst_tlbwr   = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h10] & rk == 5'h0c;
+    assign inst_tlbfill = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h10] & rk == 5'h0d;
+    assign inst_invtlb  = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h13];
+
 
     // 指令分类
     assign type_al    = inst_add_w  | inst_sub_w  | inst_slti   | inst_slt   | inst_sltui  | inst_sltu  |
@@ -360,6 +390,7 @@ module IDreg(
     assign type_ex    = inst_csrrd  | inst_csrwr  | inst_csrxchg| inst_ertn  | inst_syscall| inst_break |
                         inst_rdcntid;
     assign type_else  = inst_rdcntvh| inst_rdcntvl| inst_lu12i_w| inst_pcaddul2i; 
+    assign type_tlb   = inst_tlbfill || inst_tlbrd || inst_tlbsrch || inst_tlbwr || inst_invtlb && invtlb_op < 5'h07;
 
 
     assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_ld_hu |
@@ -444,7 +475,8 @@ module IDreg(
     assign dst_is_rj     = inst_rdcntid;
     assign gr_we         = ~inst_st_w & ~inst_st_h & ~inst_st_b & ~inst_beq  & 
                            ~inst_bne  & ~inst_b    & ~inst_bge  & ~inst_bgeu & 
-                           ~inst_blt  & ~inst_bltu & ~inst_syscall;
+                           ~inst_blt  & ~inst_bltu & ~inst_syscall & 
+                           ~inst_tlbfill & ~inst_tlbrd & ~inst_tlbsrch & ~inst_tlbwr & ~inst_invtlb;
     assign dest          = dst_is_r1 ? 5'd1 :
                             dst_is_rj ? rj  : rd;
 
@@ -495,7 +527,7 @@ module IDreg(
     //assign ds_csr_num   = ds_inst[23:10];
     assign ds_csr_num     = {14{inst_rdcntid}} & 14'h40 | {14{~inst_rdcntid}} & ds_inst[23:10];
 
-    assign ds_except_ine= ~(type_al | type_bj | type_ld_st | type_else | type_ex) & ~ds_except_adef;
+    assign ds_except_ine= ~(type_al | type_bj | type_ld_st | type_else | type_ex |type_tlb) & ~ds_except_adef;
     assign ds_except_brk  = inst_break;
     assign ds_except_int  = has_int;
     assign ds_except_sys  = inst_syscall;
@@ -504,6 +536,31 @@ module IDreg(
     assign ds_except_zip  = {ds_csr_num, ds_csr_wmask, ds_csr_wvalue,ds_csr_we,  //14+32+32+1=79
                         ds_except_int,ds_except_brk,ds_except_ine,ds_except_adef, ds_except_sys, ds_except_ertn //[5:0] 5bit
                         };//84
+    
+    assign id_refetch_flag = inst_invtlb || inst_tlbrd || inst_tlbwr || inst_tlbfill;  // 当前指令造成下一条指令需要Refetch
+                      //|| ds_csr_we && (ds_csr_num == `CSR_ASID || ds_csr_num == `CSR_CRMD || ds_csr_num == `CSR_DMW0 || ds_csr_num == `CSR_DMW1);
+                        // Reserved for exp19
+                        // 虚实转换需要读取CSR.ASID; CSR.CRMD; ds_csr_num == `CSR_DMW因此修改后必须Refetch来确保取指正确
+    assign ds2es_tlb_zip = {id_refetch_flag, inst_tlbsrch, inst_tlbrd, inst_tlbwr, inst_tlbfill, inst_invtlb, invtlb_op};
+    assign invtlb_op = ds_inst[4:0];
+    //tlb冲突，当exe,mem级有csr写入，进行阻塞
+    assign {es_inst_tlbrd, es_csr_we, es_csr_num} = es_tlb_blk_zip;
+    assign {ms_inst_tlbrd, ms_csr_we, ms_csr_num} = ms_tlb_blk_zip;
+    assign tlb_blk = ms_tlb_blk || es_tlb_blk;
+    assign es_tlb_blk = type_ld_st && (                                 // 普通访存 EXP19
+                                        es_inst_tlbrd ||                // tlbrd会改动CSR.ASID
+                                        (es_csr_we && (es_csr_num == `CSR_ASID || es_csr_num == `CSR_CRMD || es_csr_num == `CSR_DMW0 || es_csr_num == `CSR_DMW1)) // 修改CSR.ASID或直接映射相关
+                        ) || inst_tlbsrch && (                                              // tlbsrch指令, 需要EX阶段读入CSR.ASID TLBEHI
+                                        es_inst_tlbrd || 
+                                        (es_csr_we && (es_csr_num == `CSR_ASID || es_csr_num == `CSR_TLBEHI))
+                    );
+    assign ms_tlb_blk = type_ld_st && (                                 // 普通访存 EXP19
+                                        ms_inst_tlbrd ||                // tlbrd会改动CSR.ASID
+                                        (ms_csr_we && (ms_csr_num == `CSR_ASID || ms_csr_num == `CSR_CRMD || ms_csr_num == `CSR_DMW0 || ms_csr_num == `CSR_DMW1)) // 修改CSR.ASID或直接映射相关
+                        ) || inst_tlbsrch && (                                              // tlbsrch指令, 需要EX阶段读入CSR.ASID TLBEHI
+                                        ms_inst_tlbrd || 
+                                        (ms_csr_we && (ms_csr_num == `CSR_ASID || ms_csr_num == `CSR_TLBEHI))
+                    );
 
 //------------------------------ds to es interface--------------------------------------
     assign ds2es_bus = {ds_alu_op,          //19 bit
@@ -516,7 +573,8 @@ module IDreg(
                         ds_mem_inst_zip,    //8  bit
                         inst_rdcntvh ,      //1
                         inst_rdcntvl,       //1
-                        ds_except_zip       //84 bit
+                        ds_except_zip,      //84 bit
+                        ds2es_tlb_zip
                         };//249
 
 endmodule

@@ -1,3 +1,4 @@
+`include "head.h"
 module mycpu_core(
     input  wire        clk,
     input  wire        resetn,
@@ -48,7 +49,7 @@ module mycpu_core(
     wire [33:0] br_zip;
     wire [ 4:0] es_ld_inst_zip;
     wire [64:0] fs2ds_bus;
-    wire [248:0] ds2es_bus;
+    wire [DS2ES_BUS -1:0] ds2es_bus;
     wire [123:0] es2ms_bus;
     wire [149:0] ms2ws_bus;
 
@@ -74,6 +75,10 @@ module mycpu_core(
     assign hw_int_in  = 8'b0;
 
     // wire ms_wait_data_ok;
+    //TLB_block
+    // tlb block
+    wire [`TLB_CONFLICT_BUS_LEN-1:0] es_tlb_blk_zip;
+    wire [`TLB_CONFLICT_BUS_LEN-1:0] ms_tlb_blk_zip;
 
     IFreg my_ifReg(
         .clk(clk),
@@ -95,7 +100,7 @@ module mycpu_core(
         .fs2ds_bus(fs2ds_bus),
 
         .wb_ex(wb_ex),
-        .ertn_flush(ertn_flush),
+        .ertn_flush(ertn_flush||wb_refetch_flush),
         .ex_entry(ex_entry),
         .ertn_entry(ertn_entry)
     );
@@ -117,8 +122,11 @@ module mycpu_core(
         .ms_rf_zip(ms_rf_zip),
         .es_rf_zip(es_rf_zip),
 
+        .es_tlb_blk_zip(es_tlb_blk_zip),
+        .ms_tlb_blk_zip(ms_tlb_blk_zip),
+
         .has_int(has_int),
-        .wb_ex(wb_ex|ertn_flush)
+        .wb_ex(wb_ex|ertn_flush|wb_refetch_flush)
     );
 
     EXEreg my_exeReg(
@@ -133,6 +141,7 @@ module mycpu_core(
         .es2ms_bus(es2ms_bus),
         .es_rf_zip(es_rf_zip),
         .es2ms_valid(es2ms_valid),
+        .es_tlb_blk_zip(es_tlb_blk_zip),
         // .ms_wait_data_ok(ms_wait_data_ok),
         
         .data_sram_req(data_sram_req),
@@ -145,6 +154,22 @@ module mycpu_core(
 
         .ms_ex(ms_ex),
         .wb_ex(wb_ex|ertn_flush)
+
+        .invtlb_op   (invtlb_op),
+        .inst_invtlb (invtlb_valid),
+        .s1_vppn     (s1_vppn),
+        .s1_va_bit12 (s1_va_bit12),
+        .s1_asid     (s1_asid),
+        .s1_found    (s1_found  ),
+        .s1_index    (s1_index  ),
+        .s1_ppn      (s1_ppn    ),
+        .s1_ps       (s1_ps     ),
+        .s1_plv      (s1_plv    ),
+        .s1_mat      (s1_mat    ),
+        .s1_d        (s1_d      ),
+        .s1_v        (s1_v      ),
+        .tlbehi_vppn_CSRoutput(tlbehi_vppn_CSRoutput),
+        .asid_CSRoutput(asid_CSRoutput)
     );
 
     MEMreg my_memReg(
@@ -161,12 +186,13 @@ module mycpu_core(
         .ms_rf_zip(ms_rf_zip),
         .ms2ws_valid(ms2ws_valid),
         .ms2ws_bus(ms2ws_bus),
+        .ms_tlb_blk_zip(ms_tlb_blk_zip),
 
         .data_sram_data_ok(data_sram_data_ok),
         .data_sram_rdata(data_sram_rdata),
 
         .ms_ex(ms_ex),
-        .wb_ex(wb_ex|ertn_flush)
+        .wb_ex(wb_ex|ertn_flush|wb_refetch_flush)
     ) ;
 
     WBreg my_wbReg(

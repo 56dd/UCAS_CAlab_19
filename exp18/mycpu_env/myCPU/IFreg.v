@@ -1,3 +1,4 @@
+`include "head.h"
 module IFreg(
     input  wire   clk,
     input  wire   resetn,
