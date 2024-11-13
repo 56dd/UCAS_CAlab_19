@@ -100,7 +100,7 @@ module mycpu_core(
         .fs2ds_bus(fs2ds_bus),
 
         .wb_ex(wb_ex),
-        .ertn_flush(ertn_flush||wb_refetch_flush),
+        .ertn_flush(ertn_flush|wb_refetch_flush),
         .ex_entry(ex_entry),
         .ertn_entry(ertn_entry)
     );
@@ -153,7 +153,7 @@ module mycpu_core(
         .data_sram_addr_ok(data_sram_addr_ok),
 
         .ms_ex(ms_ex),
-        .wb_ex(wb_ex|ertn_flush),
+        .wb_ex(wb_ex|ertn_flush|wb_refetch_flush),
 
         .invtlb_op   (invtlb_op),
         .inst_invtlb (invtlb_valid),
@@ -193,6 +193,8 @@ module mycpu_core(
 
         .ms_ex(ms_ex),
         .wb_ex(wb_ex|ertn_flush|wb_refetch_flush)
+
+        
     ) ;
 
     WBreg my_wbReg(
@@ -222,7 +224,15 @@ module mycpu_core(
         .wb_pc      (wb_pc     ),
         .wb_vaddr   (wb_vaddr  ),
         .wb_ecode   (wb_ecode  ),
-        .wb_esubcode(wb_esubcode)
+        .wb_esubcode(wb_esubcode),
+
+        .inst_wb_tlbfill(inst_wb_tlbfill),
+        .inst_wb_tlbsrch(inst_wb_tlbsrch),
+        .tlbwe      (tlbwe),
+        .inst_wb_tlbrd(inst_wb_tlbrd),
+        .wb_tlbsrch_found(wb_tlbsrch_found),
+        .wb_tlbsrch_idxgot(wb_tlbsrch_idxgot),
+        .wb_refetch_flush(wb_refetch_flush)
     );
 
      csr u_csr(
@@ -247,5 +257,78 @@ module mycpu_core(
         .has_int    (has_int   ),
         .ex_entry   (ex_entry  ),
         .ertn_entry (ertn_entry)      
+    );
+
+    tlb u_tlb(
+        .clk        (clk       ),
+        //.reset      (~resetn   ),
+
+        .s0_vppn    (s0_vppn   ),
+        .s0_va_bit12(s0_va_bit12),
+        .s0_asid    (s0_asid   ),
+        .s0_found   (s0_found  ),
+        .s0_index   (s0_index  ),
+        .s0_ppn     (s0_ppn    ),
+        .s0_ps      (s0_ps     ),
+        .s0_plv     (s0_plv    ),
+        .s0_mat     (s0_mat    ),
+        .s0_d       (s0_d      ),
+        .s0_v       (s0_v      ),
+
+        .s1_vppn    (s1_vppn   ),
+        .s1_va_bit12(s1_va_bit12),
+        .s1_asid    (s1_asid   ),
+        .s1_found   (s1_found  ),
+        .s1_index   (s1_index  ),
+        .s1_ppn     (s1_ppn    ),
+        .s1_ps      (s1_ps     ),
+        .s1_plv     (s1_plv    ),
+        .s1_mat     (s1_mat    ),
+        .s1_d       (s1_d      ),
+        .s1_v       (s1_v      ),
+
+        .invtlb_valid(invtlb_valid),
+        .invtlb_op  (invtlb_op ),
+
+        //.inst_wb_tlbfill(inst_wb_tlbfill),
+
+        .we         (tlbwe     ),
+        .w_index    (tlbindex_index_CSRoutput),
+        .w_e        (w_e       ),
+        .w_vppn     (tlbehi_vppn_CSRoutput),
+        .w_ps       (w_ps      ),
+        .w_asid     (asid_CSRoutput),
+        .w_g        (w_g       ),
+
+        .w_ppn0     (w_ppn0    ),
+        .w_plv0     (w_plv0    ),
+        .w_mat0     (w_mat0    ),
+        .w_d0       (w_d0      ),
+        .w_v0       (w_v0      ),
+
+        .w_ppn1     (w_ppn1    ),
+        .w_plv1     (w_plv1    ),
+        .w_mat1     (w_mat1    ),
+        .w_d1       (w_d1      ),
+        .w_v1       (w_v1      ),
+
+        .r_index    (tlbindex_index_CSRoutput),
+        .r_e        (r_e       ),
+        .r_vppn     (r_vppn    ),
+        .r_ps       (r_ps      ),
+        .r_asid     (r_asid    ),
+        .r_g        (r_g       ),
+
+        .r_ppn0     (r_ppn0    ),
+        .r_plv0     (r_plv0    ),
+        .r_mat0     (r_mat0    ),
+        .r_d0       (r_d0      ),
+        .r_v0       (r_v0      ),
+
+        .r_ppn1     (r_ppn1    ),
+        .r_plv1     (r_plv1    ),
+        .r_mat1     (r_mat1    ),
+        .r_d1       (r_d1      ),
+        .r_v1       (r_v1      )
     );
 endmodule

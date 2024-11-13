@@ -43,11 +43,13 @@ module tlb
     input  wire [               5:0] w_ps,
     input  wire [               9:0] w_asid,
     input  wire                      w_g,
+    
     input  wire [              19:0] w_ppn0,
     input  wire [               1:0] w_plv0,
     input  wire [               1:0] w_mat0,
     input  wire                      w_d0,
     input  wire                      w_v0,
+
     input  wire [              19:0] w_ppn1,
     input  wire [               1:0] w_plv1,
     input  wire [               1:0] w_mat1,
@@ -61,11 +63,13 @@ module tlb
     output wire [               5:0] r_ps,
     output wire [               9:0] r_asid,
     output wire                      r_g,
+
     output wire [              19:0] r_ppn0,
     output wire [               1:0] r_plv0,
     output wire [               1:0] r_mat0,
     output wire                      r_d0,
     output wire                      r_v0,
+
     output wire [              19:0] r_ppn1,
     output wire [               1:0] r_plv1,
     output wire [               1:0] r_mat1,

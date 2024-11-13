@@ -27,6 +27,14 @@ module WBreg(
     output      [ 5:0] wb_ecode,        //6
     output      [ 8:0] wb_esubcode,     //9
     output reg  [31:0] wb_vaddr         //32
+    // TLB
+    output wire         inst_wb_tlbfill,
+    output wire         inst_wb_tlbsrch,
+    output wire         tlbwe,
+    output wire         inst_wb_tlbrd,
+    output wire         wb_tlbsrch_found,
+    output wire [`TLBNUM_IDX-1:0] wb_tlbsrch_idxgot,
+    output wire         wb_refetch_flush
 );
     
     wire        ws_ready_go;
@@ -47,6 +55,16 @@ module WBreg(
     wire        ws_except_ertn;
 
     reg  [84:0] ws_except_zip;
+
+    // TLB
+    reg  [ 9:0] ms2wb_tlb_zip; // ZIP信号
+    // wire        inst_tlbsrch;
+    // wire        inst_tlbrd;
+    wire        inst_wb_tlbwr;
+    // wire        inst_tlbfill;
+    wire        wb_refetch_flag;
+    // wire        tlbsrch_found;
+    // wire [ 3:0] tlbsrch_idxgot;
 //------------------------------state control signal---------------------------------------
 
     assign ws_ready_go      = 1'b1;
@@ -63,11 +81,11 @@ module WBreg(
 //------------------------------mem and wb state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {wb_vaddr, wb_pc, ws_except_zip}  <= {149{1'b0}};
+            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip}  <= {`MS2WS_BUS{1'b0}};
             {csr_re,ws_rf_we_tmp, ws_rf_waddr, ws_rf_wdata_tmp} <= 39'b0;
         end
         if(ms2ws_valid & ws_allowin) begin
-            {wb_vaddr, wb_pc, ws_except_zip} <= ms2ws_bus;
+            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip} <= ms2ws_bus;
             {csr_re,ws_rf_we_tmp, ws_rf_waddr, ws_rf_wdata_tmp} <= ms_rf_zip ;//1+1+5+32==39
         end
     end
@@ -96,4 +114,8 @@ module WBreg(
     assign debug_wb_rf_wdata = ws_rf_wdata;
     assign debug_wb_rf_we = {4{ws_rf_we & ws_valid & ~wb_ex & ~ertn_flush}};
     assign debug_wb_rf_wnum = ws_rf_waddr;
+//--------------------------------tlb interface---------------------------------------
+    assign {wb_refetch_flag, inst_wb_tlbsrch, inst_wb_tlbrd, inst_wb_tlbwr, inst_wb_tlbfill, wb_tlbsrch_found, wb_tlbsrch_idxgot} = ms2wb_tlb_zip;
+    assign tlbwe = (inst_wb_tlbwr || inst_wb_tlbfill) && ws_valid;
+    assign wb_refetch_flush = wb_refetch_flag && ws_valid;
 endmodule
