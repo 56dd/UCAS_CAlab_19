@@ -9,7 +9,7 @@ module EXEreg(
     //input  wire [32:0] ds_except_zip, 
     // exe and mem state interface
     input  wire        ms_allowin,          //1
-    output wire [`ES2MS_BUS-1:0] es2ms_bus,          //123   {es_wait_data_ok_r=es_mem_req,es_ld_inst_zip, es_pc, es_except_zip}
+    output wire [`ES2MS_BUS -1:0] es2ms_bus,          //123   {es_wait_data_ok_r=es_mem_req,es_ld_inst_zip, es_pc, es_except_zip}
     output wire [39:0] es_rf_zip,           //40    {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
     output wire        es2ms_valid,         //1
     output reg  [31:0] es_pc,               //32
@@ -24,7 +24,7 @@ module EXEreg(
     input  wire         data_sram_addr_ok,  //1
     // exception interface
     input  wire        ms_ex,               //1
-    input  wire        wb_ex,                //1
+    input  wire        wb_ex,               //1
     //TLB
     output wire [ 4:0] invtlb_op,
     output wire        inst_invtlb,
@@ -43,8 +43,8 @@ module EXEreg(
 
     input  wire [18:0] tlbehi_vppn_CSRoutput,
     input  wire [ 9:0] asid_CSRoutput
-    
 );
+
 
     wire        es_ready_go;
     reg         es_valid;
@@ -85,22 +85,6 @@ module EXEreg(
     reg        inst_rdcntvl;
 
     wire        es_mem_req;
-    
-    // TLB
-    reg  [10:0] ds2es_tlb_zip; // ZIP信号
-    wire        inst_tlbsrch;
-    wire        inst_tlbrd;
-    wire        inst_tlbwr;
-    wire        inst_tlbfill;
-    wire        es_refetch_flag;
-    // wire        tlbsrch_found;
-    // wire [ 3:0] tlbsrch_idxgot;
-    wire [ 9:0] es2ms_tlb_zip;
-    //csr
-    wire [13:0] es_csr_num;
-    wire        es_csr_we;
-    wire [31:0] es_csr_wmask;
-    wire [31:0] es_csr_wvalue;
 //------------------------------state control signal---------------------------------------
     assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale)& es_valid;
     //assign es_ready_go      = alu_complete;
@@ -145,7 +129,7 @@ module EXEreg(
                         es_ld_inst_zip,     // 5  bit
                         es_pc,              // 32 bit
                         es_except_zip,       // 84 bit
-                        es_except_ale,       //1
+                        es_except_ale,      //1
                         es2ms_tlb_zip       // 10 bits
                     };//123
 //------------------------------alu interface---------------------------------------
@@ -201,7 +185,7 @@ always @(posedge clk) begin
                                 es_rf_waddr,// 5
                                 es_rf_result_tmp//32
                                 };    //40
-//------------------------------TLB---------------------------------------
+    //------------------------------TLB---------------------------------------
     assign {es_refetch_flag, inst_tlbsrch, inst_tlbrd, inst_tlbwr, inst_tlbfill, inst_invtlb, invtlb_op} = ds2es_tlb_zip;
     assign {s1_vppn, s1_va_bit12} = inst_invtlb ? es_rkd_value[31:12] :
                                     inst_tlbsrch ? {tlbehi_vppn_CSRoutput, 1'b0} :
@@ -210,4 +194,3 @@ always @(posedge clk) begin
     assign es2ms_tlb_zip = {es_refetch_flag, inst_tlbsrch, inst_tlbrd, inst_tlbwr, inst_tlbfill, s1_found, s1_index};
     assign {es_csr_num, es_csr_wmask, es_csr_wvalue, es_csr_we} = es_csr_zip;
     assign es_tlb_blk_zip = {inst_tlbrd & es_valid, es_csr_we & es_valid, es_csr_num};
-endmodule
