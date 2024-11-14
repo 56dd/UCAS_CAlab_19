@@ -538,7 +538,6 @@ module IDreg(
                         };//84
     
     assign id_refetch_flag = inst_invtlb || inst_tlbrd || inst_tlbwr || inst_tlbfill;  // 当前指令造成下一条指令需要Refetch
-                      //|| ds_csr_we && (ds_csr_num == `CSR_ASID || ds_csr_num == `CSR_CRMD || ds_csr_num == `CSR_DMW0 || ds_csr_num == `CSR_DMW1);
                         // Reserved for exp19
                         // 虚实转换需要读取CSR.ASID; CSR.CRMD; ds_csr_num == `CSR_DMW因此修改后必须Refetch来确保取指正确
     assign ds2es_tlb_zip = {id_refetch_flag, inst_tlbsrch, inst_tlbrd, inst_tlbwr, inst_tlbfill, inst_invtlb, invtlb_op};
