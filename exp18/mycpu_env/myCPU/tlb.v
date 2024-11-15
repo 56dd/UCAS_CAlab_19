@@ -110,7 +110,7 @@ assign s0_found = |match0;
 assign s1_found = |match1;
 assign s0_index = s0_index_arr[TLBNUM-1];//TLB 匹配的索引输出
 assign s1_index = s1_index_arr[TLBNUM-1];
-assign s0_ps    = tlb_ps4MB[s0_index] ? 6'd21 : 6'd12; //6'd21 表示 2^21 即 4MB, 6'd12 表示 2^12 即 4kb
+assign s0_ps    = tlb_ps4MB[s0_index] ? 6'd21 : 6'd12; //6'd21 表示 2^21 即 2MB, 6'd12 表示 2^12 即 4kb
 assign s1_ps    = tlb_ps4MB[s1_index] ? 6'd21 : 6'd12;
 
 //如果页面大小是 4MB (tlb_ps4MB[s0_index] 为 1)，则根据 s0_vppn[8] 或 s1_vppn[8] 选择。
