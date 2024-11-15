@@ -22,7 +22,52 @@ module csr(
 
     output wire          has_int   ,
     output wire [31:0]   ex_entry  ,
-    output wire [31:0]   ertn_entry
+    output wire [31:0]   ertn_entry,
+
+    output reg  [ 9:0]      csr_asid_asid,//
+    output reg  [18:0]      csr_tlbehi_vppn,//
+    output reg  [ 3:0]      csr_tlbidx_index,//
+
+    input  wire             tlbsrch_we,
+    input  wire             tlbsrch_hit,
+    input  wire             tlbrd_we,
+    input  wire [ 3:0]      tlbsrch_hit_index,
+    
+    input  wire             r_tlb_e,
+    input  wire [ 5:0]      r_tlb_ps,//
+    input  wire [18:0]      r_tlb_vppn,//
+    input  wire [ 9:0]      r_tlb_asid,//
+    input  wire             r_tlb_g,//
+
+    input  wire [19:0]      r_tlb_ppn0,//
+    input  wire [ 1:0]      r_tlb_plv0,//
+    input  wire [ 1:0]      r_tlb_mat0,//
+    input  wire             r_tlb_d0,//
+    input  wire             r_tlb_v0,//
+
+    input  wire [19:0]      r_tlb_ppn1,//
+    input  wire [ 1:0]      r_tlb_plv1,//
+    input  wire [ 1:0]      r_tlb_mat1,//
+    input  wire             r_tlb_d1,//
+    input  wire             r_tlb_v1,//
+
+    output wire             w_tlb_e,//
+    output wire [ 5:0]      w_tlb_ps,//
+    output wire [18:0]      w_tlb_vppn,//
+    output wire [ 9:0]      w_tlb_asid,//
+    output wire             w_tlb_g,//
+
+    output wire [19:0]      w_tlb_ppn0,//
+    output wire [ 1:0]      w_tlb_plv0,//
+    output wire [ 1:0]      w_tlb_mat0,//
+    output wire             w_tlb_d0,//
+    output wire             w_tlb_v0,//
+
+    output wire [19:0]      w_tlb_ppn1,//
+    output wire [ 1:0]      w_tlb_plv1,//
+    output wire [ 1:0]      w_tlb_mat1,//
+    output wire             w_tlb_d1,//
+    output wire             w_tlb_v1//
 );  
     `define CSR_CRMD_PLV  1:0
     `define CSR_CRMD_PIE   2
@@ -92,7 +137,8 @@ module csr(
     wire  [31:0] coreid_in;
     wire    wb_ex_addr_err;
     wire    csr_ticlr_clr;
-    reg [`TLBNUM_IDX:0] csr_tlbidx_index;
+
+
     reg [5:0] csr_tlbidx_ps;
     reg  csr_tlbidx_ne;
     reg  [18:0] csr_tlbehi_vppn;
@@ -108,8 +154,7 @@ module csr(
     reg  [1:0] csr_tlbelo1_mat;
     reg  csr_tlbelo1_g;
     reg  [19:0] csr_tlbelo1_ppn;
-    reg  [9:0]  csr_asid_asid;
-    reg  [7:0]  csr_asid_asidbits;
+    wire  [7:0]  csr_asid_asidbits;
     reg  [25:0] csr_tlbrentry_pa;
     reg  csr_dmw0_plv0;
     reg  csr_dmw0_plv3;
@@ -328,6 +373,8 @@ module csr(
         else if (csr_we && csr_num==`CSR_TLBIDX)
             csr_tlbidx_index <= csr_wmask[`CSR_TLBIDX_INDEX]&csr_wvalue[`CSR_TLBIDX_INDEX]
                              | ~csr_wmask[`CSR_TLBIDX_INDEX]&csr_tlbidx_index;
+        else if (tlbsrch_we && tlbsrch_hit)
+            csr_tlbidx_index <= tlbsrch_hit_index;
     end
 
     always @(posedge clk) begin
@@ -336,7 +383,13 @@ module csr(
         else if (csr_we && csr_num==`CSR_TLBIDX)
             csr_tlbidx_ps <= csr_wmask[`CSR_TLBIDX_PS]&csr_wvalue[`CSR_TLBIDX_PS]
                           | ~csr_wmask[`CSR_TLBIDX_PS]&csr_tlbidx_ps;
+        else if (tlbrd_we && r_tlb_e)
+            csr_tlbidx_ps <= r_tlb_ps;
+        else if (tlbrd_we && ~r_tlb_e)
+            csr_tlbidx_ps <= 6'b0;
     end
+
+    assign w_tlb_ps = csr_tlbidx_ps;
 
     always @(posedge clk) begin
         if (reset)
@@ -344,7 +397,15 @@ module csr(
         else if (csr_we && csr_num==`CSR_TLBIDX)
             csr_tlbidx_ne <= csr_wmask[`CSR_TLBIDX_NE]&csr_wvalue[`CSR_TLBIDX_NE]
                           | ~csr_wmask[`CSR_TLBIDX_NE]&csr_tlbidx_ne;
+        else if (tlbsrch_we)
+            csr_tlbidx_ne <= ~tlbsrch_hit;
+        else if (tlbrd_we)
+            csr_tlbidx_ne <= ~r_tlb_e;
+        else id (tlbrd_we)
+            csr_tlbidx_ne <= 1'b1;
     end
+
+    assign w_tlb_e = ~csr_tlbidx_ne;
 
     always @(posedge clk) begin
         if (reset)
@@ -352,8 +413,13 @@ module csr(
         else if (csr_we && csr_num==`CSR_TLBEHI)
             csr_tlbehi_vppn <= csr_wmask[`CSR_TLBEHI_VPPN]&csr_wvalue[`CSR_TLBEHI_VPPN]
                             | ~csr_wmask[`CSR_TLBEHI_VPPN]&csr_tlbehi_vppn;
+        else if (tlbrd_we && r_tlb_e)
+            csr_tlbehi_vppn <= r_tlb_vppn;
+        else if (tlbrd_we && ~r_tlb_e)
+            csr_tlbehi_vppn <= 19'b0;
     end
 
+    w_tlb_vppn = csr_tlbehi_vppn;
 
     always @(posedge clk) begin
         if (reset) begin
@@ -377,6 +443,22 @@ module csr(
                             | ~csr_wmask[`CSR_TLBELO_G]&csr_tlbelo0_g;
             csr_tlbelo0_ppn <= csr_wmask[`CSR_TLBELO_PPN]&csr_wvalue[`CSR_TLBELO_PPN]
                             | ~csr_wmask[`CSR_TLBELO_PPN]&csr_tlbelo0_ppn;
+        end
+        else if(tlbrd_we && r_tlb_e) begin
+            csr_tlbelo0_v <= r_tlb_v0;
+            csr_tlbelo0_d <= r_tlb_d0;
+            csr_tlbelo0_plv <= r_tlb_plv0;
+            csr_tlbelo0_mat <= r_tlb_mat0;
+            csr_tlbelo0_g <= r_tlb_g;
+            csr_tlbelo0_ppn <= r_tlb_ppn0;
+        end
+        else if(tlbrd_we && ~r_tlb_e) begin
+            csr_tlbelo0_v <= 1'b0;
+            csr_tlbelo0_d <= 1'b0;
+            csr_tlbelo0_plv <= 2'b0;
+            csr_tlbelo0_mat <= 2'b0;
+            csr_tlbelo0_g <= 1'b0;
+            csr_tlbelo0_ppn <= 20'b0;
         end
     end
 
@@ -403,7 +485,37 @@ module csr(
             csr_tlbelo1_ppn <= csr_wmask[`CSR_TLBELO_PPN]&csr_wvalue[`CSR_TLBELO_PPN]
                             | ~csr_wmask[`CSR_TLBELO_PPN]&csr_tlbelo1_ppn;
         end
+        else if (tlbrd_we && r_tlb_e) begin
+            csr_tlbelo1_v <= r_tlb_v1;
+            csr_tlbelo1_d <= r_tlb_d1;
+            csr_tlbelo1_plv <= r_tlb_plv1;
+            csr_tlbelo1_mat <= r_tlb_mat1;
+            csr_tlbelo1_g <= r_tlb_g;
+            csr_tlbelo1_ppn <= r_tlb_ppn1;
+        end
+        else if (tlbrd_we && ~r_tlb_e) begin
+            csr_tlbelo1_v <= 1'b0;
+            csr_tlbelo1_d <= 1'b0;
+            csr_tlbelo1_plv <= 2'b0;
+            csr_tlbelo1_mat <= 2'b0;
+            csr_tlbelo1_g <= 1'b0;
+            csr_tlbelo1_ppn <= 20'b0;
+        end
     end
+
+    w_tlb_g = csr_tlbelo0_g & csr_tlbelo1_g;
+
+    w_tlb_v0 = csr_tlbelo0_v;
+    w_tlb_d0 = csr_tlbelo0_d;
+    w_tlb_plv0 = csr_tlbelo0_plv;
+    w_tlb_mat0 = csr_tlbelo0_mat;
+    w_tlb_ppn0 = csr_tlbelo0_ppn;
+
+    w_tlb_v1 = csr_tlbelo1_v;
+    w_tlb_d1 = csr_tlbelo1_d;
+    w_tlb_plv1 = csr_tlbelo1_plv;
+    w_tlb_mat1 = csr_tlbelo1_mat;
+    w_tlb_ppn1 = csr_tlbelo1_ppn;
 
     always @(posedge clk) begin
         if (reset)
@@ -411,15 +523,15 @@ module csr(
         else if (csr_we && csr_num==`CSR_ASID)
             csr_asid_asid <= csr_wmask[`CSR_ASID_ASID]&csr_wvalue[`CSR_ASID_ASID]
                           | ~csr_wmask[`CSR_ASID_ASID]&csr_asid_asid;
+        else if (tlbrd_we && r_tlb_e)
+            csr_asid_asid <= r_tlb_asid;
+        else if (tlbrd_we && ~r_tlb_e)
+            csr_asid_asid <= 10'b0;
     end
 
-    always @(posedge clk) begin
-        if (reset)
-            csr_asid_asidbits <= 8'b0;
-        else if (csr_we && csr_num==`CSR_ASID)
-            csr_asid_asidbits <= csr_wmask[`CSR_ASID_ASIDBITS]&csr_wvalue[`CSR_ASID_ASIDBITS]
-                              | ~csr_wmask[`CSR_ASID_ASIDBITS]&csr_asid_asidbits;
-    end
+    w_tlb_asid = csr_asid_asid;
+
+    assign csr_asid_asidbits = 8'b1010;
 
     always @(posedge clk) begin
         if (reset)

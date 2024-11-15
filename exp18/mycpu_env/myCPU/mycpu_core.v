@@ -153,7 +153,7 @@ module mycpu_core(
     wire                      inst_wb_tlbsrch;
     wire                      wb_tlbsrch_found;
     wire [`TLBNUM_IDX-1:0]    wb_tlbsrch_idxgot;
-    wire [`TLBNUM_IDX-1:0]    tlbindex_index_CSRoutput;
+    wire [`TLBNUM_IDX-1:0]    csr_tlbidx_index;
 
     wire                      inst_wb_tlbrd;
 
@@ -345,7 +345,48 @@ module mycpu_core(
 
         .has_int    (has_int   ),
         .ex_entry   (ex_entry  ),
-        .ertn_entry (ertn_entry)      
+        .ertn_entry (ertn_entry),
+
+        .csr_asid_asid   (csr_asid_asid),
+        .csr_tlbehi_vppn (csr_tlbehi_vppn),
+        .csr_tlbidx_index(csr_tlbidx_index),//
+
+        .tlbsrch_we        (tlbsrch_we),
+        .tlbsrch_hit       (tlbsrch_hit),
+        .tlbsrch_hit_index (tlbsrch_hit_index),
+        .tlbrd_we          (tlbrd_we),
+
+        .r_tlb_e         (r_e),
+        .r_tlb_ps        (r_ps),
+        .r_tlb_vppn      (r_vppn),
+        .r_tlb_asid      (r_asid),
+        .r_tlb_g         (r_g),
+        .r_tlb_ppn0      (r_ppn0),
+        .r_tlb_plv0      (r_plv0),
+        .r_tlb_mat0      (r_mat0),
+        .r_tlb_d0        (r_d0),
+        .r_tlb_v0        (r_v0),
+        .r_tlb_ppn1      (r_ppn1),
+        .r_tlb_plv1      (r_plv1),
+        .r_tlb_mat1      (r_mat1),
+        .r_tlb_d1        (r_d1),
+        .r_tlb_v1        (r_v1),
+
+        .w_tlb_e         (w_e),//
+        .w_tlb_ps        (w_ps),//
+        .w_tlb_vppn      (w_vppn),
+        .w_tlb_asid      (w_asid),
+        .w_tlb_g         (w_g),
+        .w_tlb_ppn0      (w_ppn0),
+        .w_tlb_plv0      (w_plv0),
+        .w_tlb_mat0      (w_mat0),
+        .w_tlb_d0        (w_d0),
+        .w_tlb_v0        (w_v0),
+        .w_tlb_ppn1      (w_ppn1),
+        .w_tlb_plv1      (w_plv1),
+        .w_tlb_mat1      (w_mat1),
+        .w_tlb_d1        (w_d1),
+        .w_tlb_v1        (w_v1)
     );
 
     tlb u_tlb(
@@ -382,7 +423,7 @@ module mycpu_core(
         .inst_wb_tlbfill(inst_wb_tlbfill),
 
         .we         (tlbwe     ),
-        .w_index    (tlbindex_index_CSRoutput),
+        .w_index    (csr_tlbidx_index),
         .w_e        (w_e       ),
         .w_vppn     (tlbehi_vppn_CSRoutput),
         .w_ps       (w_ps      ),
@@ -401,7 +442,7 @@ module mycpu_core(
         .w_d1       (w_d1      ),
         .w_v1       (w_v1      ),
 
-        .r_index    (tlbindex_index_CSRoutput),
+        .r_index    (csr_tlbidx_index),
         .r_e        (r_e       ),
         .r_vppn     (r_vppn    ),
         .r_ps       (r_ps      ),
