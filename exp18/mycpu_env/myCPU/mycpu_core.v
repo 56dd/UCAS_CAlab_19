@@ -290,7 +290,7 @@ module mycpu_core(
         .invtlb_valid(invtlb_valid),
         .invtlb_op  (invtlb_op ),
 
-        //.inst_wb_tlbfill(inst_wb_tlbfill),
+        .inst_wb_tlbfill(inst_wb_tlbfill),
 
         .we         (tlbwe     ),
         .w_index    (tlbindex_index_CSRoutput),
