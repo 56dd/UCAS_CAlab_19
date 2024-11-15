@@ -191,7 +191,7 @@ module mycpu_core(
         .wb_ex(wb_ex),
         .ertn_flush(ertn_flush|wb_refetch_flush),
         .ex_entry(ex_entry),
-        .ertn_entry(ertn_entry)
+        .ertn_entry(ertnentry_refetchtarget)
     );
 
     IDreg my_idReg(
