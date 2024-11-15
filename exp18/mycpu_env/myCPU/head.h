@@ -23,3 +23,7 @@
 `define ES2MS_BUS               133
 `define MS2WS_BUS               159
 `define TLBNUM_IDX              $clog2(`TLBNUM)
+
+//TLB
+`define TLBNUM      16
+`define TLBNUM_IDX  $clog2(`TLBNUM)

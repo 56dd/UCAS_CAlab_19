@@ -61,6 +61,8 @@ module mycpu_core(
     wire [31:0] csr_wvalue;
     wire [31:0] ex_entry;
     wire [31:0] ertn_entry;
+    wire [31:0] ertnentry_refetchtarget;    // (TLB) REUSE ERTN FOR REFETCH 
+
     wire        has_int;
     wire        ertn_flush;
     wire        ms_ex;
@@ -74,11 +76,98 @@ module mycpu_core(
     assign ipi_int_in = 1'b0;
     assign hw_int_in  = 8'b0;
 
+    // --- TLB ---
+    // search port 0 (for fetch)
+    wire [18:0] s0_vppn;
+    wire        s0_va_bit12;
+    wire [ 9:0] s0_asid;
+    wire        s0_found;
+    wire [$clog2(`TLBNUM)-1:0] s0_index;
+    wire [19:0] s0_ppn;
+    wire [ 5:0] s0_ps;
+    wire [ 1:0] s0_plv;
+    wire [ 1:0] s0_mat;
+    wire        s0_d;
+    wire        s0_v;
+
+    // search port 1 (for load/store)
+    wire [18:0] s1_vppn;
+    wire        s1_va_bit12;
+    wire [ 9:0] s1_asid;
+    wire        s1_found;
+    wire [$clog2(`TLBNUM)-1:0] s1_index;
+    wire [19:0] s1_ppn;
+    wire [ 5:0] s1_ps;
+    wire [ 1:0] s1_plv;
+    wire [ 1:0] s1_mat;
+    wire        s1_d;
+    wire        s1_v;
+
+    // invtlb opcode
+    wire        invtlb_valid;
+    wire [ 4:0] invtlb_op;
+
+    // write port
+    wire        inst_wb_tlbfill;
+
+    wire        tlbwe; //w(rite) e(nable)
+    wire [$clog2(`TLBNUM)-1:0] w_index;
+    wire        w_e;
+    wire [18:0] tlbehi_vppn_CSRoutput;
+    wire [ 5:0] w_ps; // 22:4MB 12:4KB
+    wire [ 9:0] asid_CSRoutput;
+    wire        w_g;
+
+    wire [19:0] w_ppn0;
+    wire [ 1:0] w_plv0;
+    wire [ 1:0] w_mat0;
+    wire        w_d0;
+    wire        w_v0;
+
+    wire [19:0] w_ppn1;
+    wire [ 1:0] w_plv1;
+    wire [ 1:0] w_mat1;
+    wire        w_d1;
+    wire        w_v1;
+
+    wire [$clog2(`TLBNUM)-1:0] r_index;
+    wire        r_e;
+    wire [18:0] r_vppn;
+    wire [ 5:0] r_ps;
+    wire [ 9:0] r_asid;
+    wire        r_g;
+
+    wire [19:0] r_ppn0;
+    wire [ 1:0] r_plv0;
+    wire [ 1:0] r_mat0;
+    wire        r_d0;
+    wire        r_v0;
+
+    wire [19:0] r_ppn1;
+    wire [ 1:0] r_plv1;
+    wire [ 1:0] r_mat1;
+    wire        r_d1;
+    wire        r_v1;
+
+    // CSR-TLB
+    wire                      inst_wb_tlbsrch;
+    wire                      wb_tlbsrch_found;
+    wire [`TLBNUM_IDX-1:0]    wb_tlbsrch_idxgot;
+    wire [`TLBNUM_IDX-1:0]    tlbindex_index_CSRoutput;
+
+    wire                      inst_wb_tlbrd;
+
     // wire ms_wait_data_ok;
     //TLB_block
     // tlb block
     wire [`TLB_CONFLICT_BUS_LEN-1:0] es_tlb_blk_zip;
     wire [`TLB_CONFLICT_BUS_LEN-1:0] ms_tlb_blk_zip;
+
+    wire                      wb_refetch_flush;
+
+    assign ertnentry_refetchtarget = ertn_flush ? ertn_entry :
+                                     debug_wb_pc + 32'd4; // Refetch Target
+        // ertn_flush and wb_refetch_flush will never be valid simultaneously  
 
     IFreg my_ifReg(
         .clk(clk),
