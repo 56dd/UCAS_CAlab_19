@@ -402,7 +402,7 @@ module csr(
             csr_tlbidx_ne <= 1'b1;
     end
 
-    assign w_tlb_e = ~csr_tlbidx_ne;
+    assign w_tlb_e = csr_estat_ecode == 6'b111111 ? 1 : ~csr_tlbidx_ne;
 
     always @(posedge clk) begin
         if (reset)
