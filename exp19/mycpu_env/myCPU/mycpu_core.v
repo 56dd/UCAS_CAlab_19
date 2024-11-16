@@ -48,7 +48,7 @@ module mycpu_core(
 
     wire [33:0] br_zip;
     wire [ 4:0] es_ld_inst_zip;
-    wire [64:0] fs2ds_bus;
+    wire [`FS2DS_BUS -1:0] fs2ds_bus;
     wire [`DS2ES_BUS -1:0] ds2es_bus;
     wire [`ES2MS_BUS -1:0] es2ms_bus;
     wire [`MS2WS_BUS -1:0] ms2ws_bus;

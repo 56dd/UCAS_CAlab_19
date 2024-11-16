@@ -6,11 +6,11 @@ module IDreg(
     input  wire        fs2ds_valid,     //1
     output wire        ds_allowin,      //1
     output wire [33:0] br_zip,          //34    {br_stall,br_taken, br_target}
-    input  wire [64:0] fs2ds_bus,       //65     {fs_inst, fs_pc,fs_except_adef}
+    input  wire [`FS2DS_BUS-1:0] fs2ds_bus,       //65     {fs_inst, fs_pc,fs_except_adef}
     // ds and es interface
     input  wire                  es_allowin,      //1
     output wire                  ds2es_valid,     //1
-    output wire [`DS2ES_BUS -1:0] ds2es_bus,      //249   {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
+    output wire [`DS2ES_BUS -1:0] ds2es_bus,      //268   {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip,       //38            {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
     input  wire [39:0] ms_rf_zip,       //40            {ms_res_from_mem, ms_csr_re,  ms_rf_we, ms_rf_waddr, ms_rf_wdata}
@@ -151,8 +151,6 @@ module IDreg(
     //blk
     wire        tlb_blk;
 
-
-
     wire        type_al;        // 算术逻辑类，arithmatic or logic
     wire        type_ld_st;     // 访存类， load or store
     wire        type_bj;        // 分支跳转类，branch or jump
@@ -227,19 +225,13 @@ module IDreg(
     wire        inst_rdcntid;
     wire        inst_rdcntvl;
     wire        inst_rdcntvh;
+
+    wire [`TLB_ERRLEN-1:0] ds_tlb_exc;
     
 
 //------------------------------state control signal---------------------------------------
-    // always @(posedge clk) begin
-    //     if(~resetn | br_taken | inst_syscall | inst_ertn)
-    //         ds_valid <= 1'b0;
-    //     else if(ds_allowin)
-    //         ds_valid <= if_to_ds_valid; 
-    // end
     assign ds_ready_go      = ~ds_stall;
     assign ds_allowin       = ~ds_valid | ds_ready_go & es_allowin; 
-    // assign ds_stall         = (es_res_from_mem|es_csr_re) & (conflict_r1_exe & need_r1|conflict_r2_exe & need_r2)|
-    //                             ms_csr_re & (conflict_r1_mem | conflict_r2_mem);   
     assign ds_stall         = (es_res_from_mem|es_csr_re) & (conflict_r1_exe & need_r1| conflict_r2_exe & need_r2)|
                               (ms_res_from_mem|ms_csr_re) & (conflict_r1_mem & need_r1| conflict_r2_mem & need_r2)|
                               tlb_blk;     
@@ -259,9 +251,9 @@ module IDreg(
 //------------------------------if and id state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn)
-            {ds_inst, ds_pc,ds_except_adef} <= 65'b0;
+            {ds_tlb_exc,ds_inst, ds_pc,ds_except_adef} <={ `FS2DS_BUS{1'b0}};
         if(fs2ds_valid & ds_allowin) begin
-            {ds_inst, ds_pc,ds_except_adef} <= fs2ds_bus;
+            {ds_tlb_exc,ds_inst, ds_pc,ds_except_adef} <= fs2ds_bus;
         end
     end
 
@@ -575,7 +567,8 @@ module IDreg(
                         inst_rdcntvh ,      //1
                         inst_rdcntvl,       //1
                         ds_except_zip,      //84 bit
-                        ds2es_tlb_zip
-                        };//249
+                        ds2es_tlb_zip,
+                        ds_tlb_exc
+                        };//268
 
 endmodule

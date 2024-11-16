@@ -18,7 +18,7 @@ module IFreg(
     input  wire [33:0]  br_zip,                         //34
     // fs to ds interface
     output wire         fs2ds_valid,                    //1
-    output wire [64:0]  fs2ds_bus,                      //65
+    output wire [`FS2DS_BUS-1:0]  fs2ds_bus,                      //65
     // exception interface
     input  wire         wb_ex,                          //1
     input  wire         ertn_flush,                     //1
@@ -214,10 +214,9 @@ module IFreg(
 
     //assign fs_inst    = inst_sram_rdata;
     assign fs_inst    = inst_buf_valid ? fs_inst_buf : inst_sram_rdata;
-    assign fs2ds_bus  = {fs_inst, fs_pc,fs_except_adef}; // 32+32+1=65
+    assign fs2ds_bus  = {fs_tlb_exc,fs_inst, fs_pc,fs_except_adef}; // 8+32+32+1=73
 
-//------------------------------tlb---------------------------------------
-    assign {s0_vppn, s0_va_bit12} = nextpc_vrtl[31:12];
+//------------------------------tlb---------------------------
     //高3位在指定的虚拟段范围内 && 权限级别和允许权限访问
     assign dmw0_hit  = (nextpc_vrtl[31:29] == csr_dmw0_vseg) && (crmd_plv_CSRoutput == 2'd0 && csr_dmw0_plv0 || crmd_plv_CSRoutput == 2'd3 && csr_dmw0_plv3);
     assign dmw1_hit  = (nextpc_vrtl[31:29] == csr_dmw1_vseg) && (crmd_plv_CSRoutput == 2'd0 && csr_dmw1_plv0 || crmd_plv_CSRoutput == 2'd3 && csr_dmw1_plv3);

@@ -41,6 +41,19 @@ module EXEreg(
     input         s1_d,
     input         s1_v,
 
+    input  wire [ 1:0] crmd_plv_CSRoutput,
+     // DMW0
+    input  wire        csr_dmw0_plv0,
+    input  wire        csr_dmw0_plv3,
+    input  wire [ 2:0] csr_dmw0_pseg,
+    input  wire [ 2:0] csr_dmw0_vseg,
+        // DMW1
+    input  wire        csr_dmw1_plv0,
+    input  wire        csr_dmw1_plv3,
+    input  wire [ 2:0] csr_dmw1_pseg,
+    input  wire [ 2:0] csr_dmw1_vseg,
+    // 直接地址翻译
+    input  wire        csr_direct_addr,
     input  wire [18:0] tlbehi_vppn_CSRoutput,
     input  wire [ 9:0] asid_CSRoutput
     
@@ -61,6 +74,7 @@ module EXEreg(
     reg  [4 :0] es_rf_waddr   ;
 
     reg  [ 2:0] es_st_op_zip;
+    wire        data_sram_wr_internal;
 
     wire       op_st_b;
     wire       op_st_h;

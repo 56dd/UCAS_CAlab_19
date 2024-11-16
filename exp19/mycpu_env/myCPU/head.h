@@ -25,7 +25,8 @@
 
 //zip&bus
 `define TLB_CONFLICT_BUS_LEN    16
-`define DS2ES_BUS               260
+`define FS2DS_BUS               73
+`define DS2ES_BUS               268
 `define ES2MS_BUS               133
 `define MS2WS_BUS               159
 `define TLBNUM_IDX              $clog2(`TLBNUM)
@@ -33,4 +34,14 @@
 //TLB
 `define TLBNUM      16
 `define TLBNUM_IDX  $clog2(`TLBNUM)
+
+//
 ·define TLB_ERRLEN  8
+`define EARRAY_TLBR_FETCH 0  // TLB REFILL
+`define EARRAY_PIL 1  // LOAD 页无效例外
+`define EARRAY_PIS 2  // Store页无效例外
+`define EARRAY_PIF 3  // Fetch页无效例外
+`define EARRAY_PME 4  // 页修改例外
+`define EARRAY_PPI_FETCH 5  // 页特权等级不合规例外
+`define EARRAY_TLBR_MEM 6
+`define EARRAY_PPI_MEM 7
