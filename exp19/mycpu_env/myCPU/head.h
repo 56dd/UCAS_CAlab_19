@@ -33,3 +33,4 @@
 //TLB
 `define TLBNUM      16
 `define TLBNUM_IDX  $clog2(`TLBNUM)
+·define TLB_ERRLEN  8

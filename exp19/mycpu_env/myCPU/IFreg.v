@@ -24,6 +24,31 @@ module IFreg(
     input  wire         ertn_flush,                     //1
     input  wire [31:0]  ex_entry,                       //32
     input  wire [31:0]  ertn_entry                      //32
+
+    // tlb
+    output wire [18:0] s0_vppn,         //虚拟页号，当前访问地址的高位部分
+    output wire        s0_va_bit12,     //虚拟地址的12位，区分页内地址
+    input  wire        s0_found,        //TLB查找是否命中
+    input  wire [$clog2(`TLBNUM)-1:0] s0_index,//命中条目索引
+    input  wire [19:0] s0_ppn,          //命中的物理页号
+    input  wire [ 5:0] s0_ps,           //页面大小
+    input  wire [ 1:0] s0_plv,          //权限级别
+    input  wire [ 1:0] s0_mat,          //内存访问类型
+    input  wire        s0_d,            //页面是否被修改
+    input  wire        s0_v,            //页面是否有效
+    input  wire [ 1:0] crmd_plv_CSRoutput,//当前特权级，来自csr
+    // DMW0  直接将虚拟地址映射到物理地址，绕过TLB？
+    input  wire        csr_dmw0_plv0,   //用户级别0
+    input  wire        csr_dmw0_plv3,   //用户级别3
+    input  wire [ 2:0] csr_dmw0_pseg,   //直接映射的物理地址段
+    input  wire [ 2:0] csr_dmw0_vseg,   //直接映射的虚拟地址段
+    // DMW1
+    input  wire        csr_dmw1_plv0,   
+    input  wire        csr_dmw1_plv3,
+    input  wire [ 2:0] csr_dmw1_pseg,
+    input  wire [ 2:0] csr_dmw1_vseg,
+    // 直接地址翻译
+    input  wire        csr_direct_addr  //直接地址
 );
 
     wire        pf_ready_go;//preIF的ready-go
@@ -34,7 +59,9 @@ module IFreg(
 
 
     wire [31:0] seq_pc;
-    wire [31:0] nextpc;
+    //wire [31:0] nextpc;
+    wire [31:0] nextpc_vrtl; // 虚拟地址 ADDED EXP19
+    wire [31:0] nextpc_phy;  // 物理地址 ADDED EXP19
 
     wire         br_stall;
     wire         br_taken;
@@ -60,19 +87,23 @@ module IFreg(
     reg         inst_discard;   // 判断cancel之后是否需要丢掉一条指令
     reg         pf_block;
 
+    wire [`TLB_ERRLEN-1:0] fs_tlb_exc;
 
+    // addr translation
+    wire        dmw0_hit;   //是否命中
+    wire        dmw1_hit;
+    wire [31:0] dmw0_paddr; //存储映射后的物理地址
+    wire [31:0] dmw1_paddr;
+    wire [31:0] tlb_paddr ; //翻译后的物理地址
+    wire        tlb_used  ; // 确实用到了TLB进行地址翻译
 //------------------------------inst sram interface---------------------------------------
     
-    // assign inst_sram_req     = fs_allowin & resetn;
-    // assign inst_sram_wr     = 4'b0;
-    // assign inst_sram_addr   = nextpc;
-    // assign inst_sram_wdata  = 32'b0;
-    //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的
     assign inst_sram_req    = fs_allowin & resetn & (~br_stall | wb_ex | ertn_flush) & ~pf_block & ~inst_sram_addr_ack;
     assign inst_sram_wr     = |inst_sram_wstrb;
     assign inst_sram_wstrb  = 4'b0;
-    assign inst_sram_addr   = nextpc;
+    assign inst_sram_addr   = nextpc_phy;//从实地址取数据
     assign inst_sram_wdata  = 32'b0;
+    assign inst_sram_size   = 3'b0;
 
 //------------------------------prIF control signal---------------------------------------
     assign pf_ready_go      = inst_sram_req & inst_sram_addr_ok; 
@@ -81,7 +112,7 @@ module IFreg(
     // assign nextpc           = wb_ex? ex_entry :
     //                           ertn_flush? ertn_entry :
     //                           br_taken ? br_target : seq_pc;
-    assign nextpc           = wb_ex_r? ex_entry_r: wb_ex? ex_entry:
+    assign nextpc_vrtl      = wb_ex_r? ex_entry_r: wb_ex? ex_entry:
                               ertn_flush_r? ertn_entry_r: ertn_flush? ertn_entry:
                               br_taken_r? br_target_r: br_taken ? br_target : seq_pc;
     always @(posedge clk) begin
@@ -102,7 +133,7 @@ module IFreg(
             br_target_r <= br_target;
             br_taken_r <= 1'b1;
         end
-        // 若对应地址已经获得了来自指令SRAM的ok，后续nextpc不再从寄存器中取
+        // 若对应地址已经获得了来自指令SRAM的ok，后续nextpc_vrtl不再从寄存器中取
         else if(pf_ready_go) begin
             {wb_ex_r, ertn_flush_r, br_taken_r} <= 3'b0;
         end
@@ -127,10 +158,6 @@ module IFreg(
             inst_sram_addr_ack <= 1'b0;
     end
 //------------------------------IF control signal---------------------------------------
-    //assign to_fs_valid      = resetn;
-    // assign fs_ready_go      = inst_sram_req & inst_sram_addr_ok; //req & addr_ok;
-    // assign fs_allowin       = ~fs_valid | fs_ready_go & ds_allowin | ertn_flush | wb_ex;     
-    // assign fs2ds_valid      = fs_valid & fs_ready_go;
     assign fs_ready_go      = (inst_sram_data_ok | inst_buf_valid) & ~inst_discard;
     assign fs_allowin       = (~fs_valid) | fs_ready_go & ds_allowin;     
     assign fs2ds_valid      = fs_valid & fs_ready_go;
@@ -142,14 +169,15 @@ module IFreg(
         else if(fs_cancel)
             fs_valid <= 1'b0;
     end
-    
 //------------------------------exception---------------------------------------
     wire   fs_except_adef;
-    assign fs_except_adef=(|fs_pc[1:0])&fs_valid;
+    //assign fs_except_adef=(|fs_pc[1:0])&fs_valid;
+    //虚地址最后两位不为00  &&  是高地址空间且用户模式，用户模式没有这个权限  &&  确保地址没有命中直接映射窗口
+    assign fs_except_adef = ((|nextpc_vrtl[1:0]) | (nextpc_vrtl[31] & crmd_plv_CSRoutput == 2'd3)) & ~dmw0_hit & ~dmw1_hit & fs_valid; 
 
 //------------------------------cancel relevant---------------------------------------
     assign fs_cancel = wb_ex | ertn_flush | br_taken;
-    //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc时的值都是正确的
+    //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc_vrtl时的值都是正确的
     assign pf_cancel = fs_cancel;
     always @(posedge clk) begin
         if(~resetn)
@@ -166,7 +194,7 @@ module IFreg(
         if(~resetn)
             fs_pc <= 32'h1BFF_FFFC;
         else if(to_fs_valid & fs_allowin)
-            fs_pc <= nextpc;
+            fs_pc <= nextpc_vrtl;
     end
     // 设置寄存器，暂存指令，并用valid信号表示其内指令是否有效
     always @(posedge clk) begin
@@ -187,4 +215,25 @@ module IFreg(
     //assign fs_inst    = inst_sram_rdata;
     assign fs_inst    = inst_buf_valid ? fs_inst_buf : inst_sram_rdata;
     assign fs2ds_bus  = {fs_inst, fs_pc,fs_except_adef}; // 32+32+1=65
+
+//------------------------------tlb---------------------------------------
+    assign {s0_vppn, s0_va_bit12} = nextpc_vrtl[31:12];
+    //高3位在指定的虚拟段范围内 && 权限级别和允许权限访问
+    assign dmw0_hit  = (nextpc_vrtl[31:29] == csr_dmw0_vseg) && (crmd_plv_CSRoutput == 2'd0 && csr_dmw0_plv0 || crmd_plv_CSRoutput == 2'd3 && csr_dmw0_plv3);
+    assign dmw1_hit  = (nextpc_vrtl[31:29] == csr_dmw1_vseg) && (crmd_plv_CSRoutput == 2'd0 && csr_dmw1_plv0 || crmd_plv_CSRoutput == 2'd3 && csr_dmw1_plv3);
+    //直接映射的物理地址
+    assign dmw0_paddr = {csr_dmw0_pseg, nextpc_vrtl[28:0]};
+    assign dmw1_paddr = {csr_dmw1_pseg, nextpc_vrtl[28:0]};
+    //tlb物理地址
+    assign tlb_paddr  = (s0_ps == 6'd22) ? {s0_ppn[19:10], nextpc_vrtl[21:0]} : {s0_ppn, nextpc_vrtl[11:0]}; // 根据Page Size决定
+    assign nextpc_phy = csr_direct_addr ? nextpc_vrtl :
+                        dmw0_hit        ? dmw0_paddr  :
+                        dmw1_hit        ? dmw1_paddr  :
+                                          tlb_paddr   ;     
+    assign tlb_used = ~csr_direct_addr && ~dmw0_hit && ~dmw1_hit;
+    assign {fs_tlb_exc[`EARRAY_PIL],fs_tlb_exc[`EARRAY_PIS],fs_tlb_exc[`EARRAY_PME],fs_tlb_exc[`EARRAY_TLBR_MEM], fs_tlb_exc[`EARRAY_PPI_MEM]} = 5'h0;
+    assign fs_tlb_exc[`EARRAY_TLBR_FETCH] = fs_valid & tlb_used & ~s0_found;//未命中
+    assign fs_tlb_exc[`EARRAY_PIF ] = fs_valid & tlb_used & ~fs_tlb_exc[`EARRAY_TLBR_FETCH] & ~s0_v;//页表项无效
+    assign fs_tlb_exc[`EARRAY_PPI_FETCH ] = fs_valid & tlb_used & ~fs_tlb_exc[`EARRAY_PIF ] & (crmd_plv_CSRoutput > s0_plv);//权限不足
+
 endmodule
