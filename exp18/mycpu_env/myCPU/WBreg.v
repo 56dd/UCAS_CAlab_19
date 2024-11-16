@@ -26,7 +26,7 @@ module WBreg(
     output reg  [31:0] wb_pc,           //32
     output      [ 5:0] wb_ecode,        //6
     output      [ 8:0] wb_esubcode,     //9
-    output reg  [31:0] wb_vaddr         //32
+    output reg  [31:0] wb_vaddr  ,       //32
     // TLB
     output wire         inst_wb_tlbfill,
     output wire         inst_wb_tlbsrch,
@@ -93,7 +93,7 @@ module WBreg(
     assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, 
             ws_except_sys, ws_except_ertn, ws_except_ale } = ws_except_zip & {85{ws_valid}};     //
     assign ertn_flush=ws_except_ertn & ws_valid;
-    assign wb_ex = (ws_except_adef |                   // 用错误地�??取指已经发生，故不与ws_valid挂钩
+    assign wb_ex = (ws_except_adef |                   // 用错误地�???取指已经发生，故不与ws_valid挂钩
                     ws_except_int  |                    // 中断由状态寄存器中的计时器产生，不与ws_valid挂钩
                     ws_except_ale | ws_except_ine | ws_except_brk | ws_except_sys) & ws_valid;
     //assign wb_ecode = {6{wb_ex}} & 6'hb;

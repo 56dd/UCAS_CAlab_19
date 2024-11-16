@@ -4,6 +4,7 @@ module tlb
 )
 (
     input wire clk,
+    input wire reset,
 
     //搜索端口 0（用于取指）
     input  wire [              18:0] s0_vppn, // 虚拟页号，访存虚地址的 31..13 位

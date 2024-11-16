@@ -347,14 +347,14 @@ module mycpu_core(
         .ex_entry   (ex_entry  ),
         .ertn_entry (ertn_entry),
 
-        .csr_asid_asid   (csr_asid_asid),
-        .csr_tlbehi_vppn (csr_tlbehi_vppn),
+        .csr_asid_asid   (asid_CSRoutput),
+        .csr_tlbehi_vppn (tlbehi_vppn_CSRoutput),
         .csr_tlbidx_index(csr_tlbidx_index),//
 
-        .tlbsrch_we        (tlbsrch_we),
-        .tlbsrch_hit       (tlbsrch_hit),
-        .tlbsrch_hit_index (tlbsrch_hit_index),
-        .tlbrd_we          (tlbrd_we),
+        .tlbsrch_we        (inst_wb_tlbsrch),
+        .tlbsrch_hit       (wb_tlbsrch_found),
+        .tlbsrch_hit_index (wb_tlbsrch_idxgot),
+        .tlbrd_we          (inst_wb_tlbrd),
 
         .r_tlb_e         (r_e),
         .r_tlb_ps        (r_ps),
@@ -391,7 +391,7 @@ module mycpu_core(
 
     tlb u_tlb(
         .clk        (clk       ),
-        //.reset      (~resetn   ),
+        .reset      (~resetn   ),
 
         .s0_vppn    (s0_vppn   ),
         .s0_va_bit12(s0_va_bit12),

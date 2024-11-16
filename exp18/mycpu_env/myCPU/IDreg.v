@@ -10,7 +10,7 @@ module IDreg(
     // ds and es interface
     input  wire                  es_allowin,      //1
     output wire                  ds2es_valid,     //1
-    output wire [DS2ES_BUS -1:0] ds2es_bus,      //249   {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
+    output wire [`DS2ES_BUS -1:0] ds2es_bus,      //249   {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip,       //38            {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
     input  wire [39:0] ms_rf_zip,       //40            {ms_res_from_mem, ms_csr_re,  ms_rf_we, ms_rf_waddr, ms_rf_wdata}

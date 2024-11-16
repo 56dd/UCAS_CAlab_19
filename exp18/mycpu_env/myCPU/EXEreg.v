@@ -101,6 +101,7 @@ module EXEreg(
     wire        es_csr_we;
     wire [31:0] es_csr_wmask;
     wire [31:0] es_csr_wvalue;
+    wire [78:0] es_csr_zip;
 //------------------------------state control signal---------------------------------------
     assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale)& es_valid;
     //assign es_ready_go      = alu_complete;
@@ -204,6 +205,8 @@ always @(posedge clk) begin
                                     es_alu_result[31:12]; // Normal Load/Store translation, RESERVED for exp19
     assign s1_asid       = inst_invtlb ?  es_alu_src1[9:0] : asid_CSRoutput; // alu src1 is rj value
     assign es2ms_tlb_zip = {es_refetch_flag, inst_tlbsrch, inst_tlbrd, inst_tlbwr, inst_tlbfill, s1_found, s1_index};
+    assign es_csr_zip = es_except_zip[83:6];
     assign {es_csr_num, es_csr_wmask, es_csr_wvalue, es_csr_we} = es_csr_zip;
     assign es_tlb_blk_zip = {inst_tlbrd & es_valid, es_csr_we & es_valid, es_csr_num};
+    
 endmodule

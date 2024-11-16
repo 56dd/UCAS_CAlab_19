@@ -64,6 +64,7 @@ module MEMreg(
     wire        ms_csr_we;
     wire [31:0] ms_csr_wmask;
     wire [31:0] ms_csr_wvalue;
+    wire [78:0] ms_csr_zip;
 
 //------------------------------state control signal---------------------------------------
 
@@ -134,6 +135,7 @@ module MEMreg(
 //---------------------------------- tlb --------------------------------------
     assign {ms_refetch_flag, inst_tlbsrch, inst_tlbrd, inst_tlbwr, inst_tlbfill, tlbsrch_found, tlbsrch_idxgot} = es2ms_tlb_zip;
     assign ms2wb_tlb_zip = es2ms_tlb_zip;
+    assign ms_csr_zip = ms_except_zip[84:7];
     assign {ms_csr_num, ms_csr_wmask, ms_csr_wvalue, ms_csr_we} = ms_csr_zip;
     assign ms_tlb_blk_zip = {inst_tlbrd & ms_valid, ms_csr_we & ms_valid, ms_csr_num};
 endmodule
