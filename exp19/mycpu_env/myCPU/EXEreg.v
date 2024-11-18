@@ -222,7 +222,7 @@ always @(posedge clk) begin
     assign data_sram_wr     = (|data_sram_wstrb) & es_valid & ~wb_ex & ~ms_ex & ~es_ex;
     assign data_sram_wstrb  =  es_mem_we;
     assign data_sram_size   = {2{op_st_b}} & 2'b0 | {2{op_st_h}} & 2'b1 | {2{op_st_w}} & 2'd2;
-    assign data_sram_addr   = es_alu_result;
+    assign data_sram_addr   = phy_addr;
     assign data_sram_wdata[ 7: 0]   = es_rkd_value[ 7: 0];
     assign data_sram_wdata[15: 8]   = op_st_b ? es_rkd_value[ 7: 0] : es_rkd_value[15: 8];
     assign data_sram_wdata[23:16]   = op_st_w ? es_rkd_value[23:16] : es_rkd_value[ 7: 0];

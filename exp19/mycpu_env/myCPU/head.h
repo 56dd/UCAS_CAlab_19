@@ -27,7 +27,7 @@
 `define TLB_CONFLICT_BUS_LEN    16
 `define FS2DS_BUS               73
 `define DS2ES_BUS               268
-`define ES2MS_BUS               141
+`define ES2MS_BUS               142
 `define MS2WS_BUS               169
 `define TLBNUM_IDX              $clog2(`TLBNUM)
 
