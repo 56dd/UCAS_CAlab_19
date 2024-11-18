@@ -27,8 +27,8 @@
 `define TLB_CONFLICT_BUS_LEN    16
 `define FS2DS_BUS               73
 `define DS2ES_BUS               268
-`define ES2MS_BUS               133
-`define MS2WS_BUS               159
+`define ES2MS_BUS               141
+`define MS2WS_BUS               169
 `define TLBNUM_IDX              $clog2(`TLBNUM)
 
 //TLB
@@ -45,3 +45,16 @@
 `define EARRAY_PPI_FETCH 5  // 页特权等级不合规例外
 `define EARRAY_TLBR_MEM 6
 `define EARRAY_PPI_MEM 7
+
+`define ECODE_ADE 6'h08  // ADEM: esubcode=1; ADEF: esubcode=0
+`define ECODE_TLBR 6'h3F
+`define ECODE_PIL 6'h01  // LOAD页无效例外
+`define ECODE_PIS 6'h02  // STORE页无效例外
+`define ECODE_PIF 6'h03  // FETCH页无效例外
+`define ECODE_PME 6'h04  // 页修改例外
+`define ECODE_PPI 6'h07  // 页特权等级不合规例外
+
+
+
+`define ESUBCODE_ADEF 9'b00    
+`define ESUBCODE_ADEM 9'b01    

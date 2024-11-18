@@ -5,12 +5,11 @@ module EXEreg(
     // id and exe interface
     output wire        es_allowin,          //1
     input  wire        ds2es_valid,         //1
-    input  wire [`DS2ES_BUS -1:0] ds2es_bus,          //249    {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
-    //input  wire [32:0] ds_except_zip, 
+    input  wire [`DS2ES_BUS -1:0] ds2es_bus,          //249    
     // exe and mem state interface
     input  wire        ms_allowin,          //1
-    output wire [`ES2MS_BUS-1:0] es2ms_bus,          //123   {es_wait_data_ok_r=es_mem_req,es_ld_inst_zip, es_pc, es_except_zip}
-    output wire [39:0] es_rf_zip,           //40    {es_csr_re, es_res_from_mem, es_rf_we, es_rf_waddr, es_alu_result}
+    output wire [`ES2MS_BUS-1:0] es2ms_bus,          //123   
+    output wire [39:0] es_rf_zip,           //40   
     output wire        es2ms_valid,         //1
     output reg  [31:0] es_pc,               //32
     output wire [`TLB_CONFLICT_BUS_LEN -1:0] es_tlb_blk_zip,
@@ -74,7 +73,7 @@ module EXEreg(
     reg  [4 :0] es_rf_waddr   ;
 
     reg  [ 2:0] es_st_op_zip;
-    wire        data_sram_wr_internal;
+    //wire        data_sram_wr_internal;//注意这个信号，syw把访存逻辑变了变。但是为什么？debug的时候de把
 
     wire       op_st_b;
     wire       op_st_h;
@@ -91,7 +90,7 @@ module EXEreg(
     wire        es_except_ale;
 
     reg   [ 4:0] es_ld_inst_zip; // {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w}
-    reg   [83:0] es_except_zip;
+    reg   [84:0] es_except_zip;
     wire  [31:0] es_rf_result_tmp;
     reg   [63:0] es_timer_cnt;
 
@@ -99,6 +98,8 @@ module EXEreg(
     reg        inst_rdcntvl;
 
     wire        es_mem_req;
+    wire        ex_except_adem;
+
 
     // TLB
     reg  [10:0] ds2es_tlb_zip; // ZIP信号
@@ -116,8 +117,25 @@ module EXEreg(
     wire [31:0] es_csr_wmask;
     wire [31:0] es_csr_wvalue;
     wire [78:0] es_csr_zip;
+
+    // addr translation
+    wire        dmw0_hit;
+    wire        dmw1_hit;
+    wire [31:0] dmw0_paddr;
+    wire [31:0] dmw1_paddr;
+    wire [31:0] tlb_paddr ;
+
+    wire [31:0] vtl_addr;   // 虚拟地址
+    wire [31:0] phy_addr;   // 物理地址
+
+    reg  [`TLB_ERRLEN-1:0] ds2es_tlb_exc;
+    wire [`TLB_ERRLEN-1:0] es_tlb_exc   ;
+    wire [`TLB_ERRLEN-1:0] es2ms_tlb_exc;
+    wire        tlb_used  ; // 确实用到了TLB进行地址翻译
+    wire        isLoad ;
+    wire        isStore;
 //------------------------------state control signal---------------------------------------
-    assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale)& es_valid;
+    assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale ||ex_except_adem||(|es2ms_tlb_exc))& es_valid;
     //assign es_ready_go      = alu_complete;
     assign es_ready_go      = alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok);
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
@@ -155,14 +173,22 @@ module EXEreg(
 //------------------------------exe and mem state interface---------------------------------------
     assign es_except_ale = ((|es_alu_result[1:0]) & (op_st_w | op_ld_w)|
                             es_alu_result[0] & (op_st_h|op_ld_hu|op_ld_h)) & es_valid;
+    
     assign es2ms_bus = {
                         es_mem_req,         //1
                         es_ld_inst_zip,     // 5  bit
                         es_pc,              // 32 bit
                         es_except_zip,       // 84 bit
                         es_except_ale,       //1
-                        es2ms_tlb_zip       // 10 bits
+                        ex_except_adem, 
+                        es2ms_tlb_zip,      // 10 bits
+                        es2ms_tlb_exc       // 8  bits
+
                     };//123
+    //地址错误：内存指令 |虚拟地址高位为1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗口
+    assign ex_except_adem = (es_res_from_mem | (|es_mem_we)) & (vtl_addr[31] & crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
+
+    assign es_except_zip = {ex_except_adem, es_except_ale, es_except_zip_tmp};
 //------------------------------alu interface---------------------------------------
     alu u_alu(
         .clk            (clk       ),
@@ -223,4 +249,26 @@ always @(posedge clk) begin
     assign {es_csr_num, es_csr_wmask, es_csr_wvalue, es_csr_we} = es_csr_zip;
     assign es_tlb_blk_zip = {inst_tlbrd & es_valid, es_csr_we & es_valid, es_csr_num};
     
+    // addr translation
+    assign vtl_addr = es_alu_result;
+    assign dmw0_hit  = (vtl_addr[31:29] == csr_dmw0_vseg) & (crmd_plv_CSRoutput == 2'd0 & csr_dmw0_plv0 | crmd_plv_CSRoutput == 2'd3 & csr_dmw0_plv3);
+    assign dmw1_hit  = (vtl_addr[31:29] == csr_dmw1_vseg) & (crmd_plv_CSRoutput == 2'd0 & csr_dmw1_plv0 | crmd_plv_CSRoutput == 2'd3 & csr_dmw1_plv3);
+    assign dmw0_paddr = {csr_dmw0_pseg, vtl_addr[28:0]};
+    assign dmw1_paddr = {csr_dmw1_pseg, vtl_addr[28:0]};
+    assign tlb_paddr  = (s1_ps == 6'd22) ? {s1_ppn[19:10], vtl_addr[21:0]} : {s1_ppn, vtl_addr[11:0]}; // 根据Page Size决定
+    assign phy_addr   = csr_direct_addr ? vtl_addr    :
+                        dmw0_hit        ? dmw0_paddr  :
+                        dmw1_hit        ? dmw1_paddr  :
+                                          tlb_paddr   ;
+    assign tlb_used = (es_res_from_mem | (|es_mem_we)) & ~wb_ex & ~ms_ex & ~(|es_except_zip) //es_mem_req 
+                      & (~csr_direct_addr & ~dmw0_hit & ~dmw1_hit);
+    assign isStore  = |es_mem_we;
+    assign isLoad   = es_res_from_mem;
+    assign {es_tlb_exc[`EARRAY_PIF], es_tlb_exc[`EARRAY_TLBR_FETCH], es_tlb_exc[`EARRAY_PPI_FETCH]} = 3'b0;
+    assign es_tlb_exc[`EARRAY_TLBR_MEM] = es_valid & es_res_from_mem & tlb_used & !s1_found;
+    assign es_tlb_exc[`EARRAY_PIL ] = es_valid & tlb_used & isLoad  & !es_tlb_exc[`EARRAY_TLBR_MEM] & !s1_v;
+    assign es_tlb_exc[`EARRAY_PIS ] = es_valid & tlb_used & isStore & !es_tlb_exc[`EARRAY_TLBR_MEM] & !s1_v;
+    assign es_tlb_exc[`EARRAY_PPI_MEM] = es_valid & tlb_used & (isLoad | isStore) & !es_tlb_exc[`EARRAY_PIL] & !es_tlb_exc[`EARRAY_PIS] & (crmd_plv_CSRoutput > s1_plv);
+    assign es_tlb_exc[`EARRAY_PME ] = es_valid & tlb_used & isStore & !es_tlb_exc[`EARRAY_PPI_MEM] & !s1_d;
+    assign es2ms_tlb_exc = ds2es_tlb_exc | es_tlb_exc;
 endmodule

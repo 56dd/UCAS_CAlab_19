@@ -34,7 +34,9 @@ module WBreg(
     output wire         inst_wb_tlbrd,
     output wire         wb_tlbsrch_found,
     output wire [`TLBNUM_IDX-1:0] wb_tlbsrch_idxgot,
-    output wire         wb_refetch_flush
+    output wire         wb_refetch_flush,
+
+    output wire         current_exc_fetch
 );
     
     wire        ws_ready_go;
@@ -53,8 +55,9 @@ module WBreg(
     wire        ws_except_int;
     wire        ws_except_sys;
     wire        ws_except_ertn;
+    wire        ws_except_adem;
 
-    reg  [84:0] ws_except_zip;
+    reg  [86:0] ws_except_zip;
 
     // TLB
     reg  [ 9:0] ms2wb_tlb_zip; // ZIP信号
@@ -65,6 +68,7 @@ module WBreg(
     wire        wb_refetch_flag;
     // wire        tlbsrch_found;
     // wire [ 3:0] tlbsrch_idxgot;
+    reg  [`TLB_ERRLEN-1:0] ws_tlb_exc;
 //------------------------------state control signal---------------------------------------
 
     assign ws_ready_go      = 1'b1;
@@ -81,29 +85,43 @@ module WBreg(
 //------------------------------mem and wb state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip}  <= {`MS2WS_BUS{1'b0}};
+            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip,ws_tlb_exc}  <= {`MS2WS_BUS{1'b0}};
             {csr_re,ws_rf_we_tmp, ws_rf_waddr, ws_rf_wdata_tmp} <= 39'b0;
         end
         if(ms2ws_valid & ws_allowin) begin
-            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip} <= ms2ws_bus;
+            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip,ws_tlb_exc} <= ms2ws_bus;
             {csr_re,ws_rf_we_tmp, ws_rf_waddr, ws_rf_wdata_tmp} <= ms_rf_zip ;//1+1+5+32==39
         end
     end
 //-----------------------------wb and csr state interface---------------------------------------
     assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, 
-            ws_except_sys, ws_except_ertn, ws_except_ale } = ws_except_zip & {85{ws_valid}};     //
+            ws_except_sys, ws_except_ertn, ws_except_ale,ws_except_adem } = ws_except_zip & {86{ws_valid}};     //
     assign ertn_flush=ws_except_ertn & ws_valid;
-    assign wb_ex = (ws_except_adef |                   // 用错误地�???取指已经发生，故不与ws_valid挂钩
+    assign wb_ex = (ws_except_adef |                   // 用错误地�???取指已经发生，故不与ws_valid挂钩
                     ws_except_int  |                    // 中断由状态寄存器中的计时器产生，不与ws_valid挂钩
-                    ws_except_ale | ws_except_ine | ws_except_brk | ws_except_sys) & ws_valid;
-    //assign wb_ecode = {6{wb_ex}} & 6'hb;
-    assign wb_esubcode = 9'b0;
+                    ws_except_ale | 
+                    ws_except_ine | 
+                    ws_except_brk | 
+                    ws_except_sys|
+                    ws_except_adem ) & ws_valid;
+    //assign wb_esubcode = 9'b0;
+    assign wb_esubcode = ws_except_adem ? `ESUBCODE_ADEM : `ESUBCODE_ADEF;
     assign wb_ecode =   {6{ws_except_int}} & ({6{wb_ex}} & 6'h0)
                        |{6{ws_except_adef}}& ({6{wb_ex}} & 6'h8)
                        |{6{ws_except_ale}} & ({6{wb_ex}} & 6'h9) 
                        |{6{ws_except_sys}} & ({6{wb_ex}} & 6'hb)
                        |{6{ws_except_brk}} & ({6{wb_ex}} & 6'hc)
-                       |{6{ws_except_ine}} & ({6{wb_ex}} & 6'hd);
+                       |{6{ws_except_ine}} & ({6{wb_ex}} & 6'hd)
+                       |{6{ws_except_adem }} & ({6{wb_ex}} & `ECODE_ADE)
+                       |{6{ws_tlb_exc[`EARRAY_TLBR_MEM]}} & ({6{wb_ex}} & `ECODE_TLBR)
+                       |{6{ws_tlb_exc[`EARRAY_PIL]}} & ({6{wb_ex}} & `ECODE_PIL)
+                       |{6{ws_tlb_exc[`EARRAY_PIS]}} & ({6{wb_ex}} & `ECODE_PIS)
+                       |{6{ws_tlb_exc[`EARRAY_PME]}} & ({6{wb_ex}} & `ECODE_PME)
+                       |{6{ws_tlb_exc[`EARRAY_PPI_MEM]}} & ({6{wb_ex}} & `ECODE_PPI)
+                       |{6{ws_tlb_exc[`EARRAY_TLBR_FETCH]}} & ({6{wb_ex}} & `ECODE_TLBR)
+                       |{6{ws_tlb_exc[`EARRAY_PIF]}} & ({6{wb_ex}} & `ECODE_PIF)
+                       |{6{ws_tlb_exc[`EARRAY_PPI_FETCH]} }& ({6{wb_ex}} & `ECODE_PPI)
+                       
                        // 未包含ADEM和TLBR
 //------------------------------id and ws state interface---------------------------------------
     assign ws_rf_wdata = csr_re ? csr_rvalue : ws_rf_wdata_tmp;

@@ -191,7 +191,28 @@ module mycpu_core(
         .wb_ex(wb_ex),
         .ertn_flush(ertn_flush|wb_refetch_flush),
         .ex_entry(ex_entry),
-        .ertn_entry(ertnentry_refetchtarget)
+        .ertn_entry(ertnentry_refetchtarget),
+
+        .s0_vppn    (s0_vppn   ),
+        .s0_va_bit12(s0_va_bit12),
+        .s0_found   (s0_found  ),
+        .s0_index   (s0_index  ),
+        .s0_ppn     (s0_ppn    ),
+        .s0_ps      (s0_ps     ),
+        .s0_plv     (s0_plv    ),
+        .s0_mat     (s0_mat    ),
+        .s0_d       (s0_d      ),
+        .s0_v       (s0_v      ),
+        .crmd_plv_CSRoutput(crmd_plv_CSRoutput),
+        .csr_dmw0_pseg(csr_dmw0_pseg),
+        .csr_dmw0_vseg(csr_dmw0_vseg),
+        .csr_dmw1_pseg(csr_dmw1_pseg),
+        .csr_dmw1_vseg(csr_dmw1_vseg),
+        .csr_dmw0_plv0(csr_dmw0_plv0),
+        .csr_dmw0_plv3(csr_dmw0_plv3),
+        .csr_dmw1_plv0(csr_dmw1_plv0),
+        .csr_dmw1_plv3(csr_dmw1_plv3),
+        .csr_direct_addr(csr_direct_addr)
     );
 
     IDreg my_idReg(
@@ -258,7 +279,17 @@ module mycpu_core(
         .s1_d        (s1_d      ),
         .s1_v        (s1_v      ),
         .tlbehi_vppn_CSRoutput(tlbehi_vppn_CSRoutput),
-        .asid_CSRoutput(asid_CSRoutput)
+        .asid_CSRoutput(asid_CSRoutput),
+        .crmd_plv_CSRoutput(crmd_plv_CSRoutput),
+        .csr_dmw0_pseg(csr_dmw0_pseg),
+        .csr_dmw0_vseg(csr_dmw0_vseg),
+        .csr_dmw1_pseg(csr_dmw1_pseg),
+        .csr_dmw1_vseg(csr_dmw1_vseg),
+        .csr_dmw0_plv0(csr_dmw0_plv0),
+        .csr_dmw0_plv3(csr_dmw0_plv3),
+        .csr_dmw1_plv0(csr_dmw1_plv0),
+        .csr_dmw1_plv3(csr_dmw1_plv3),
+        .csr_direct_addr(csr_direct_addr)
     );
 
     MEMreg my_memReg(
@@ -321,7 +352,9 @@ module mycpu_core(
         .inst_wb_tlbrd(inst_wb_tlbrd),
         .wb_tlbsrch_found(wb_tlbsrch_found),
         .wb_tlbsrch_idxgot(wb_tlbsrch_idxgot),
-        .wb_refetch_flush(wb_refetch_flush)
+        .wb_refetch_flush(wb_refetch_flush),
+
+        .current_exc_fetch(current_exc_fetch)
     );
 
      csr u_csr(
