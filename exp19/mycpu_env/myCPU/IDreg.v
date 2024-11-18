@@ -226,7 +226,7 @@ module IDreg(
     wire        inst_rdcntvl;
     wire        inst_rdcntvh;
 
-    wire [`TLB_ERRLEN-1:0] ds_tlb_exc;
+    reg [`TLB_ERRLEN-1:0] ds_tlb_exc;
     
 
 //------------------------------state control signal---------------------------------------
@@ -567,8 +567,8 @@ module IDreg(
                         inst_rdcntvh ,      //1
                         inst_rdcntvl,       //1
                         ds_except_zip,      //84 bit
-                        ds2es_tlb_zip,
-                        ds_tlb_exc
+                        ds2es_tlb_zip,      //11 bit
+                        ds_tlb_exc          //8  bit
                         };//268
 
 endmodule

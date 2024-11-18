@@ -1,4 +1,4 @@
-//控制状�?�寄存器
+//控制状�?�寄存器
     `define CSR_CRMD      14'h0000
     `define CSR_PRMD      14'h0001
     `define CSR_ECFG      14'h0004
@@ -38,20 +38,21 @@
 //
 `define TLB_ERRLEN  8
 `define EARRAY_TLBR_FETCH 0  // TLB REFILL
-`define EARRAY_PIL 1  // LOAD 页无效例�?
-`define EARRAY_PIS 2  // Store页无效例�?
-`define EARRAY_PIF 3  // Fetch页无效例�?
-`define EARRAY_PME 4  // 页修改例�?
+`define EARRAY_PIL 1  // LOAD 页无效例�?
+`define EARRAY_PIS 2  // Store页无效例�?
+`define EARRAY_PIF 3  // Fetch页无效例�?
+`define EARRAY_PME 4  // 页修改例�?
 `define EARRAY_PPI_FETCH 5  // 页特权等级不合规例外
 `define EARRAY_TLBR_MEM 6
 `define EARRAY_PPI_MEM 7
 
 `define ECODE_ADE 6'h08  // ADEM: esubcode=1; ADEF: esubcode=0
+`define ECODE_ALE 6'h09
 `define ECODE_TLBR 6'h3F
-`define ECODE_PIL 6'h01  // LOAD页无效例�?
-`define ECODE_PIS 6'h02  // STORE页无效例�?
-`define ECODE_PIF 6'h03  // FETCH页无效例�?
-`define ECODE_PME 6'h04  // 页修改例�?
+`define ECODE_PIL 6'h01  // LOAD页无效例�?
+`define ECODE_PIS 6'h02  // STORE页无效例�?
+`define ECODE_PIF 6'h03  // FETCH页无效例�?
+`define ECODE_PME 6'h04  // 页修改例�?
 `define ECODE_PPI 6'h07  // 页特权等级不合规例外
 
 

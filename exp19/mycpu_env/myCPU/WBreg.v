@@ -57,7 +57,7 @@ module WBreg(
     wire        ws_except_ertn;
     wire        ws_except_adem;
 
-    reg  [86:0] ws_except_zip;
+    reg  [85:0] ws_except_zip;
 
     // TLB
     reg  [ 9:0] ms2wb_tlb_zip; // ZIP信号
@@ -97,7 +97,7 @@ module WBreg(
     assign {csr_num, csr_wmask, csr_wvalue, csr_we,ws_except_int,ws_except_brk,ws_except_ine,ws_except_adef, 
             ws_except_sys, ws_except_ertn, ws_except_ale,ws_except_adem } = ws_except_zip & {86{ws_valid}};     //
     assign ertn_flush=ws_except_ertn & ws_valid;
-    assign wb_ex = (ws_except_adef |                   // 用错误地�????取指已经发生，故不与ws_valid挂钩
+    assign wb_ex = (ws_except_adef |                   // 用错误地�????取指已经发生，故不与ws_valid挂钩
                     ws_except_int  |                    // 中断由状态寄存器中的计时器产生，不与ws_valid挂钩
                     ws_except_ale | 
                     ws_except_ine | 

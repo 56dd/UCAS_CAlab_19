@@ -90,7 +90,7 @@ module EXEreg(
     wire        es_except_ale;
 
     reg   [ 4:0] es_ld_inst_zip; // {op_ld_b, op_ld_bu,op_ld_h, op_ld_hu, op_ld_w}
-    reg   [84:0] es_except_zip;
+    reg   [83:0] es_except_zip;
     wire  [31:0] es_rf_result_tmp;
     reg   [63:0] es_timer_cnt;
 
@@ -156,14 +156,16 @@ module EXEreg(
              es_ld_inst_zip,
              inst_rdcntvh , inst_rdcntvl,
              es_except_zip,
-             ds2es_tlb_zip} <= {`DS2ES_BUS{1'b0}};
+             ds2es_tlb_zip,
+             ds2es_tlb_exc} <= {`DS2ES_BUS{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
              es_ld_inst_zip, 
              inst_rdcntvh , inst_rdcntvl,
              es_except_zip,
-             ds2es_tlb_zip} <= ds2es_bus;    
+             ds2es_tlb_zip,
+             ds2es_tlb_exc} <= ds2es_bus;    
     end
     assign {op_st_b, op_st_h, op_st_w} = es_st_op_zip;
     assign {op_ld_b, op_ld_bu, op_ld_h, op_ld_hu, op_ld_w} = es_ld_inst_zip;
@@ -188,7 +190,7 @@ module EXEreg(
     //地址错误：内存指令 |虚拟地址高位为1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗口
     assign ex_except_adem = (es_res_from_mem | (|es_mem_we)) & (vtl_addr[31] & crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
 
-    assign es_except_zip = {ex_except_adem, es_except_ale, es_except_zip_tmp};
+    //assign es_except_zip = {ex_except_adem, es_except_ale, es_except_zip_tmp};
 //------------------------------alu interface---------------------------------------
     alu u_alu(
         .clk            (clk       ),
@@ -264,6 +266,7 @@ always @(posedge clk) begin
                       & (~csr_direct_addr & ~dmw0_hit & ~dmw1_hit);
     assign isStore  = |es_mem_we;
     assign isLoad   = es_res_from_mem;
+    assign es_tlb_exc = ds2es_tlb_exc;
     assign {es_tlb_exc[`EARRAY_PIF], es_tlb_exc[`EARRAY_TLBR_FETCH], es_tlb_exc[`EARRAY_PPI_FETCH]} = 3'b0;
     assign es_tlb_exc[`EARRAY_TLBR_MEM] = es_valid & es_res_from_mem & tlb_used & !s1_found;
     assign es_tlb_exc[`EARRAY_PIL ] = es_valid & tlb_used & isLoad  & !es_tlb_exc[`EARRAY_TLBR_MEM] & !s1_v;

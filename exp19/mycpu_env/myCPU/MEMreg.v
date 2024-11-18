@@ -39,7 +39,7 @@ module MEMreg(
     wire [31:0] ms_mem_result ;
     wire [31:0] shift_rdata   ;
 
-    reg  [86:0] ms_except_zip;
+    reg  [85:0] ms_except_zip;
     reg  [31:0] ms_pc;
     reg  [31:0] es_rf_result_tmp;
     

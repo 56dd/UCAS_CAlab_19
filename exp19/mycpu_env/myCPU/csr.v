@@ -2,11 +2,11 @@
 module csr(
     input  wire          clk       ,
     input  wire          reset     ,
-    // 读端口
+    // 读端�?
     input  wire          csr_re    ,
     input  wire [13:0]   csr_num   ,
     output wire [31:0]   csr_rvalue,
-    // 写端口
+    // 写端�?
     input  wire          csr_we    ,
     input  wire [31:0]   csr_wmask ,
     input  wire [31:0]   csr_wvalue,
@@ -67,12 +67,26 @@ module csr(
     output wire [ 1:0]      w_tlb_plv1,//
     output wire [ 1:0]      w_tlb_mat1,//
     output wire             w_tlb_d1,//
-    output wire             w_tlb_v1//
+    output wire             w_tlb_v1,//
+
+    output reg  csr_dmw0_plv0,
+    output reg  csr_dmw0_plv3,
+    output reg  [1:0] csr_dmw0_mat,
+    output reg  [2:0] csr_dmw0_pseg,
+    output reg  [2:0] csr_dmw0_vseg,
+    output reg  csr_dmw1_plv0,
+    output reg  csr_dmw1_plv3,
+    output reg  [2:0] csr_dmw1_pseg,
+    output reg  [2:0] csr_dmw1_vseg,
+    output wire csr_direct_addr,
+    output reg  [1:0]  csr_crmd_plv
 );  
     `define CSR_CRMD_PLV  1:0
     `define CSR_CRMD_PIE   2
     `define CSR_PRMD_PPLV 1:0
     `define CSR_PRMD_PIE  2
+    `define CSR_CRMD_DA   3
+    `define CSR_CRMD_PG   4
     `define CSR_ECFG_LIE  12:0
     `define CSR_ESTAT_IS10 1:0  
     `define CSR_ERA_PC    31:0
@@ -103,17 +117,11 @@ module csr(
     `define CSR_DMW_PSEG  27:25
     `define CSR_DMW_VSEG  31:29
 
-
-    `define ECODE_ADE    6'h08
-    `define ECODE_ALE    6'h09
-    `define ESUBCODE_ADEF 9'h00
-
-    reg  [1:0]  csr_crmd_plv;
     reg         csr_crmd_ie;
-    wire        csr_crmd_da;
-    wire        csr_crmd_pg;
-    reg  [1:0]  csr_crmd_datf;
-    reg  [1:0]  csr_crmd_datm;
+    reg        csr_crmd_da;
+    reg        csr_crmd_pg;
+    wire  [1:0]  csr_crmd_datf;
+    wire  [1:0]  csr_crmd_datm;
     reg  [1:0]  csr_prmd_pplv;
     reg         csr_prmd_pie;
     reg  [12:0] csr_ecfg_lie;
@@ -155,16 +163,8 @@ module csr(
     reg  [19:0] csr_tlbelo1_ppn;
     wire  [7:0]  csr_asid_asidbits;
     reg  [25:0] csr_tlbrentry_pa;
-    reg  csr_dmw0_plv0;
-    reg  csr_dmw0_plv3;
-    reg  [1:0] csr_dmw0_mat;
-    reg  [2:0] csr_dmw0_pseg;
-    reg  [2:0] csr_dmw0_vseg;
-    reg  csr_dmw1_plv0;
-    reg  csr_dmw1_plv3;
     reg  [1:0] csr_dmw1_mat;
-    reg  [2:0] csr_dmw1_pseg;
-    reg  [2:0] csr_dmw1_vseg;
+    
 
 
     wire [31:0] csr_crmd_rvalue;
@@ -222,7 +222,7 @@ module csr(
 
     always @(posedge clk) begin
         if (reset)
-            csr_crmd_da <= 1'b0;
+            csr_crmd_da <= 1'b1;
         else if (wb_ex && wb_ecode==`ECODE_TLBR)
             csr_crmd_da <= 1'b1;
         else if (ertn_entry && csr_estat_ecode==6'b111111)
@@ -234,7 +234,7 @@ module csr(
 
     always @(posedge clk) begin
         if (reset)
-            csr_crmd_pg <= 1'b1;
+            csr_crmd_pg <= 1'b0;
         else if (wb_ex && wb_ecode==`ECODE_TLBR)
             csr_crmd_pg <= 1'b0;
         else if (ertn_entry && csr_estat_ecode==6'b111111)
@@ -246,6 +246,7 @@ module csr(
 
     assign csr_crmd_datf = csr_crmd_pg ? 2'b01 : 2'b00;
     assign csr_crmd_datm = csr_crmd_pg ? 2'b01 : 2'b00;
+    assign csr_direct_addr = csr_crmd_da;
 
 
     always @(posedge clk) begin

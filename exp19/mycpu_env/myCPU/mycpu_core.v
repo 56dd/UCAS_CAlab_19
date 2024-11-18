@@ -169,6 +169,18 @@ module mycpu_core(
                                      debug_wb_pc + 32'd4; // Refetch Target
         // ertn_flush and wb_refetch_flush will never be valid simultaneously  
 
+
+    wire [2:0] csr_dmw0_pseg;
+    wire [2:0] csr_dmw0_vseg;
+    wire [2:0] csr_dmw1_pseg;
+    wire [2:0] csr_dmw1_vseg;
+    wire       csr_dmw0_plv0;
+    wire       csr_dmw0_plv3;
+    wire       csr_dmw1_plv0;
+    wire       csr_dmw1_plv3;
+    wire       csr_direct_addr;
+    wire [1:0] crmd_plv_CSRoutput;
+
     IFreg my_ifReg(
         .clk(clk),
         .resetn(resetn),
@@ -419,7 +431,18 @@ module mycpu_core(
         .w_tlb_plv1      (w_plv1),
         .w_tlb_mat1      (w_mat1),
         .w_tlb_d1        (w_d1),
-        .w_tlb_v1        (w_v1)
+        .w_tlb_v1        (w_v1),
+
+        .csr_crmd_plv (crmd_plv_CSRoutput),
+        .csr_dmw0_pseg(csr_dmw0_pseg),
+        .csr_dmw0_vseg(csr_dmw0_vseg),
+        .csr_dmw1_pseg(csr_dmw1_pseg),
+        .csr_dmw1_vseg(csr_dmw1_vseg),
+        .csr_dmw0_plv0(csr_dmw0_plv0),
+        .csr_dmw0_plv3(csr_dmw0_plv3),
+        .csr_dmw1_plv0(csr_dmw1_plv0),
+        .csr_dmw1_plv3(csr_dmw1_plv3),
+        .csr_direct_addr(csr_direct_addr)
     );
 
     tlb u_tlb(
@@ -428,7 +451,7 @@ module mycpu_core(
 
         .s0_vppn    (s0_vppn   ),
         .s0_va_bit12(s0_va_bit12),
-        .s0_asid    (s0_asid   ),
+        .s0_asid    (asid_CSRoutput   ),
         .s0_found   (s0_found  ),
         .s0_index   (s0_index  ),
         .s0_ppn     (s0_ppn    ),
