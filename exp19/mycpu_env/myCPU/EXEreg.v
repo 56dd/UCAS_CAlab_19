@@ -98,7 +98,7 @@ module EXEreg(
     reg        inst_rdcntvl;
 
     wire        es_mem_req;
-    wire        ex_except_adem;
+    wire        es_except_adem;
 
 
     // TLB
@@ -135,7 +135,7 @@ module EXEreg(
     wire        isLoad ;
     wire        isStore;
 //------------------------------state control signal---------------------------------------
-    assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale ||ex_except_adem||(|es2ms_tlb_exc))& es_valid;
+    assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale ||es_except_adem||(|es2ms_tlb_exc))& es_valid;
     //assign es_ready_go      = alu_complete;
     assign es_ready_go      = alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok);
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
@@ -182,15 +182,15 @@ module EXEreg(
                         es_pc,              // 32 bit
                         es_except_zip,       // 84 bit
                         es_except_ale,       //1
-                        ex_except_adem, 
+                        es_except_adem, 
                         es2ms_tlb_zip,      // 10 bits
                         es2ms_tlb_exc       // 8  bits
 
-                    };//123
+                    };//142
     //地址错误：内存指令 |虚拟地址高位为1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗口
-    assign ex_except_adem = (es_res_from_mem | (|es_mem_we)) & (vtl_addr[31] & crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
+    assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (vtl_addr[31] & crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
 
-    //assign es_except_zip = {ex_except_adem, es_except_ale, es_except_zip_tmp};
+    //assign es_except_zip = {es_except_adem, es_except_ale, es_except_zip_tmp};
 //------------------------------alu interface---------------------------------------
     alu u_alu(
         .clk            (clk       ),
@@ -262,11 +262,10 @@ always @(posedge clk) begin
                         dmw0_hit        ? dmw0_paddr  :
                         dmw1_hit        ? dmw1_paddr  :
                                           tlb_paddr   ;
-    assign tlb_used = (es_res_from_mem | (|es_mem_we)) & ~wb_ex & ~ms_ex & ~(|es_except_zip) //es_mem_req 
+    assign tlb_used = (es_res_from_mem | (|es_mem_we)) & ~wb_ex & ~ms_ex & ~(|es_except_zip[5:0]) & ~es_except_ale & ~es_except_adem //es_mem_req 
                       & (~csr_direct_addr & ~dmw0_hit & ~dmw1_hit);
     assign isStore  = |es_mem_we;
     assign isLoad   = es_res_from_mem;
-    assign es_tlb_exc = ds2es_tlb_exc;
     assign {es_tlb_exc[`EARRAY_PIF], es_tlb_exc[`EARRAY_TLBR_FETCH], es_tlb_exc[`EARRAY_PPI_FETCH]} = 3'b0;
     assign es_tlb_exc[`EARRAY_TLBR_MEM] = es_valid & es_res_from_mem & tlb_used & !s1_found;
     assign es_tlb_exc[`EARRAY_PIL ] = es_valid & tlb_used & isLoad  & !es_tlb_exc[`EARRAY_TLBR_MEM] & !s1_v;

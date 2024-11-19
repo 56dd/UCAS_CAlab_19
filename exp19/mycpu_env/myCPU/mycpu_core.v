@@ -181,6 +181,8 @@ module mycpu_core(
     wire       csr_direct_addr;
     wire [1:0] crmd_plv_CSRoutput;
 
+    wire       current_exc_fetch;
+
     IFreg my_ifReg(
         .clk(clk),
         .resetn(resetn),
@@ -442,7 +444,8 @@ module mycpu_core(
         .csr_dmw0_plv3(csr_dmw0_plv3),
         .csr_dmw1_plv0(csr_dmw1_plv0),
         .csr_dmw1_plv3(csr_dmw1_plv3),
-        .csr_direct_addr(csr_direct_addr)
+        .csr_direct_addr(csr_direct_addr),
+        .current_exc_fetch(current_exc_fetch)
     );
 
     tlb u_tlb(

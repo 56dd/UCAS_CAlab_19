@@ -103,24 +103,26 @@ module WBreg(
                     ws_except_ine | 
                     ws_except_brk | 
                     ws_except_sys|
-                    ws_except_adem ) & ws_valid;
+                    ws_except_adem|
+                    (|ws_tlb_exc) ) & ws_valid;
     //assign wb_esubcode = 9'b0;
     assign wb_esubcode = ws_except_adem ? `ESUBCODE_ADEM : `ESUBCODE_ADEF;
-    assign wb_ecode =   {6{ws_except_int}} & ({6{wb_ex}} & 6'h0)
-                       |{6{ws_except_adef}}& ({6{wb_ex}} & 6'h8)
-                       |{6{ws_except_ale}} & ({6{wb_ex}} & 6'h9) 
-                       |{6{ws_except_sys}} & ({6{wb_ex}} & 6'hb)
-                       |{6{ws_except_brk}} & ({6{wb_ex}} & 6'hc)
-                       |{6{ws_except_ine}} & ({6{wb_ex}} & 6'hd)
-                       |{6{ws_except_adem }} & ({6{wb_ex}} & `ECODE_ADE)
-                       |{6{ws_tlb_exc[`EARRAY_TLBR_MEM]}} & ({6{wb_ex}} & `ECODE_TLBR)
-                       |{6{ws_tlb_exc[`EARRAY_PIL]}} & ({6{wb_ex}} & `ECODE_PIL)
-                       |{6{ws_tlb_exc[`EARRAY_PIS]}} & ({6{wb_ex}} & `ECODE_PIS)
-                       |{6{ws_tlb_exc[`EARRAY_PME]}} & ({6{wb_ex}} & `ECODE_PME)
-                       |{6{ws_tlb_exc[`EARRAY_PPI_MEM]}} & ({6{wb_ex}} & `ECODE_PPI)
-                       |{6{ws_tlb_exc[`EARRAY_TLBR_FETCH]}} & ({6{wb_ex}} & `ECODE_TLBR)
-                       |{6{ws_tlb_exc[`EARRAY_PIF]}} & ({6{wb_ex}} & `ECODE_PIF)
-                       |{6{ws_tlb_exc[`EARRAY_PPI_FETCH]} }& ({6{wb_ex}} & `ECODE_PPI);
+    assign wb_ecode =  ws_except_int ? `ECODE_INT:
+                       ws_except_adef? `ECODE_ADE:
+                       ws_tlb_exc[`EARRAY_TLBR_FETCH]?`ECODE_TLBR:
+                       ws_tlb_exc[`EARRAY_PIF]?`ECODE_PIF:
+                       ws_tlb_exc[`EARRAY_PPI_FETCH]?`ECODE_PPI:
+                       ws_except_ale  ? `ECODE_ALE: 
+                       ws_except_adem ? `ECODE_ADE:
+                       ws_tlb_exc[`EARRAY_TLBR_MEM]?`ECODE_TLBR:
+                       ws_tlb_exc[`EARRAY_PIL]?`ECODE_PIL:
+                       ws_tlb_exc[`EARRAY_PIS]?`ECODE_PIS:
+                       ws_tlb_exc[`EARRAY_PME]?`ECODE_PME:
+                       ws_tlb_exc[`EARRAY_PPI_MEM]?`ECODE_PPI:
+                       ws_except_sys? `ECODE_SYS:
+                       ws_except_brk? `ECODE_BRK:
+                       ws_except_ine? `ECODE_INE:
+                        6'b0; 
                        
                        // 未包含ADEM和TLBR
 //------------------------------id and ws state interface---------------------------------------
@@ -133,6 +135,7 @@ module WBreg(
     assign debug_wb_rf_we = {4{ws_rf_we & ws_valid & ~wb_ex & ~ertn_flush}};
     assign debug_wb_rf_wnum = ws_rf_waddr;
 //--------------------------------tlb interface---------------------------------------
+    assign current_exc_fetch = ws_except_adef | ws_tlb_exc[`EARRAY_TLBR_FETCH] | ws_tlb_exc[`EARRAY_PIF] | ws_tlb_exc[`EARRAY_PPI_FETCH];
     assign {wb_refetch_flag, inst_wb_tlbsrch, inst_wb_tlbrd, inst_wb_tlbwr, inst_wb_tlbfill, wb_tlbsrch_found, wb_tlbsrch_idxgot} = ms2wb_tlb_zip;
     assign tlbwe = (inst_wb_tlbwr || inst_wb_tlbfill) && ws_valid;
     assign wb_refetch_flush = wb_refetch_flag && ws_valid;
