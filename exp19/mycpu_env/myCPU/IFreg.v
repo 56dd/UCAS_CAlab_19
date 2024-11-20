@@ -172,8 +172,7 @@ module IFreg(
 //------------------------------exception---------------------------------------
     wire   fs_except_adef;
     //assign fs_except_adef=(|fs_pc[1:0])&fs_valid;
-    //虚地�?�?后两位不�?00  &&  是高地址空间且用户模式，用户模式没有这个权限  &&  确保地址没有命中直接映射窗口
-    assign fs_except_adef = ((|nextpc_vrtl[1:0]) | (nextpc_vrtl[31] & crmd_plv_CSRoutput == 2'd3)) & ~dmw0_hit & ~dmw1_hit & fs_valid; 
+    assign fs_except_adef = (|nextpc_vrtl[1:0]) & fs_valid; 
 
 //------------------------------cancel relevant---------------------------------------
     assign fs_cancel = wb_ex | ertn_flush | br_taken;
