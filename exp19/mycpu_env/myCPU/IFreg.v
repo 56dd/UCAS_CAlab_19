@@ -33,8 +33,8 @@ module IFreg(
     input  wire [19:0] s0_ppn,          //命中的物理页�?
     input  wire [ 5:0] s0_ps,           //页面大小
     input  wire [ 1:0] s0_plv,          //权限级别
-    input  wire [ 1:0] s0_mat,          //内存访问类型
-    input  wire        s0_d,            //页面是否被修�?
+    //input  wire [ 1:0] s0_mat,          //内存访问类型,没用到
+    //input  wire        s0_d,            //页面是否被修�?
     input  wire        s0_v,            //页面是否有效
     input  wire [ 1:0] crmd_plv_CSRoutput,//当前特权级，来自csr
     // DMW0  直接将虚拟地�?映射到物理地�?，绕过TLB�?
@@ -109,9 +109,6 @@ module IFreg(
     assign pf_ready_go      = inst_sram_req & inst_sram_addr_ok; 
     assign to_fs_valid      = pf_ready_go & ~pf_block & ~pf_cancel;
     assign seq_pc           = fs_pc + 3'h4;  
-    // assign nextpc           = wb_ex? ex_entry :
-    //                           ertn_flush? ertn_entry :
-    //                           br_taken ? br_target : seq_pc;
     assign nextpc_vrtl      = wb_ex_r? ex_entry_r: wb_ex? ex_entry:
                               ertn_flush_r? ertn_entry_r: ertn_flush? ertn_entry:
                               br_taken_r? br_target_r: br_taken ? br_target : seq_pc;
@@ -171,12 +168,10 @@ module IFreg(
     end
 //------------------------------exception---------------------------------------
     wire   fs_except_adef;
-    //assign fs_except_adef=(|fs_pc[1:0])&fs_valid;
     assign fs_except_adef = (|nextpc_vrtl[1:0]) & fs_valid; 
 
 //------------------------------cancel relevant---------------------------------------
     assign fs_cancel = wb_ex | ertn_flush | br_taken;
-    //assign pf_cancel = 1'b0;       // pre-IF无需被cancel，原因是在给出nextpc_vrtl时的值都是正确的
     assign pf_cancel = fs_cancel;
     always @(posedge clk) begin
         if(~resetn)
@@ -217,18 +212,19 @@ module IFreg(
 
 //------------------------------tlb---------------------------
     assign {s0_vppn, s0_va_bit12} = nextpc_vrtl[31:12];
-    //�?3位在指定的虚拟段范围�? && 权限级别和允许权限访�?
+    //?3位在指定的虚拟段范围? && 权限级别和允许权限访?
     assign dmw0_hit  = (nextpc_vrtl[31:29] == csr_dmw0_vseg) && (crmd_plv_CSRoutput == 2'd0 && csr_dmw0_plv0 || crmd_plv_CSRoutput == 2'd3 && csr_dmw0_plv3);
     assign dmw1_hit  = (nextpc_vrtl[31:29] == csr_dmw1_vseg) && (crmd_plv_CSRoutput == 2'd0 && csr_dmw1_plv0 || crmd_plv_CSRoutput == 2'd3 && csr_dmw1_plv3);
-    //直接映射的物理地�?
+    //映射的物理地�?
     assign dmw0_paddr = {csr_dmw0_pseg, nextpc_vrtl[28:0]};
     assign dmw1_paddr = {csr_dmw1_pseg, nextpc_vrtl[28:0]};
-    //tlb物理地址
+    //tlb物理地址，4MB
     assign tlb_paddr  = (s0_ps == 6'd22) ? {s0_ppn[19:10], nextpc_vrtl[21:0]} : {s0_ppn, nextpc_vrtl[11:0]}; // 根据Page Size决定
     assign nextpc_phy = csr_direct_addr ? nextpc_vrtl :
                         dmw0_hit        ? dmw0_paddr  :
                         dmw1_hit        ? dmw1_paddr  :
                                           tlb_paddr   ;     
+
     assign tlb_used = ~csr_direct_addr && ~dmw0_hit && ~dmw1_hit;
     assign {fs_tlb_exc[`EARRAY_PIL],fs_tlb_exc[`EARRAY_PIS],fs_tlb_exc[`EARRAY_PME],fs_tlb_exc[`EARRAY_TLBR_MEM], fs_tlb_exc[`EARRAY_PPI_MEM]} = 5'h0;
     assign fs_tlb_exc[`EARRAY_TLBR_FETCH] = fs_valid & tlb_used & ~s0_found;//未命�?

@@ -73,7 +73,6 @@ module EXEreg(
     reg  [4 :0] es_rf_waddr   ;
 
     reg  [ 2:0] es_st_op_zip;
-    //wire        data_sram_wr_internal;//注意这个信号，syw把访存逻辑变了变。但是为什么？debug的时候de把
 
     wire       op_st_b;
     wire       op_st_h;
@@ -136,7 +135,6 @@ module EXEreg(
     wire        isStore;
 //------------------------------state control signal---------------------------------------
     assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale ||es_except_adem||(|es2ms_tlb_exc))& es_valid;
-    //assign es_ready_go      = alu_complete;
     assign es_ready_go      = alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok);
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
     assign es2ms_valid      = es_valid & es_ready_go;
@@ -187,10 +185,10 @@ module EXEreg(
                         es2ms_tlb_exc       // 8  bits
 
                     };//142
-    //地址错误：内存指令 |虚拟地址高位为1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗口
-    assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (vtl_addr[31] & crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
+    //地址错误：内存指�? |虚拟地址高位�?1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗�?
+    //assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (vtl_addr[31] & crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
+    assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
 
-    //assign es_except_zip = {es_except_adem, es_except_ale, es_except_zip_tmp};
 //------------------------------alu interface---------------------------------------
     alu u_alu(
         .clk            (clk       ),
@@ -233,7 +231,7 @@ always @(posedge clk) begin
                               {32{inst_rdcntvl}} & es_timer_cnt[31: 0] |
                               {32{~inst_rdcntvh & ~inst_rdcntvl}} & es_alu_result;
 
-    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处理
+    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处�?
     assign es_rf_zip       = {es_csr_re & es_valid, //1
                                 es_res_from_mem & es_valid, //1
                                 es_rf_we & es_valid, //1

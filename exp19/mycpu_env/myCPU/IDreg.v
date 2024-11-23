@@ -517,7 +517,6 @@ module IDreg(
     assign ds_csr_we    = inst_csrwr | inst_csrxchg;
     assign ds_csr_wmask    = {32{inst_csrxchg}} & rj_value | {32{inst_csrwr}};
     assign ds_csr_wvalue   = rkd_value;
-    //assign ds_csr_num   = ds_inst[23:10];
     assign ds_csr_num     = {14{inst_rdcntid}} & 14'h40 | {14{~inst_rdcntid}} & ds_inst[23:10];
 
     assign ds_except_ine= ~(type_al | type_bj | type_ld_st | type_else | type_ex |type_tlb) & ~ds_except_adef;
