@@ -76,6 +76,7 @@ module csr(
     output reg  [2:0] csr_dmw0_vseg,
     output reg  csr_dmw1_plv0,
     output reg  csr_dmw1_plv3,
+    output reg  [1:0] csr_dmw1_mat,
     output reg  [2:0] csr_dmw1_pseg,
     output reg  [2:0] csr_dmw1_vseg,
     output wire csr_direct_addr,
