@@ -446,13 +446,11 @@ module csr(
             csr_tlbidx_ne <= ~tlbsrch_hit;
         else if (tlbrd_we)
             csr_tlbidx_ne <= ~r_tlb_e;
-        else if (tlbrd_we)
-            csr_tlbidx_ne <= 1'b1;
     end
 
     assign w_tlb_e = csr_estat_ecode == 6'b111111 ? 1 : ~csr_tlbidx_ne;
 
-     assign tlbehi_exc  = wb_ecode == `ECODE_TLBR || wb_ecode == `ECODE_PIL || wb_ecode == `ECODE_PIS 
+    assign tlbehi_exc  = wb_ecode == `ECODE_TLBR || wb_ecode == `ECODE_PIL || wb_ecode == `ECODE_PIS 
                        || wb_ecode == `ECODE_PIF  || wb_ecode == `ECODE_PME || wb_ecode == `ECODE_PPI;
 
     always @(posedge clk) begin
