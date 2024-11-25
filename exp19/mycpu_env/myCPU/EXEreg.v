@@ -185,10 +185,10 @@ module EXEreg(
                         es2ms_tlb_exc       // 8  bits
 
                     };//142
-    //地址错误：内存指�? |虚拟地址高位�?1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗�?
+    //地址错误：内存指�? |虚拟地址高位�?1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗�?
     //assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (vtl_addr[31] & crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
-    assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
-
+    //assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
+    assign es_except_adem = 1'b0;
 //------------------------------alu interface---------------------------------------
     alu u_alu(
         .clk            (clk       ),
@@ -231,7 +231,7 @@ always @(posedge clk) begin
                               {32{inst_rdcntvl}} & es_timer_cnt[31: 0] |
                               {32{~inst_rdcntvh & ~inst_rdcntvl}} & es_alu_result;
 
-    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处�?
+    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处�?
     assign es_rf_zip       = {es_csr_re & es_valid, //1
                                 es_res_from_mem & es_valid, //1
                                 es_rf_we & es_valid, //1
