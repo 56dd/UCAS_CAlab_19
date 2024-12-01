@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Sun Dec  1 17:41:49 2024
+# Process ID: 16904
+# Current directory: D:/aaa/UCAS_CAlab_19/exp20/mycpu_env/cache_verify/run_vivado/project/loongson.runs/tagv_ram_synth_1
+# Command line: vivado.exe -log tagv_ram.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source tagv_ram.tcl
+# Log file: D:/aaa/UCAS_CAlab_19/exp20/mycpu_env/cache_verify/run_vivado/project/loongson.runs/tagv_ram_synth_1/tagv_ram.vds
+# Journal file: D:/aaa/UCAS_CAlab_19/exp20/mycpu_env/cache_verify/run_vivado/project/loongson.runs/tagv_ram_synth_1\vivado.jou
+#-----------------------------------------------------------
+source tagv_ram.tcl -notrace
