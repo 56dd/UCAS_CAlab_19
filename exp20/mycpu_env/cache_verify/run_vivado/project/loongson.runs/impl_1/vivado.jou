@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Mon Dec  2 23:31:05 2024
+# Process ID: 24152
+# Current directory: D:/aaa/UCAS_CAlab_19/exp20/mycpu_env/cache_verify/run_vivado/project/loongson.runs/impl_1
+# Command line: vivado.exe -log cache_top.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source cache_top.tcl -notrace
+# Log file: D:/aaa/UCAS_CAlab_19/exp20/mycpu_env/cache_verify/run_vivado/project/loongson.runs/impl_1/cache_top.vdi
+# Journal file: D:/aaa/UCAS_CAlab_19/exp20/mycpu_env/cache_verify/run_vivado/project/loongson.runs/impl_1\vivado.jou
+#-----------------------------------------------------------
+source cache_top.tcl -notrace

@@ -2,20 +2,20 @@ module cache(
     input wire        clk,
     input wire        resetn,
 
-    /* cache 模块与 CPU 流水线的交互接口 */
+    // cache与CPU的交互接口
     input wire        valid,  // CPU 访问cache 请求的有效信号
-    input wire        op,     // READ/WRITE
-    input wire [ 7:0] index,  // vaddr[11:4]
-    input wire [19:0] tag,    // paddr[31:12], from tlb
-    input wire [ 3:0] offset, // vaddr[3:0]
+    input wire        op,     // 读或写
+    input wire [ 7:0] index,  // vaddr[11:4] 索引
+    input wire [19:0] tag,    // paddr[31:12] 标签
+    input wire [ 3:0] offset, // vaddr[3:0] 偏移量
     input wire [ 3:0] wstrb,  // 字节写使能
     input wire [31:0] wdata,  // 写数据
     
-    output wire        addr_ok, // 地址传输ok
-    output wire        data_ok, // 数据传输ok
+    output wire        addr_ok, // 地址传输完成信号
+    output wire        data_ok, // 数据传输完成信号
     output wire [31:0] rdata,   // cache读数据
 
-    /* cache 模块与 AXI 总线接口模块之间的接口 */
+    // cache与总线的交互接口
     output wire        rd_req,   // 读请求有效信号
     output wire [ 2:0] rd_type,  // 读请求类型
     output wire [31:0] rd_addr,  // 读请求起始地址
@@ -35,76 +35,27 @@ module cache(
 
     );
 
-/* ------------------------------------------------------------- 
-                paddr:
-    |------------------------------------|
-    |   tag    |   index   |    offset   |
-    |31      12|11        4|3           0|
-    |------------------------------------|
-
->>>读 cache 请求:
-    第1拍：直接用输入信号读ram
-    第2拍：将读出的信息与 request buffer 比较
-    命中直接拉高data_ok，返回数据
-    未命中
-    第3拍：MISS，若dirty，等待 wr_rdy 拉高；若不dirty，下一拍进入REPLACE
-    ...
->>>写 cache 请求:
-    第1拍：直接用输入信号读ram
-    第2拍：将读出的信息与 request buffer 比较
-    命中直接拉高data_ok
-    第3拍：待写入数据进入 write buffer
-    第4拍：write buffer数据写入ram
-    未命中
-    第3拍：MISS，若dirty，等待 wr_rdy 拉高；若不dirty，下一拍进入REPLACE
-    ...
-
->>>4 种 cache 操作，其中 lookup，replace 和 refill 不可能同时进行（阻塞），但 hitwrite 可能与其他操作同时进行，所以需要专门的寄存器 write bufffer
-
->>> 还没有完成的部分:
-    1. uncache 支持；
-    2. AXI总线对 cache 读写一个 block 的支持；
-*/
-
 // cache 的 4 种操作类型
-wire lookup;
-wire hitwrite;
-wire replace;
-wire refill;
+wire lookup; //根据标签和索引查找是否命中
+wire hitwrite;//命中的写操作会进入 Write Buffer，随后将数据写入命中 Cache 行的对应位置。
+wire replace;//如果查找未命中或者缓存中的数据需要被更新，执行替换cache，即读取一个 Cache 行
+wire refill;//将内存返回的数据（以及 store miss 待写入的数据）填入 Replace 空出的位置上
 
-// CPU---->cache 请求类型 (op)
+// CPU-->cache 请求类型 (op)
 localparam READ  = 1'b0;
 localparam WRITE = 1'b1;
 
-// cache---->内存 读请求类型 (rd_type)
-localparam READ_BYTE     = 3'b000;
-localparam READ_HALFWORD = 3'b001;
-localparam READ_WORD     = 3'b010;
-localparam READ_BLOCK    = 3'b100;
+// cache-->内存 读请求类型 (rd_type)
+localparam READ_BYTE     = 3'b000; //1字节
+localparam READ_HALFWORD = 3'b001; //2字节
+localparam READ_WORD     = 3'b010; //4字节
+localparam READ_BLOCK    = 3'b100; 
 
-// cache---->内存 写请求类型 (wr_type)
+// cache-->内存 写请求类型 (wr_type)
 localparam WRITE_BYTE     = 3'b000;
 localparam WRITE_HALFWORD = 3'b001;
 localparam WRITE_WORD     = 3'b010;
 localparam WRITE_BLOCK    = 3'b100;
-
-
-/* tagv_ram 的读写端口：（读写复用同一个端口）
-    input  [ 7:0] addra,
-    input         clka,
-    input  [20:0] dina,
-    output [20:0] douta,
-    input         ena,    // 片选信号
-    input         wea     // 写使能信号
-
-   data_block_ram 的读写端口：（读写复用同一个端口，支持写字节使能）
-    input  [ 7:0] addra,
-    input         clka,
-    input  [31:0] dina,
-    output [31:0] douta,
-    input         ena,    // 片选信号
-    input  [ 3:0] wea     // 字节写使能信号
-*/
 
 reg         reset;
 always @(posedge clk)begin
@@ -143,6 +94,7 @@ tagv_ram tagv_way1(
     .ena(tagv_w1_en),
     .wea(tagv_w1_we)
 );
+
 // data block：每一路拆分成4个 bank，每个 bank 用 256*32 bit 的 ram 实现
 data_bank_ram data_way0_bank0(
     .addra(data_addr),
@@ -208,7 +160,7 @@ data_bank_ram data_way1_bank3(
     .ena(data_w1_b3_en),
     .wea(data_w1_b3_we)
 );
-// D 域：每一路用 256 位的寄存器实现
+// D 域：每一路用 256 位的寄存器实现，dirty 位用于指示某个缓存行的数据是否已经被修改
 reg [255:0] dirty_way0;
 reg [255:0] dirty_way1;
 
@@ -223,7 +175,7 @@ localparam IDLE    = 5'b00001,
 reg [4:0] current_state;
 reg [4:0] next_state;
 
-// write_buffer 状态机的状态
+// write_buffer
 localparam WRITEBUF_IDLE  = 2'b01,
            WRITEBUF_WRITE = 2'b10;
 
@@ -243,10 +195,10 @@ reg [31:0] reg_wdata;
 reg [ 1:0] refill_word_counter;  // 1个 cache block 有 4 个 32 位数据
 
 // write buffer
-reg        write_way;
-reg [ 1:0] write_bank;
-reg [ 7:0] write_index;
-reg [ 3:0] write_strb;
+reg        write_way;   //写入的路
+reg [ 1:0] write_bank;  //写入的缓存块
+reg [ 7:0] write_index; //索引
+reg [ 3:0] write_strb; //写使能信号
 reg [31:0] write_data;
 
 // tag compare，此处未考虑 Uncache 情况，如果是 Uncache，一定要不命中
@@ -269,20 +221,20 @@ wire [ 31:0] load_res;
 
 assign way0_load_block = {data_w0_b3_rdata, data_w0_b2_rdata, data_w0_b1_rdata, data_w0_b0_rdata};
 assign way1_load_block = {data_w1_b3_rdata, data_w1_b2_rdata, data_w1_b1_rdata, data_w1_b0_rdata};
-assign way0_load_word = way0_load_block[reg_offset[3:2]*32 +: 32];
+assign way0_load_word = way0_load_block[reg_offset[3:2]*32 +: 32]; //从拼接的缓存块中选择一个特定的 32 位数据单元
 assign way1_load_word = way1_load_block[reg_offset[3:2]*32 +: 32];
 assign load_res = {32{way0_hit}} & way0_load_word |
                   {32{way1_hit}} & way1_load_word |
                   {32{current_state == REFILL}} & ret_data;
 
 
-// LFSR 线性反馈移位寄存器
+// LFSR 线性反馈移位寄存器，是一种用于随机生成序列的寄存器，用于选择替换的缓存行
 reg [2:0] lfsr;
 always @(posedge clk)begin
     if(reset)begin
         lfsr <= 3'b111;
     end
-    else if(ret_valid == 1 & ret_last == 1)begin
+    else if(ret_valid == 1 & ret_last == 1)begin  //数据有效且传输完成
         lfsr <= {lfsr[0], lfsr[2]^lfsr[0], lfsr[1]};
     end
 end
@@ -293,8 +245,10 @@ wire [127:0] replace_data;
 assign replace_way = lfsr[0];
 assign replace_data = replace_way? way1_load_block : way0_load_block;
 
+//脏块是指已修改但还未写回主存的数据块
 wire   replace_block_dirty;
 assign replace_block_dirty = (replace_way == 1'b0) && dirty_way0[reg_index] && way0_v 
+                        //选择 way0，way0 中的指定索引块是脏的，并且 way0 有效
                         || (replace_way == 1'b1) && dirty_way1[reg_index] && way1_v;
 
 
@@ -387,7 +341,8 @@ assign replace = (current_state == MISS) || (current_state == REPLACE);
 assign refill = (current_state == REFILL);
 
 assign lookup_en = (current_state == IDLE) && valid && (~conflict_case1) ||
-                (current_state == LOOKUP) && valid && (~conflict_case1) && (~conflict_case2); // 对于 ram 片选信号的生成，需要防止cache输出产生的 cache_hit 信号影响 ram 片选信号的生成
+                (current_state == LOOKUP) && valid && (~conflict_case1) && (~conflict_case2); 
+                // 对于 ram 片选信号的生成，需要防止cache输出产生的 cache_hit 信号影响 ram 片选信号的生成
 
 
 // request buffer 的赋值
@@ -455,12 +410,6 @@ assign tagv_wdata = {reg_tag, 1'b1}; // refill 的 cache block v 位自动置1
 assign tagv_addr  = {8{lookup_en}} & index |
                     {8{replace || refill}} & reg_index;
 
-// data bank ram 的输入信号生成
-/* 片选信号需要拉高的情况：
-    1. lookup 操作，并且输入 offset 与 bank 对应；
-    2. hitwrite 操作，并且 write buffer 中的 way 和 bank 与自己匹配；
-    3. replace/refill 操作，并且 miss buffer 中的 way 和自己匹配；
- */
 
 assign data_w0_b0_en = lookup_en && (offset[3:2] == 2'b00) ||
                        hitwrite && (write_way == 1'b0)||
@@ -487,10 +436,7 @@ assign data_w1_b3_en = lookup_en && (offset[3:2] == 2'b11) ||
                        hitwrite && (write_way == 1'b1)||
                        (replace || refill) && (replace_way == 1'b1);
 
-/* 写字节使能需要拉高的情况:
-    1. hitwrite 操作，且 write buffer 中的 way 与 bank 与自己匹配，此时写字节使能来自于 write buffer
-    2. refill 操作，且 miss buffer 中的 way 与 counter(实际上也是bank的值) 与自己匹配，此时写字节使能就是 1111（32位全部要替换）
-*/
+
 
 assign data_w0_b0_we = {4{hitwrite && (write_way == 1'b0) && (write_bank == 2'b00)}} & write_strb |
                        {4{refill && (replace_way == 1'b0) && (refill_word_counter == 2'b00) && ret_valid}} & {4'b1111};
@@ -538,7 +484,7 @@ always @(posedge clk)begin
 end
 
 
-// cache ----> CPU 输出信号的赋值
+// cache --> CPU 输出信号的赋值
 assign addr_ok = (current_state == IDLE) ||
                  (current_state == LOOKUP) && cache_hit &&
                  valid && (~conflict_case1) && (~conflict_case2);
@@ -546,7 +492,7 @@ assign data_ok = (current_state == LOOKUP) && (cache_hit || (reg_op == WRITE)) |
                  (current_state == REFILL) && ret_valid && (refill_word_counter == reg_offset[3:2]) && (reg_op == READ);
 assign rdata   = load_res;
 
-// cache ----> AXI 输出信号的赋值
+// cache --> AXI 输出信号的赋值
 assign rd_req = (current_state == REPLACE);
 assign rd_type = READ_BLOCK; // 后续加入 ucached 需要补充！
 assign rd_addr = {reg_tag, reg_index, 4'b0000};
