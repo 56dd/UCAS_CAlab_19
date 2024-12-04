@@ -43,15 +43,15 @@ module bridge_sram_axi(
     input               	bvalid,
     output              	bready,
     // inst sram interface
-    input               	inst_sram_req,
-    input               	inst_sram_wr,
-    input   	[ 1:0]      inst_sram_size,
-    input   	[31:0]      inst_sram_addr,
-    input   	[ 3:0]      inst_sram_wstrb,
-    input   	[31:0]      inst_sram_wdata,
-    output              inst_sram_addr_ok,
-    output              inst_sram_data_ok,
-    output  [31:0]      inst_sram_rdata,
+    // input               	inst_sram_req,
+    // input               	inst_sram_wr,
+    // input   	[ 1:0]      inst_sram_size,
+    // input   	[31:0]      inst_sram_addr,
+    // input   	[ 3:0]      inst_sram_wstrb,
+    // input   	[31:0]      inst_sram_wdata,
+    // output              inst_sram_addr_ok,
+    // output              inst_sram_data_ok,
+    // output  [31:0]      inst_sram_rdata,
     // data sram interface
     input               	data_sram_req,
     input               	data_sram_wr,
@@ -81,17 +81,17 @@ module bridge_sram_axi(
 	reg [4:0] w_next_state;
 	reg [4:0] b_current_state;	// 写相应状态机
 	reg [4:0] b_next_state;
-	// 地址已经握手成功而未响应的情况，�?要计�?
+	// 地址已经握手成功而未响应的情况，�??要计�??
 	reg [1:0] ar_resp_cnt;
 	reg [1:0] aw_resp_cnt;
 	reg [1:0] wd_resp_cnt;
-	// 写数据burst传输计数�?
-	reg [1:0] wburst_cnt;	// �?多传�?4次，�?3'b100，只�?两位是因为最后一次累加恰好进位溢出，等价于置�?
-	// 数据寄存器，0-指令SRAM寄存器，1-数据SRAM寄存器（根据id索引�?
+	// 写数据burst传输计数�??
+	reg [1:0] wburst_cnt;	// �??多传�??4次，�??3'b100，只�??两位是因为最后一次累加恰好进位溢出，等价于置�??
+	// 数据寄存器，0-指令SRAM寄存器，1-数据SRAM寄存器（根据id索引�??
 	reg [31:0] buf_rdata [1:0];
-	// 数据相关的判断信�?
+	// 数据相关的判断信�??
 	wire read_block;
-	// 若干寄存�?
+	// 若干寄存�??
     reg  [ 3:0] rid_r;
 
 	localparam  IDLE = 5'b1;         //各个状�?�机共用IDLE状�??  
@@ -110,7 +110,7 @@ module bridge_sram_axi(
 	always @(*) begin
 		case(ar_current_state)
 			IDLE:begin
-				if((~read_block) & icache_rd_req)	// 读请�?
+				if((~read_block) & icache_rd_req)	// 读请�??
 					ar_next_state = AR_REQ_START;
 				else
 					ar_next_state = IDLE;
@@ -126,7 +126,7 @@ module bridge_sram_axi(
 			end
 		endcase
 	end
-	//第三�?
+	//第三�??
 	assign arvalid = ar_current_state[1];
 	always  @(posedge aclk) begin
 		if(~aresetn) begin
@@ -150,14 +150,14 @@ module bridge_sram_axi(
     localparam  R_DATA_START   	= 4'b0010,
 				R_DATA_MID		= 4'b0100,
 				R_DATA_END		= 4'b1000;
-    //第一�?
+    //第一�??
 	always @(posedge aclk) begin
 		if(~aresetn)
 			r_current_state <= IDLE;
 		else 
 			r_current_state <= r_next_state;
 	end
-	//第二�?
+	//第二�??
 	always @(*) begin
 		case(r_current_state)
 			IDLE:begin
@@ -188,11 +188,11 @@ module bridge_sram_axi(
 				r_next_state = IDLE;
 		endcase
 	end
-	//第三�?
+	//第三�??
 	always @(posedge aclk) begin
 		if(~aresetn)
 			ar_resp_cnt <= 2'b0;
-		else if(arvalid & arready & rvalid & rready)	// 读地�?和数据channel同时完成握手
+		else if(arvalid & arready & rvalid & rready)	// 读地�??和数据channel同时完成握手
 			ar_resp_cnt <= ar_resp_cnt;		
 		else if(arvalid & arready)
 			ar_resp_cnt <= ar_resp_cnt + 1'b1;
@@ -200,22 +200,36 @@ module bridge_sram_axi(
 			ar_resp_cnt <= ar_resp_cnt - 1'b1;
 	end
 	assign rready = r_current_state[1];
-	assign read_block = (araddr == awaddr) & (|w_current_state[4:1]) & ~b_current_state[2];	// 读写地址相同且有写操作且数据未写�?
+	assign read_block = (araddr == awaddr) & (|w_current_state[4:1]) & ~b_current_state[2];	// 读写地址相同且有写操作且数据未写�??
 	always @(posedge aclk)begin
 		if(!aresetn)
 			{buf_rdata[1], buf_rdata[0]} <= 64'b0;
 		else if(rvalid & rready)
 			buf_rdata[rid] <= rdata;
 	end
-	assign data_sram_rdata = buf_rdata[1];
-	assign data_sram_addr_ok = arid[0] & arvalid & arready | wid[0] & awvalid & awready ; 
-	assign data_sram_data_ok = rid_r[0] & r_current_state[2] | bid[0] & bvalid & bready; 
+	// assign data_sram_rdata = buf_rdata[1];
+	// assign data_sram_addr_ok = arid[0] & arvalid & arready | wid[0] & awvalid & awready ; 
+	// assign data_sram_data_ok = rid_r[0] & r_current_state[2] | bid[0] & bvalid & bready; 
 	
-	assign inst_sram_rdata = buf_rdata[0];
-	assign inst_sram_data_ok = ~rid_r[0] & r_current_state[2] | ~bid[0] & bvalid & bready; // rvalid & rready的下�?�?
-	assign inst_sram_addr_ok = ~arid[0] & arvalid & arready;
-
+	// assign inst_sram_rdata = buf_rdata[0];
+	// //assign inst_sram_data_ok = ~rid_r[0] & r_current_state[2] | ~bid[0] & bvalid & bready; // rvalid & rready的下�??�??
+	// //assign inst_sram_addr_ok = ~arid[0] & arvalid & arready;
+	// assign icache_ret_valid = ~rid_r[0] & r_current_state[2] | ~bid[0] & bvalid & bready; // rvalid & rready的下�??�??
+	// assign icache_rd_rdy = ~arid[0] & arvalid & arready;
+	assign icache_rd_rdy = ar_current_state[0] & ~data_sram_req;
+	assign icache_ret_data = buf_rdata[0];
+	assign icache_ret_valid = ~rid_r[0] & (|r_current_state[3:2]); // rvalid & rready的下�?�?
+	assign icache_ret_last = ~rid_r[0] & r_current_state[3];
 	// data_ok 不采用如下是因为�?要从buffer中拿数据，则要等到下�?�?
+	// assign icache_ret_valid = ~rid[0] & rvalid & rready;
+	assign dcache_rd_rdy = ar_current_state[0];
+	// assign dcache_rd_rdy = arid[0] & arvalid & arready;
+	assign dcache_ret_data = buf_rdata[1];
+	assign dcache_ret_valid = rid_r[0] & (|r_current_state[3:2]);
+	assign dcache_ret_last = rid_r[0] & r_current_state[3];
+
+
+	// data_ok 不采用如下是因为�??要从buffer中拿数据，则要等到下�??�??
 	// assign inst_sram_data_ok = ~rid[0] & rvalid & rready;
 
 	always @(posedge aclk)  begin
@@ -225,19 +239,19 @@ module bridge_sram_axi(
 			rid_r <= rid;
 	end	
 //--------------------------------state machine for write req & data channel-------------------------------------------
-    //写请�?&写数据�?�道状�?�独热码译码
+    //写请�??&写数据�?�道状�?�独热码译码
 	localparam  W_REQ_START      		= 5'b00010,
 				W_ADDR_RESP				= 5'b00100,
 				W_DATA_RESP      		= 5'b01000,
 				W_REQ_END				= 5'b10000;
-    //第一�?
+    //第一�??
 	always @(posedge aclk) begin
 		if(~aresetn)
 			w_current_state <= IDLE;
 		else 
 			w_current_state <= w_next_state;
 	end
-	//第二�?
+	//第二�??
 	always @(*) begin
 		case(w_current_state)
 			IDLE:begin
@@ -274,19 +288,22 @@ module bridge_sram_axi(
 					w_next_state = W_REQ_END;
 		endcase
 	end
-	//第三�?
+	//第三�??
 	assign awvalid = w_current_state[1] | w_current_state[3];	// W_REQ_START | W_DATA_RESP
 	assign wlast  = &wburst_cnt;
 
 	always  @(posedge aclk) begin
 		if(~aresetn) begin
 			awaddr <= 32'b0;
-			awsize <= 3'b0;
-			{awlen, awburst, awlock, awcache, awprot, awid} <= {8'b0, 2'b1, 1'b0, 1'b0, 1'b0, 1'b1};	// 常�??
+			awsize <= 3'b010;
+			awcache <= 4'b0;
+			{awlen, awburst, awlock,  awprot, awid} <= {8'b0, 2'b1, 1'b0, 1'b0, 1'b1};	// 常�??
 		end
 		else if(w_current_state[0]) begin	// 写请求状态机为空闲状态，更新数据
-			awaddr <= data_sram_wr? data_sram_addr : inst_sram_addr;
-			awsize <= data_sram_wr? {1'b0, data_sram_size} : {1'b0, inst_sram_size};
+			//awaddr <= data_sram_wr? data_sram_addr : inst_sram_addr;
+			awaddr <= data_sram_wr? data_sram_addr : icache_rd_addr;
+			//awsize <= data_sram_wr? {1'b0, data_sram_size} : {1'b0, inst_sram_size};
+			awlen[1:0] <= {2{data_sram_wr}};
 		end
 	end
 
@@ -308,14 +325,14 @@ module bridge_sram_axi(
     localparam  B_START     = 4'b0010,
 				B_MID		= 4'b0100,
 				B_END		= 4'b1000;
-    //第一�?
+    //第一�??
 	always @(posedge aclk) begin
 		if(~aresetn)
 			b_current_state <= IDLE;
 		else 
 			b_current_state <= b_next_state;
 	end
-	//第二�?
+	//第二�??
 	always @(*) begin
 		case(b_current_state)
 			IDLE:begin
@@ -343,7 +360,7 @@ module bridge_sram_axi(
 			end
 		endcase
 	end
-	//第三�?
+	//第三�??
 	assign bready = w_current_state[4];
 	always @(posedge aclk) begin
 		if(~aresetn) begin
@@ -365,7 +382,7 @@ module bridge_sram_axi(
 			wd_resp_cnt <= wd_resp_cnt - 1'b1;
 		end
 	end
-	// 写响应�?�道burst传输计数�?
+	// 写响应�?�道burst传输计数�??
 	always @(posedge aclk) begin
 		if(~aresetn)
 			wburst_cnt <= 2'b0;
@@ -375,7 +392,7 @@ module bridge_sram_axi(
 
 	assign icache_rd_rdy = ar_current_state[0] ;
 	assign icache_ret_data = buf_rdata[0];
-	assign icache_ret_valid = ~rid_r[0] & (|r_current_state[3:2]); // rvalid & rready的下�?�?
+	assign icache_ret_valid = ~rid_r[0] & (|r_current_state[3:2]); // rvalid & rready的下�??�??
 	assign icache_ret_last = ~rid_r[0] & r_current_state[3];
 	
 endmodule
