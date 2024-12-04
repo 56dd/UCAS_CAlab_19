@@ -48,7 +48,9 @@ module IFreg(
     input  wire [ 2:0] csr_dmw1_pseg,
     input  wire [ 2:0] csr_dmw1_vseg,
     // 直接地址翻译
-    input  wire        csr_direct_addr  //直接地址
+    input  wire        csr_direct_addr,  //直接地址
+    //ICACHE ADD!
+    output wire [31:0]  inst_addr_vrtl
 );
 
     wire        pf_ready_go;//preIF的ready-go
@@ -59,9 +61,9 @@ module IFreg(
 
 
     wire [31:0] seq_pc;
-    //wire [31:0] nextpc;
     wire [31:0] nextpc_vrtl; // 虚拟地址 ADDED EXP19
     wire [31:0] nextpc_phy;  // 物理地址 ADDED EXP19
+    assign inst_addr_vrtl =nextpc_vrtl;
 
     wire         br_stall;
     wire         br_taken;

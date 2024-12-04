@@ -71,6 +71,61 @@ module mycpu_top(
     wire        data_sram_data_ok;
     wire [31:0] data_sram_rdata;
 
+    //icache read channel
+    wire [31:0] inst_addr_vrtl;
+    wire        icache_addr_ok;
+    wire        icache_data_ok;
+    wire [31:0] icache_rdata;
+    wire        icache_rd_req;
+    wire [ 2:0] icache_rd_type;
+    wire [31:0] icache_rd_addr;
+    wire        icache_rd_rdy;
+    wire        icache_ret_valid;
+    wire        icache_ret_last;
+    wire [31:0] icache_ret_data;
+
+    //icache write channel=meaning less ,all is 0        
+    wire        icache_wr_req;
+    wire [ 2:0] icache_wr_type;
+    wire [31:0] icache_wr_addr;
+    wire [ 3:0] icache_wr_strb;
+    wire [127:0]icache_wr_data;
+    wire        icache_wr_rdy=1'b0;
+
+    //exp21: 继承指令cache
+    cache Icache(
+        //----------cpu interface------
+        .clk    (aclk                       ),
+        .resetn (aresetn                    ),
+        .valid  (inst_sram_req              ),//pre-if request valid
+        .op     (inst_sram_wr               ),//always 0==read
+        .index  (inst_addr_vrtl[11:4]       ),
+        .tag    (inst_sram_addr[31:12]      ),//from tlb:inst_sram_addr[31:12]=实地址
+        .offset (inst_addr_vrtl[3:0]        ),
+        .wstrb  (inst_sram_wstrb            ),
+        .wdata  (inst_sram_wdata            ),
+        .addr_ok(icache_addr_ok             ),//output 流水线方向 阻塞流水线的指令
+        .data_ok(icache_data_ok             ),
+        .rdata  (icache_rdata               ),//output
+        //--------AXI read interface-------
+        .rd_req (icache_rd_req              ),//output
+        .rd_type(icache_rd_type             ),
+        .rd_addr(icache_rd_addr             ),
+
+        .rd_rdy   (icache_rd_rdy            ),//input 总线发来的
+        .ret_valid(icache_ret_valid         ),
+        .ret_last (icache_ret_last          ),
+        .ret_data (icache_ret_data          ),
+
+        //--------AXI write interface------
+        .wr_req (icache_wr_req              ),//output,对于icache永远是0
+        .wr_type(icache_wr_type             ),
+        .wr_addr(icache_wr_addr             ),
+        .wr_wstrb(icache_wr_strb             ),
+        .wr_data(icache_wr_data             ),
+        .wr_rdy (icache_wr_rdy              )//icache不会真正要写sram，置1没有关系
+    );
+
     mycpu_core my_core(
         .clk            (aclk       ),
         .resetn         (aresetn    ),
@@ -98,7 +153,10 @@ module mycpu_top(
         .debug_wb_pc        (debug_wb_pc        ),
         .debug_wb_rf_we     (debug_wb_rf_we     ),
         .debug_wb_rf_wnum   (debug_wb_rf_wnum   ),
-        .debug_wb_rf_wdata  (debug_wb_rf_wdata  )
+        .debug_wb_rf_wdata  (debug_wb_rf_wdata  ),
+
+        //ICACHE ADD!
+        .inst_addr_vrtl     (inst_addr_vrtl     )
     ); 
 
     bridge_sram_axi my_bridge_sram_axi(
