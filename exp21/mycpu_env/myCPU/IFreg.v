@@ -61,6 +61,7 @@ module IFreg(
 
 
     wire [31:0] seq_pc;
+    //wire [31:0] nextpc;
     wire [31:0] nextpc_vrtl; // 虚拟地址 ADDED EXP19
     wire [31:0] nextpc_phy;  // 物理地址 ADDED EXP19
     assign inst_addr_vrtl =nextpc_vrtl;
@@ -100,7 +101,8 @@ module IFreg(
     wire        tlb_used  ; // 确实用到了TLB进行地址翻译
 //------------------------------inst sram interface---------------------------------------
     
-    assign inst_sram_req    = fs_allowin & resetn & (~br_stall | wb_ex | ertn_flush) & ~pf_block & ~inst_sram_addr_ack;
+    //assign inst_sram_req    = fs_allowin & resetn & (~br_stall | wb_ex | ertn_flush) & ~pf_block & ~inst_sram_addr_ack;
+    assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_block & ~inst_sram_addr_ack;
     assign inst_sram_wr     = |inst_sram_wstrb;
     assign inst_sram_wstrb  = 4'b0;
     assign inst_sram_addr   = nextpc_phy;//从实地址取数�?
@@ -141,8 +143,8 @@ module IFreg(
     always @(posedge clk) begin
         if(~resetn)
             pf_block <= 1'b0;
-        // else if(pf_cancel  & ~inst_sram_data_ok)
-        //     pf_block <= 1'b1;
+        else if(pf_cancel  & ~inst_sram_data_ok)
+            pf_block <= 1'b1;
         else if(inst_sram_data_ok)
             pf_block <= 1'b0;
     end
@@ -179,7 +181,7 @@ module IFreg(
         if(~resetn)
             inst_discard <= 1'b0;
         // 流水级取消：当pre-IF阶段发�?�错误地�?请求已被指令SRAM接受 or IF内有有效指令且正在等待数据返回时，需要丢弃一条指�?
-        else if(fs_cancel & ~fs_allowin & ~fs_ready_go | pf_cancel & inst_sram_req& inst_sram_addr_ok)
+        else if(fs_cancel & ~fs_allowin & ~fs_ready_go | pf_cancel & inst_sram_req)
             inst_discard <= 1'b1;
         else if(inst_discard & inst_sram_data_ok)
             inst_discard <= 1'b0;

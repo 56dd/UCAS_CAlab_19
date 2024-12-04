@@ -252,8 +252,7 @@ module IDreg(
     always @(posedge clk) begin
         if(~resetn)
             {ds_tlb_exc,ds_inst, ds_pc,ds_except_adef} <={ `FS2DS_BUS{1'b0}};
-        //if(fs2ds_valid & ds_allowin) begin
-        if(ds_allowin) begin
+        if(fs2ds_valid & ds_allowin) begin
             {ds_tlb_exc,ds_inst, ds_pc,ds_except_adef} <= fs2ds_bus;
         end
     end
