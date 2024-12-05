@@ -54,8 +54,10 @@ module EXEreg(
     // 直接地址翻译
     input  wire        csr_direct_addr,
     input  wire [18:0] tlbehi_vppn_CSRoutput,
-    input  wire [ 9:0] asid_CSRoutput
-    
+    input  wire [ 9:0] asid_CSRoutput,
+
+    //DCACHE ADD
+    output wire [31:0] vtl_addr//虚地址   
 );
 
     wire        es_ready_go;

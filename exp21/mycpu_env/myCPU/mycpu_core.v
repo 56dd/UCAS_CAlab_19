@@ -29,7 +29,9 @@ module mycpu_core(
     output wire [31:0] debug_wb_rf_wdata,
 
     //ICACHE ADD!
-    output wire [31:0]  inst_addr_vrtl
+    output wire [31:0]  inst_addr_vrtl,
+    //DCACHE ADD!
+    output wire [31:0]  data_addr_vrtl
 );
     wire        ds_allowin;
     wire        es_allowin;
@@ -309,7 +311,9 @@ module mycpu_core(
         .csr_dmw0_plv3(csr_dmw0_plv3),
         .csr_dmw1_plv0(csr_dmw1_plv0),
         .csr_dmw1_plv3(csr_dmw1_plv3),
-        .csr_direct_addr(csr_direct_addr)
+        .csr_direct_addr(csr_direct_addr),
+
+        .vtl_addr (data_addr_vrtl)
     );
 
     MEMreg my_memReg(

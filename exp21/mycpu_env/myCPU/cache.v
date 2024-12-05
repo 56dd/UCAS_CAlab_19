@@ -57,10 +57,8 @@ localparam WRITE_HALFWORD = 3'b001;
 localparam WRITE_WORD     = 3'b010;
 localparam WRITE_BLOCK    = 3'b100;
 
-reg         reset;
-always @(posedge clk)begin
-    reset <= ~resetn;
-end
+wire reset;
+assign reset = ~resetn;
 
 // tagv_ram 和 data_bank_ram 的输入输出信号
 wire [ 7:0] tagv_addr;
