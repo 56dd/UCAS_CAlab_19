@@ -143,8 +143,8 @@ module IFreg(
     always @(posedge clk) begin
         if(~resetn)
             pf_block <= 1'b0;
-        else if(pf_cancel  & ~inst_sram_data_ok)
-            pf_block <= 1'b1;
+        // else if(pf_cancel  & ~inst_sram_data_ok)
+        //     pf_block <= 1'b1;
         else if(inst_sram_data_ok)
             pf_block <= 1'b0;
     end
@@ -181,7 +181,7 @@ module IFreg(
         if(~resetn)
             inst_discard <= 1'b0;
         // 流水级取消：当pre-IF阶段发�?�错误地�?请求已被指令SRAM接受 or IF内有有效指令且正在等待数据返回时，需要丢弃一条指�?
-        else if(fs_cancel & ~fs_allowin & ~fs_ready_go | pf_cancel & inst_sram_req)
+        else if(fs_cancel & ~fs_allowin & ~fs_ready_go | pf_cancel & inst_sram_req&inst_sram_addr_ok)
             inst_discard <= 1'b1;
         else if(inst_discard & inst_sram_data_ok)
             inst_discard <= 1'b0;
