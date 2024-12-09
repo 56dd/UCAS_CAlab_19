@@ -101,8 +101,8 @@ module IFreg(
     wire        tlb_used  ; // 确实用到了TLB进行地址翻译
 //------------------------------inst sram interface---------------------------------------
     
-    //assign inst_sram_req    = fs_allowin & resetn & (~br_stall | wb_ex | ertn_flush) & ~pf_block & ~inst_sram_addr_ack;
-    assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_block & ~inst_sram_addr_ack;
+    assign inst_sram_req    = fs_allowin & resetn & (~br_stall | wb_ex | ertn_flush) & ~pf_block & ~inst_sram_addr_ack;
+    //assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_block & ~inst_sram_addr_ack;
     assign inst_sram_wr     = |inst_sram_wstrb;
     assign inst_sram_wstrb  = 4'b0;
     assign inst_sram_addr   = nextpc_phy;//从实地址取数�?

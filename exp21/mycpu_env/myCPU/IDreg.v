@@ -242,7 +242,7 @@ module IDreg(
             ds_valid <= 1'b0;
         else if(wb_ex)
             ds_valid <= 1'b0;
-        else if(br_taken)
+        else if(ds_allowin && br_taken)
             ds_valid <= 1'b0;
         else if(ds_allowin)
             ds_valid <= fs2ds_valid;
