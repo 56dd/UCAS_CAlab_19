@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2019.2 (64-bit)
+# SW Build 2708876 on Wed Nov  6 21:40:23 MST 2019
+# IP Build 2700528 on Thu Nov  7 00:09:20 MST 2019
+# Start of session at: Tue Dec 10 02:01:52 2024
+# Process ID: 11556
+# Current directory: d:/calab/UCAS_CAlab_19/exp22/mycpu_env/soc_verify/soc_axi/run_vivado/project/loongson.runs/data_bank_ram_synth_1
+# Command line: vivado.exe -log data_bank_ram.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source data_bank_ram.tcl
+# Log file: d:/calab/UCAS_CAlab_19/exp22/mycpu_env/soc_verify/soc_axi/run_vivado/project/loongson.runs/data_bank_ram_synth_1/data_bank_ram.vds
+# Journal file: d:/calab/UCAS_CAlab_19/exp22/mycpu_env/soc_verify/soc_axi/run_vivado/project/loongson.runs/data_bank_ram_synth_1\vivado.jou
+#-----------------------------------------------------------
+source data_bank_ram.tcl -notrace
