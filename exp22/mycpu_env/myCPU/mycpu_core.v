@@ -31,7 +31,8 @@ module mycpu_core(
     //ICACHE ADD!
     output wire [31:0]  inst_addr_vrtl,
     //DCACHE ADD!
-    output wire [31:0]  data_addr_vrtl
+    output wire [31:0]  data_addr_vrtl,
+    output wire [1:0]   datm
 );
     wire        ds_allowin;
     wire        es_allowin;
@@ -183,10 +184,14 @@ module mycpu_core(
     wire       csr_dmw0_plv3;
     wire       csr_dmw1_plv0;
     wire       csr_dmw1_plv3;
+    wire [1:0] csr_dmw0_mat;
+    wire [1:0] csr_dmw1_mat;
     wire       csr_direct_addr;
     wire [1:0] crmd_plv_CSRoutput;
 
     wire       current_exc_fetch;
+
+    wire [1:0] csr_crmd_datm;
 
     IFreg my_ifReg(
         .clk(clk),
@@ -311,7 +316,12 @@ module mycpu_core(
         .csr_dmw0_plv3(csr_dmw0_plv3),
         .csr_dmw1_plv0(csr_dmw1_plv0),
         .csr_dmw1_plv3(csr_dmw1_plv3),
+        .csr_dmw0_mat(csr_dmw0_mat),
+        .csr_dmw1_mat(csr_dmw1_mat),
         .csr_direct_addr(csr_direct_addr),
+        .csr_crmd_datm(csr_crmd_datm),
+        .datm(datm),
+
 
         .vtl_addr (data_addr_vrtl)
     );
@@ -445,6 +455,8 @@ module mycpu_core(
         .w_tlb_d1        (w_d1),
         .w_tlb_v1        (w_v1),
 
+        .csr_crmd_datm(csr_crmd_datm),
+
         .csr_crmd_plv (crmd_plv_CSRoutput),
         .csr_dmw0_pseg(csr_dmw0_pseg),
         .csr_dmw0_vseg(csr_dmw0_vseg),
@@ -454,6 +466,8 @@ module mycpu_core(
         .csr_dmw0_plv3(csr_dmw0_plv3),
         .csr_dmw1_plv0(csr_dmw1_plv0),
         .csr_dmw1_plv3(csr_dmw1_plv3),
+        .csr_dmw0_mat(csr_dmw0_mat),
+        .csr_dmw1_mat(csr_dmw1_mat),
         .csr_direct_addr(csr_direct_addr),
         .current_exc_fetch(current_exc_fetch)
     );

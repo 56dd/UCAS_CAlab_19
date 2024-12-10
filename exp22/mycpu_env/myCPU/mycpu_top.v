@@ -112,6 +112,7 @@ module mycpu_top(
     wire [ 3:0] dcache_wr_strb;
     wire[127:0] dcache_wr_data;
     wire        dcache_wr_rdy;
+    wire [1:0]  datm;
 
     //exp21: 继承指令cache
     cache Icache(
@@ -137,6 +138,7 @@ module mycpu_top(
         .ret_valid(icache_ret_valid         ),
         .ret_last (icache_ret_last          ),
         .ret_data (icache_ret_data          ),
+        .datm     (2'b01),//icache永远可缓存
 
         //--------AXI write interface------
         .wr_req (icache_wr_req              ),//output,对于icache永远是0
@@ -171,6 +173,7 @@ module mycpu_top(
         .ret_valid(dcache_ret_valid         ),
         .ret_last (dcache_ret_last          ),
         .ret_data (dcache_ret_data          ),
+        .datm     (datm),//dcache的datm由外部传入
 
         //--------AXI write interface------
         .wr_req (dcache_wr_req              ),//output,
@@ -213,7 +216,8 @@ module mycpu_top(
         //ICACHE ADD!
         .inst_addr_vrtl     (inst_addr_vrtl     ),
         //DCACHE ADD!
-        .data_addr_vrtl     (data_addr_vrtl     )
+        .data_addr_vrtl     (data_addr_vrtl     ),
+        .datm               (datm               )
     );
 
     bridge_sram_axi my_bridge_sram_axi(

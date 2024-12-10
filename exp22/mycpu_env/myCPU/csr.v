@@ -69,6 +69,8 @@ module csr(
     output wire             w_tlb_d1,//
     output wire             w_tlb_v1,//
 
+    output reg  [1:0]  csr_crmd_datm, 
+
     output reg  csr_dmw0_plv0,
     output reg  csr_dmw0_plv3,
     output reg  [1:0] csr_dmw0_mat,
@@ -125,7 +127,6 @@ module csr(
     reg        csr_crmd_da;
     reg        csr_crmd_pg;
     reg  [1:0]  csr_crmd_datf;
-    reg  [1:0]  csr_crmd_datm;
     reg  [1:0]  csr_prmd_pplv;
     reg         csr_prmd_pie;
     reg  [12:0] csr_ecfg_lie;
@@ -169,7 +170,6 @@ module csr(
     reg  [19:0] csr_tlbelo1_ppn;
     wire  [7:0]  csr_asid_asidbits;
     reg  [25:0] csr_tlbrentry_pa;
-    reg  [1:0] csr_dmw1_mat;
 
     
 

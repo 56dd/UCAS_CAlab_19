@@ -46,18 +46,22 @@ module EXEreg(
     input  wire        csr_dmw0_plv3,
     input  wire [ 2:0] csr_dmw0_pseg,
     input  wire [ 2:0] csr_dmw0_vseg,
+    input  wire [ 1:0] csr_dmw0_mat,
         // DMW1
     input  wire        csr_dmw1_plv0,
     input  wire        csr_dmw1_plv3,
     input  wire [ 2:0] csr_dmw1_pseg,
     input  wire [ 2:0] csr_dmw1_vseg,
+    input  wire [ 1:0] csr_dmw1_mat,
     // 直接地址翻译
     input  wire        csr_direct_addr,
     input  wire [18:0] tlbehi_vppn_CSRoutput,
     input  wire [ 9:0] asid_CSRoutput,
 
     //DCACHE ADD
-    output wire [31:0] vtl_addr//虚地址   
+    output wire [31:0] vtl_addr,//虚地址 
+    input wire [1:0]  csr_crmd_datm,
+    output wire [1:0] datm
 );
 
     wire        es_ready_go;
@@ -126,7 +130,6 @@ module EXEreg(
     wire [31:0] dmw1_paddr;
     wire [31:0] tlb_paddr ;
 
-    wire [31:0] vtl_addr;   // 虚拟地址
     wire [31:0] phy_addr;   // 物理地址
 
     reg  [`TLB_ERRLEN-1:0] ds2es_tlb_exc;
@@ -263,6 +266,10 @@ always @(posedge clk) begin
                         dmw0_hit        ? dmw0_paddr  :
                         dmw1_hit        ? dmw1_paddr  :
                                           tlb_paddr   ;
+    assign datm       = csr_direct_addr ? csr_crmd_datm :
+                        dmw0_hit        ? csr_dmw0_mat  :
+                        dmw1_hit        ? csr_dmw1_mat  :
+                                          s1_mat        ; 
     
     assign tlb_used = (es_res_from_mem | (|es_mem_we)) & ~wb_ex & ~ms_ex & ~(|es_except_zip[5:0]) & ~es_except_ale & ~es_except_adem //es_mem_req 
                       & (~csr_direct_addr & ~dmw0_hit & ~dmw1_hit);

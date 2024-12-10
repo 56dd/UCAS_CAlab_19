@@ -14,6 +14,7 @@ module cache(
     output wire        addr_ok, // 地址传输完成信号
     output wire        data_ok, // 数据传输完成信号
     output wire [31:0] rdata,   // cache读数据
+    input wire  [ 1:0] datm,    // cache可缓存类型
 
     // cache与总线的交互接口
     output wire        rd_req,   // 读请求有效信号
@@ -82,7 +83,7 @@ tagv_ram tagv_way0(
     .dina(tagv_wdata),
     .douta(tagv_w0_rdata),
     .ena(tagv_w0_en),
-    .wea(tagv_w0_we)
+    .wea(tagv_w0_we && ~uncache_flag)
 );
 tagv_ram tagv_way1(
     .addra(tagv_addr),
@@ -90,7 +91,7 @@ tagv_ram tagv_way1(
     .dina(tagv_wdata),
     .douta(tagv_w1_rdata),
     .ena(tagv_w1_en),
-    .wea(tagv_w1_we)
+    .wea(tagv_w1_we && ~uncache_flag)
 );
 
 // data block：每一路拆分成4个 bank，每个 bank 用 256*32 bit 的 ram 实现
@@ -100,7 +101,7 @@ data_bank_ram data_way0_bank0(
     .dina(data_wdata),
     .douta(data_w0_b0_rdata),
     .ena(data_w0_b0_en),
-    .wea(data_w0_b0_we)
+    .wea(data_w0_b0_we && ~uncache_flag)
 );
 data_bank_ram data_way0_bank1(
     .addra(data_addr),
@@ -108,7 +109,7 @@ data_bank_ram data_way0_bank1(
     .dina(data_wdata),
     .douta(data_w0_b1_rdata),
     .ena(data_w0_b1_en),
-    .wea(data_w0_b1_we)
+    .wea(data_w0_b1_we && ~uncache_flag)
 );
 data_bank_ram data_way0_bank2(
     .addra(data_addr),
@@ -116,7 +117,7 @@ data_bank_ram data_way0_bank2(
     .dina(data_wdata),
     .douta(data_w0_b2_rdata),
     .ena(data_w0_b2_en),
-    .wea(data_w0_b2_we)
+    .wea(data_w0_b2_we && ~uncache_flag)
 );
 data_bank_ram data_way0_bank3(
     .addra(data_addr),
@@ -124,7 +125,7 @@ data_bank_ram data_way0_bank3(
     .dina(data_wdata),
     .douta(data_w0_b3_rdata),
     .ena(data_w0_b3_en),
-    .wea(data_w0_b3_we)
+    .wea(data_w0_b3_we && ~uncache_flag)
 );
 data_bank_ram data_way1_bank0(
     .addra(data_addr),
@@ -132,7 +133,7 @@ data_bank_ram data_way1_bank0(
     .dina(data_wdata),
     .douta(data_w1_b0_rdata),
     .ena(data_w1_b0_en),
-    .wea(data_w1_b0_we)
+    .wea(data_w1_b0_we && ~uncache_flag)
 );
 data_bank_ram data_way1_bank1(
     .addra(data_addr),
@@ -140,7 +141,7 @@ data_bank_ram data_way1_bank1(
     .dina(data_wdata),
     .douta(data_w1_b1_rdata),
     .ena(data_w1_b1_en),
-    .wea(data_w1_b1_we)
+    .wea(data_w1_b1_we && ~uncache_flag)
 );
 data_bank_ram data_way1_bank2(
     .addra(data_addr),
@@ -148,7 +149,7 @@ data_bank_ram data_way1_bank2(
     .dina(data_wdata),
     .douta(data_w1_b2_rdata),
     .ena(data_w1_b2_en),
-    .wea(data_w1_b2_we)
+    .wea(data_w1_b2_we && ~uncache_flag)
 );
 data_bank_ram data_way1_bank3(
     .addra(data_addr),
@@ -156,7 +157,7 @@ data_bank_ram data_way1_bank3(
     .dina(data_wdata),
     .douta(data_w1_b3_rdata),
     .ena(data_w1_b3_en),
-    .wea(data_w1_b3_we)
+    .wea(data_w1_b3_we && ~uncache_flag)
 );
 // D 域：每一路用 256 位的寄存器实现，dirty 位用于指示某个缓存行的数据是否已经被修改
 reg [255:0] dirty_way0;
@@ -269,6 +270,19 @@ always @(posedge clk)begin
         current_state <= next_state;
 end
 
+reg [1:0] datm_r;
+always @(posedge clk)begin
+    if(reset)
+        datm_r <= 2'b01;
+    else if(valid)
+        datm_r <= datm;
+    else if(data_ok)
+        datm_r <= 2'b01;
+end
+
+wire uncache_flag;
+assign uncache_flag = (datm == 2'b00) || (datm_r == 2'b00);
+
 always @(*)begin
     case(current_state)
     IDLE:begin
@@ -278,7 +292,7 @@ always @(*)begin
             next_state = IDLE;
     end
     LOOKUP:begin
-        if(~cache_hit)
+        if(~cache_hit || uncache_flag)
             next_state = MISS;
         else if((~valid) || conflict_case1 || conflict_case2)
             next_state = IDLE;
@@ -286,7 +300,9 @@ always @(*)begin
             next_state = LOOKUP;
     end
     MISS:begin
-        if((wr_rdy == 1) || (~replace_block_dirty))
+        if((wr_rdy == 1) && uncache_flag)
+            next_state = IDLE;
+        else if((wr_rdy == 1) || (~replace_block_dirty && reg_op == READ) || (uncache_flag && reg_op == READ))
             next_state = REPLACE;
         else
             next_state = MISS;
@@ -467,13 +483,13 @@ always @(posedge clk)begin
         dirty_way0 <= 256'b0;
         dirty_way1 <= 256'b0;
     end
-    else if(hitwrite)begin
+    else if(hitwrite && ~uncache_flag)begin
         if(way0_hit)
             dirty_way0[write_index] <= 1'b1;
         else if(way1_hit)
             dirty_way1[write_index] <= 1'b1;
     end
-    else if(refill)begin
+    else if(refill && ~uncache_flag)begin
         if(replace_way == 1'b0)
             dirty_way0[reg_index] <= 1'b0;
         else if(replace_way == 1'b1)
@@ -486,22 +502,32 @@ end
 assign addr_ok = (current_state == IDLE) ||
                  (current_state == LOOKUP) && cache_hit &&
                  valid && (~conflict_case1) && (~conflict_case2);
-assign data_ok = (current_state == LOOKUP) && (cache_hit || (reg_op == WRITE)) ||
-                 (current_state == REFILL) && ret_valid && (refill_word_counter == reg_offset[3:2]) && (reg_op == READ);
+assign data_ok = (current_state == LOOKUP) && (cache_hit || (reg_op == WRITE)) && ~uncache_flag ||
+                 (current_state == MISS) && uncache_flag && wr_rdy ||
+                 (current_state == REFILL) && uncache_flag && ret_valid && ret_last || 
+                 (current_state == REFILL) && ~uncache_flag && ret_valid && (refill_word_counter == reg_offset[3:2]) && (reg_op == READ);
 assign rdata   = load_res;
 
 // cache --> AXI 输出信号的赋值
 assign rd_req = (current_state == REPLACE);
-assign rd_type = READ_BLOCK; // 后续加入 ucached 需要补充！
+assign rd_type = {3{~uncache_flag}} & READ_BLOCK
+                |{3{ uncache_flag}} & READ_WORD; // 后续加入 ucached 需要补充！
 assign rd_addr = {reg_tag, reg_index, 4'b0000};
 
 
-assign wr_req = (current_state == MISS) && replace_block_dirty;
-assign wr_type = WRITE_BLOCK; // 后续加入 ucached 需要补充！
-assign wr_addr = {32{replace_way == 1'b0}} & {way0_tag, reg_index, 4'b0000} |
-                 {32{replace_way == 1'b1}} & {way1_tag, reg_index, 4'b0000};
-assign wr_wstrb = 4'b1111; // 只有 uncached 才有意义
-assign wr_data = {128{replace_way == 1'b0}} & way0_load_block |
-                 {128{replace_way == 1'b1}} & way1_load_block;
+assign wr_req = (current_state == MISS) && replace_block_dirty && ~uncache_flag
+             || (current_state == MISS) && (reg_op == WRITE)   &&  uncache_flag;
+assign wr_type = {3{~uncache_flag}} & WRITE_BLOCK
+                |{3{ uncache_flag}} & WRITE_WORD; // 后续加入 ucached 需要补充！
+assign wr_addr = {32{uncache_flag}} & {reg_tag, reg_index, 4'b0000}
+                |{32{~uncache_flag}} &
+                ({32{replace_way == 1'b0}} & {way0_tag, reg_index, 4'b0000} |
+                 {32{replace_way == 1'b1}} & {way1_tag, reg_index, 4'b0000});
+assign wr_wstrb = {4{ uncache_flag}} & wstrb
+                | {4{~uncache_flag}} &4'b1111; // 只有 uncached 才有意义
+assign wr_data = {128{uncache_flag}} & wdata
+                |{128{~uncache_flag}} &
+                ({128{replace_way == 1'b0}} & way0_load_block |
+                 {128{replace_way == 1'b1}} & way1_load_block);
 
 endmodule
