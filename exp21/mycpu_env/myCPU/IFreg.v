@@ -101,7 +101,7 @@ module IFreg(
     wire        tlb_used  ; // 确实用到了TLB进行地址翻译
 //------------------------------inst sram interface---------------------------------------
     
-    assign inst_sram_req    = fs_allowin & resetn & (~br_stall | wb_ex | ertn_flush) & ~pf_block & ~inst_sram_addr_ack;
+    assign inst_sram_req    = fs_allowin & resetn & (~br_stall | wb_ex | ertn_flush) & ~pf_block & ~inst_sram_addr_ack_r;
     //assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_block & ~inst_sram_addr_ack;
     assign inst_sram_wr     = |inst_sram_wstrb;
     assign inst_sram_wstrb  = 4'b0;
@@ -158,6 +158,9 @@ module IFreg(
         else if(inst_sram_data_ok)
             inst_sram_addr_ack <= 1'b0;
     end
+
+    wire inst_sram_addr_ack_r;
+    assign inst_sram_addr_ack_r = inst_sram_addr_ack & ~inst_sram_data_ok;
 //------------------------------IF control signal---------------------------------------
     assign fs_ready_go      = (inst_sram_data_ok | inst_buf_valid) & ~inst_discard;
     assign fs_allowin       = (~fs_valid) | fs_ready_go & ds_allowin;     
