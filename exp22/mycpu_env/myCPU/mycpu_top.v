@@ -109,7 +109,7 @@ module mycpu_top(
     wire        dcache_wr_req;
     wire [ 2:0] dcache_wr_type;
     wire [31:0] dcache_wr_addr;
-    wire [ 3:0] dcache_wr_strb;
+    wire [ 3:0] dcache_wr_wstrb;
     wire[127:0] dcache_wr_data;
     wire        dcache_wr_rdy;
     wire [1:0]  datm;
@@ -179,7 +179,7 @@ module mycpu_top(
         .wr_req (dcache_wr_req              ),//output,
         .wr_type(dcache_wr_type             ),
         .wr_addr(dcache_wr_addr             ),
-        .wr_wstrb(dcache_wr_strb            ),
+        .wr_wstrb(dcache_wr_wstrb            ),
         .wr_data(dcache_wr_data             ),
         .wr_rdy (dcache_wr_rdy              )
     );

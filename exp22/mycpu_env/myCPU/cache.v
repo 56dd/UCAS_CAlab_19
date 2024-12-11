@@ -281,7 +281,7 @@ always @(posedge clk)begin
 end
 
 wire uncache_flag;
-assign uncache_flag = (datm == 2'b00) || (datm_r == 2'b00);
+assign uncache_flag = (datm == 2'b00 && valid) || (datm_r == 2'b00);
 
 always @(*)begin
     case(current_state)
@@ -300,9 +300,9 @@ always @(*)begin
             next_state = LOOKUP;
     end
     MISS:begin
-        if((wr_rdy == 1) && uncache_flag)
+        if((wr_rdy == 1) && uncache_flag && reg_op == WRITE)
             next_state = IDLE;
-        else if((wr_rdy == 1) || (~replace_block_dirty && reg_op == READ) || (uncache_flag && reg_op == READ))
+        else if((wr_rdy == 1 && reg_op == WRITE) || (~replace_block_dirty && reg_op == READ) || (uncache_flag && reg_op == READ))
             next_state = REPLACE;
         else
             next_state = MISS;
@@ -314,7 +314,9 @@ always @(*)begin
             next_state = REPLACE;
     end
     REFILL:begin
-        if(ret_valid == 1 && ret_last == 1)
+        if(ret_valid == 1 && ret_last == 1 && reg_op == WRITE)
+            next_state = LOOKUP;
+        else if(ret_valid == 1 && ret_last == 1)
             next_state = IDLE;
         else
             next_state = REFILL;
@@ -502,8 +504,8 @@ end
 assign addr_ok = (current_state == IDLE) ||
                  (current_state == LOOKUP) && cache_hit &&
                  valid && (~conflict_case1) && (~conflict_case2);
-assign data_ok = (current_state == LOOKUP) && (cache_hit || (reg_op == WRITE)) && ~uncache_flag ||
-                 (current_state == MISS) && uncache_flag && wr_rdy ||
+assign data_ok = (current_state == LOOKUP) && (cache_hit) && ~uncache_flag ||
+                 (current_state == MISS) && uncache_flag && wr_rdy && reg_op == WRITE ||
                  (current_state == REFILL) && uncache_flag && ret_valid && ret_last || 
                  (current_state == REFILL) && ~uncache_flag && ret_valid && (refill_word_counter == reg_offset[3:2]) && (reg_op == READ);
 assign rdata   = load_res;
@@ -512,20 +514,21 @@ assign rdata   = load_res;
 assign rd_req = (current_state == REPLACE);
 assign rd_type = {3{~uncache_flag}} & READ_BLOCK
                 |{3{ uncache_flag}} & READ_WORD; // 后续加入 ucached 需要补充！
-assign rd_addr = {reg_tag, reg_index, 4'b0000};
+assign rd_addr = {32{~uncache_flag}} & {reg_tag, reg_index, 4'b0000}
+                |{32{ uncache_flag}} & {reg_tag, reg_index, reg_offset};
 
 
-assign wr_req = (current_state == MISS) && replace_block_dirty && ~uncache_flag
+assign wr_req = (current_state == MISS) && (replace_block_dirty) && ~uncache_flag
              || (current_state == MISS) && (reg_op == WRITE)   &&  uncache_flag;
-assign wr_type = {3{~uncache_flag}} & WRITE_BLOCK
+assign wr_type = {3{~uncache_flag && reg_op}} & WRITE_BLOCK
                 |{3{ uncache_flag}} & WRITE_WORD; // 后续加入 ucached 需要补充！
-assign wr_addr = {32{uncache_flag}} & {reg_tag, reg_index, 4'b0000}
+assign wr_addr = {32{uncache_flag}} & {reg_tag, reg_index, reg_offset}
                 |{32{~uncache_flag}} &
                 ({32{replace_way == 1'b0}} & {way0_tag, reg_index, 4'b0000} |
                  {32{replace_way == 1'b1}} & {way1_tag, reg_index, 4'b0000});
-assign wr_wstrb = {4{ uncache_flag}} & wstrb
+assign wr_wstrb = {4{ uncache_flag}} & reg_wstrb
                 | {4{~uncache_flag}} &4'b1111; // 只有 uncached 才有意义
-assign wr_data = {128{uncache_flag}} & wdata
+assign wr_data = {128{uncache_flag}} & reg_wdata
                 |{128{~uncache_flag}} &
                 ({128{replace_way == 1'b0}} & way0_load_block |
                  {128{replace_way == 1'b1}} & way1_load_block);

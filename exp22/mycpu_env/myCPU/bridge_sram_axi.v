@@ -289,20 +289,17 @@ module bridge_sram_axi(
 			wstrb <= 4'b0;
 			dcache_wr_data_r <= 128'b0;
 			wid <= 4'b1;	// 常值
+			wdata <= 32'b0;
 		end
 		else if(w_current_state[0]) begin	// 写请求状态机为空闲状态，更新数据
 			wstrb <= dcache_wr_wstrb;
 			dcache_wr_data_r <= dcache_wr_data;
-			wdata <= dcache_wr_data_r[31:0];
+			wdata <= dcache_wr_data[31:0];
 		end
-	end
-
-	always @(posedge aclk)begin
-		if(~aresetn)
-		wdata <= 32'b0;
-		else if(wvalid & wready)
-		wdata <= dcache_wr_data_r[31:0];
-		dcache_wr_data_r <= {32'b0,dcache_wr_data_r};
+		else if(wvalid & wready) begin
+			wdata <= dcache_wr_data_r[31:0];
+			dcache_wr_data_r <= {32'b0,dcache_wr_data_r};
+		end
 	end
 
 	always @(posedge aclk) begin
@@ -318,6 +315,7 @@ module bridge_sram_axi(
 	end
 
 	assign wlast = w_data_cnt == awlen;
+	assign dcache_wr_rdy = w_current_state[0];	// W_REQ_END
 
 //--------------------------------state machine for write response channel-------------------------------------------
     //写响应通道状态独热码译码
