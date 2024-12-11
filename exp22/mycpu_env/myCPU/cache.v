@@ -274,14 +274,14 @@ reg [1:0] datm_r;
 always @(posedge clk)begin
     if(reset)
         datm_r <= 2'b01;
-    else if(valid)
+    else if(addr_ok)
         datm_r <= datm;
     else if(data_ok)
         datm_r <= 2'b01;
 end
 
 wire uncache_flag;
-assign uncache_flag = (datm == 2'b00 && valid) || (datm_r == 2'b00);
+assign uncache_flag = datm_r == 2'b00;
 
 always @(*)begin
     case(current_state)
@@ -292,7 +292,7 @@ always @(*)begin
             next_state = IDLE;
     end
     LOOKUP:begin
-        if(~cache_hit || uncache_flag)
+        if(~cache_hit || uncache_flag || ((datm == 2'b00) && valid))
             next_state = MISS;
         else if((~valid) || conflict_case1 || conflict_case2)
             next_state = IDLE;
