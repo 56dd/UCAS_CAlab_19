@@ -83,7 +83,7 @@ tagv_ram tagv_way0(
     .dina(tagv_wdata),
     .douta(tagv_w0_rdata),
     .ena(tagv_w0_en),
-    .wea(tagv_w0_we && ~uncache_flag)
+    .wea(tagv_w0_we & ~uncache_flag)
 );
 tagv_ram tagv_way1(
     .addra(tagv_addr),
@@ -91,7 +91,7 @@ tagv_ram tagv_way1(
     .dina(tagv_wdata),
     .douta(tagv_w1_rdata),
     .ena(tagv_w1_en),
-    .wea(tagv_w1_we && ~uncache_flag)
+    .wea(tagv_w1_we & ~uncache_flag)
 );
 
 // data block：每一路拆分成4个 bank，每个 bank 用 256*32 bit 的 ram 实现
@@ -101,7 +101,7 @@ data_bank_ram data_way0_bank0(
     .dina(data_wdata),
     .douta(data_w0_b0_rdata),
     .ena(data_w0_b0_en),
-    .wea(data_w0_b0_we && ~uncache_flag)
+    .wea(data_w0_b0_we & {4{~uncache_flag}})
 );
 data_bank_ram data_way0_bank1(
     .addra(data_addr),
@@ -109,7 +109,7 @@ data_bank_ram data_way0_bank1(
     .dina(data_wdata),
     .douta(data_w0_b1_rdata),
     .ena(data_w0_b1_en),
-    .wea(data_w0_b1_we && ~uncache_flag)
+    .wea(data_w0_b1_we & {4{~uncache_flag}})
 );
 data_bank_ram data_way0_bank2(
     .addra(data_addr),
@@ -117,7 +117,7 @@ data_bank_ram data_way0_bank2(
     .dina(data_wdata),
     .douta(data_w0_b2_rdata),
     .ena(data_w0_b2_en),
-    .wea(data_w0_b2_we && ~uncache_flag)
+    .wea(data_w0_b2_we & {4{~uncache_flag}})
 );
 data_bank_ram data_way0_bank3(
     .addra(data_addr),
@@ -125,7 +125,7 @@ data_bank_ram data_way0_bank3(
     .dina(data_wdata),
     .douta(data_w0_b3_rdata),
     .ena(data_w0_b3_en),
-    .wea(data_w0_b3_we && ~uncache_flag)
+    .wea(data_w0_b3_we & {4{~uncache_flag}})
 );
 data_bank_ram data_way1_bank0(
     .addra(data_addr),
@@ -133,7 +133,7 @@ data_bank_ram data_way1_bank0(
     .dina(data_wdata),
     .douta(data_w1_b0_rdata),
     .ena(data_w1_b0_en),
-    .wea(data_w1_b0_we && ~uncache_flag)
+    .wea(data_w1_b0_we & {4{~uncache_flag}})
 );
 data_bank_ram data_way1_bank1(
     .addra(data_addr),
@@ -141,7 +141,7 @@ data_bank_ram data_way1_bank1(
     .dina(data_wdata),
     .douta(data_w1_b1_rdata),
     .ena(data_w1_b1_en),
-    .wea(data_w1_b1_we && ~uncache_flag)
+    .wea(data_w1_b1_we & {4{~uncache_flag}})
 );
 data_bank_ram data_way1_bank2(
     .addra(data_addr),
@@ -149,7 +149,7 @@ data_bank_ram data_way1_bank2(
     .dina(data_wdata),
     .douta(data_w1_b2_rdata),
     .ena(data_w1_b2_en),
-    .wea(data_w1_b2_we && ~uncache_flag)
+    .wea(data_w1_b2_we & {4{~uncache_flag}})
 );
 data_bank_ram data_way1_bank3(
     .addra(data_addr),
@@ -157,7 +157,7 @@ data_bank_ram data_way1_bank3(
     .dina(data_wdata),
     .douta(data_w1_b3_rdata),
     .ena(data_w1_b3_en),
-    .wea(data_w1_b3_we && ~uncache_flag)
+    .wea(data_w1_b3_we & {4{~uncache_flag}})
 );
 // D 域：每一路用 256 位的寄存器实现，dirty 位用于指示某个缓存行的数据是否已经被修改
 reg [255:0] dirty_way0;
