@@ -4,7 +4,7 @@ module IFreg(
     input  wire   resetn,
     // inst sram interface
     output wire         inst_sram_req,//req 对应 en     1
-    output wire [ 3:0]  inst_sram_wr,//wr 对应（|wen�?  4
+    output wire [ 3:0]  inst_sram_wr,//wr 对应（|wen�??  4
     output wire [ 1:0]  inst_sram_size,                 //2
     output wire [ 3:0]  inst_sram_wstrb,                //4
     output wire [31:0]  inst_sram_addr,                 //32
@@ -26,22 +26,22 @@ module IFreg(
     input  wire [31:0]  ertn_entry,                      //32
 
     // tlb
-    output wire [18:0] s0_vppn,         //虚拟页号，当前访问地�?的高位部�?
-    output wire        s0_va_bit12,     //虚拟地址�?12位，区分页内地址
+    output wire [18:0] s0_vppn,         //虚拟页号，当前访问地�??的高位部�??
+    output wire        s0_va_bit12,     //虚拟地址�??12位，区分页内地址
     input  wire        s0_found,        //TLB查找是否命中
     input  wire [$clog2(`TLBNUM)-1:0] s0_index,//命中条目索引
-    input  wire [19:0] s0_ppn,          //命中的物理页�?
+    input  wire [19:0] s0_ppn,          //命中的物理页�??
     input  wire [ 5:0] s0_ps,           //页面大小
     input  wire [ 1:0] s0_plv,          //权限级别
-    //input  wire [ 1:0] s0_mat,          //内存访问类型,没用到
-    //input  wire        s0_d,            //页面是否被修�?
+    //input  wire [ 1:0] s0_mat,          //内存访问类型,没用�?
+    //input  wire        s0_d,            //页面是否被修�??
     input  wire        s0_v,            //页面是否有效
     input  wire [ 1:0] crmd_plv_CSRoutput,//当前特权级，来自csr
-    // DMW0  直接将虚拟地�?映射到物理地�?，绕过TLB�?
+    // DMW0  直接将虚拟地�??映射到物理地�??，绕过TLB�??
     input  wire        csr_dmw0_plv0,   //用户级别0
     input  wire        csr_dmw0_plv3,   //用户级别3
-    input  wire [ 2:0] csr_dmw0_pseg,   //直接映射的物理地�?�?
-    input  wire [ 2:0] csr_dmw0_vseg,   //直接映射的虚拟地�?�?
+    input  wire [ 2:0] csr_dmw0_pseg,   //直接映射的物理地�??�??
+    input  wire [ 2:0] csr_dmw0_vseg,   //直接映射的虚拟地�??�??
     // DMW1
     input  wire        csr_dmw1_plv0,   
     input  wire        csr_dmw1_plv3,
@@ -87,7 +87,7 @@ module IFreg(
 
     wire        fs_cancel;
     wire        pf_cancel;
-    reg         inst_discard;   // 判断cancel之后是否�?要丢掉一条指�?
+    reg         inst_discard;   // 判断cancel之后是否�??要丢掉一条指�??
     reg         pf_block;
 
     wire [`TLB_ERRLEN-1:0] fs_tlb_exc;
@@ -105,7 +105,7 @@ module IFreg(
     //assign inst_sram_req    = fs_allowin & resetn & ~br_stall & ~pf_block & ~inst_sram_addr_ack;
     assign inst_sram_wr     = |inst_sram_wstrb;
     assign inst_sram_wstrb  = 4'b0;
-    assign inst_sram_addr   = nextpc_phy;//从实地址取数�?
+    assign inst_sram_addr   = nextpc_phy;//从实地址取数�??
     assign inst_sram_wdata  = 32'b0;
     assign inst_sram_size   = 3'b0;
 
@@ -134,7 +134,7 @@ module IFreg(
             br_target_r <= br_target;
             br_taken_r <= 1'b1;
         end
-        // 若对应地�?已经获得了来自指令SRAM的ok，后续nextpc_vrtl不再从寄存器中取
+        // 若对应地�??已经获得了来自指令SRAM的ok，后续nextpc_vrtl不再从寄存器中取
         else if(pf_ready_go) begin
             {wb_ex_r, ertn_flush_r, br_taken_r} <= 3'b0;
         end
@@ -149,7 +149,7 @@ module IFreg(
             pf_block <= 1'b0;
     end
 
-    // 判断当前地址是否已经握手成功，若成功则拉低req，避免重复申�?
+    // 判断当前地址是否已经握手成功，若成功则拉低req，避免重复申�??
     always @(posedge clk) begin
         if(~resetn)
             inst_sram_addr_ack <= 1'b0;
@@ -169,7 +169,7 @@ module IFreg(
         if(~resetn)
             fs_valid <= 1'b0;
         else if(fs_allowin)
-            fs_valid <= to_fs_valid; // 在reset撤销的下�?个时钟上升沿才开始取�?
+            fs_valid <= to_fs_valid; // 在reset撤销的下�??个时钟上升沿才开始取�??
         else if(fs_cancel)
             fs_valid <= 1'b0;
     end
@@ -183,14 +183,14 @@ module IFreg(
     always @(posedge clk) begin
         if(~resetn)
             inst_discard <= 1'b0;
-        // 流水级取消：当pre-IF阶段发�?�错误地�?请求已被指令SRAM接受 or IF内有有效指令且正在等待数据返回时，需要丢弃一条指�?
+        // 流水级取消：当pre-IF阶段发�?�错误地�??请求已被指令SRAM接受 or IF内有有效指令且正在等待数据返回时，需要丢弃一条指�??
         else if(fs_cancel & ~fs_allowin & ~fs_ready_go | pf_cancel & inst_sram_req&inst_sram_addr_ok)
             inst_discard <= 1'b1;
         else if(inst_discard & inst_sram_data_ok)
             inst_discard <= 1'b0;
     end
 //------------------------------fs and ds state interface---------------------------------------
-    //fs_pc存前�?条指令的pc�?
+    //fs_pc存前�??条指令的pc�??
     always @(posedge clk) begin
         if(~resetn)
             fs_pc <= 32'h1BFF_FFFC;
@@ -203,7 +203,7 @@ module IFreg(
             fs_inst_buf <= 32'b0;
             inst_buf_valid <= 1'b0;
         end
-        else if(to_fs_valid & fs_allowin)   // 缓存已经流向下一流水�?
+        else if(to_fs_valid & fs_allowin)   // 缓存已经流向下一流水�??
             inst_buf_valid <= 1'b0;
         else if(fs_cancel)                  // IF取消后需要清空当前buffer
             inst_buf_valid <= 1'b0;
@@ -222,11 +222,11 @@ module IFreg(
     //?3位在指定的虚拟段范围? && 权限级别和允许权限访?
     assign dmw0_hit  = (nextpc_vrtl[31:29] == csr_dmw0_vseg) && (crmd_plv_CSRoutput == 2'd0 && csr_dmw0_plv0 || crmd_plv_CSRoutput == 2'd3 && csr_dmw0_plv3);
     assign dmw1_hit  = (nextpc_vrtl[31:29] == csr_dmw1_vseg) && (crmd_plv_CSRoutput == 2'd0 && csr_dmw1_plv0 || crmd_plv_CSRoutput == 2'd3 && csr_dmw1_plv3);
-    //映射的物理地�?
+    //映射的物理地�??
     assign dmw0_paddr = {csr_dmw0_pseg, nextpc_vrtl[28:0]};
     assign dmw1_paddr = {csr_dmw1_pseg, nextpc_vrtl[28:0]};
-    //tlb物理地址，4MB
-    assign tlb_paddr  = (s0_ps == 6'd22) ? {s0_ppn[19:10], nextpc_vrtl[21:0]} : {s0_ppn, nextpc_vrtl[11:0]}; // 根据Page Size决定
+    //tlb物理地址�?4MB
+    assign tlb_paddr  = (s0_ps == 6'd21) ? {s0_ppn[19:10], nextpc_vrtl[21:0]} : {s0_ppn, nextpc_vrtl[11:0]}; // 根据Page Size决定
     assign nextpc_phy = csr_direct_addr ? nextpc_vrtl :
                         dmw0_hit        ? dmw0_paddr  :
                         dmw1_hit        ? dmw1_paddr  :
@@ -234,8 +234,8 @@ module IFreg(
 
     assign tlb_used = ~csr_direct_addr && ~dmw0_hit && ~dmw1_hit;
     assign {fs_tlb_exc[`EARRAY_PIL],fs_tlb_exc[`EARRAY_PIS],fs_tlb_exc[`EARRAY_PME],fs_tlb_exc[`EARRAY_TLBR_MEM], fs_tlb_exc[`EARRAY_PPI_MEM]} = 5'h0;
-    assign fs_tlb_exc[`EARRAY_TLBR_FETCH] = fs_valid & tlb_used & ~s0_found;//未命�?
-    assign fs_tlb_exc[`EARRAY_PIF ] = fs_valid & tlb_used & ~fs_tlb_exc[`EARRAY_TLBR_FETCH] & ~s0_v;//页表项无�?
+    assign fs_tlb_exc[`EARRAY_TLBR_FETCH] = fs_valid & tlb_used & ~s0_found;//未命�??
+    assign fs_tlb_exc[`EARRAY_PIF ] = fs_valid & tlb_used & ~fs_tlb_exc[`EARRAY_TLBR_FETCH] & ~s0_v;//页表项无�??
     assign fs_tlb_exc[`EARRAY_PPI_FETCH ] = fs_valid & tlb_used & ~fs_tlb_exc[`EARRAY_PIF ] & (crmd_plv_CSRoutput > s0_plv);//权限不足
 
 endmodule

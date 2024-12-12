@@ -57,7 +57,7 @@ module EXEreg(
     input  wire [ 9:0] asid_CSRoutput,
 
     //DCACHE ADD
-    output wire [31:0] vtl_addr//虚地址   
+    output wire [31:0] vtl_addr//虚地�?   
 );
 
     wire        es_ready_go;
@@ -187,7 +187,7 @@ module EXEreg(
                         es2ms_tlb_exc       // 8  bits
 
                     };//142
-    //地址错误：内存指�? |虚拟地址高位�?1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗�?
+    //地址错误：内存指�?? |虚拟地址高位�??1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗�??
     //assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (vtl_addr[31] & crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
     //assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
     assign es_except_adem = 1'b0;
@@ -233,7 +233,7 @@ always @(posedge clk) begin
                               {32{inst_rdcntvl}} & es_timer_cnt[31: 0] |
                               {32{~inst_rdcntvh & ~inst_rdcntvl}} & es_alu_result;
 
-    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处�?
+    //暂时认为es_rf_wdata等于es_alu_result,只有在ld类指令需要特殊处�??
     assign es_rf_zip       = {es_csr_re & es_valid, //1
                                 es_res_from_mem & es_valid, //1
                                 es_rf_we & es_valid, //1
@@ -258,7 +258,7 @@ always @(posedge clk) begin
     assign dmw1_hit  = (vtl_addr[31:29] == csr_dmw1_vseg) & (crmd_plv_CSRoutput == 2'd0 & csr_dmw1_plv0 | crmd_plv_CSRoutput == 2'd3 & csr_dmw1_plv3);
     assign dmw0_paddr = {csr_dmw0_pseg, vtl_addr[28:0]};
     assign dmw1_paddr = {csr_dmw1_pseg, vtl_addr[28:0]};
-    assign tlb_paddr  = (s1_ps == 6'd22) ? {s1_ppn[19:10], vtl_addr[21:0]} : {s1_ppn, vtl_addr[11:0]}; // 根据Page Size决定
+    assign tlb_paddr  = (s1_ps == 6'd21) ? {s1_ppn[19:10], vtl_addr[21:0]} : {s1_ppn, vtl_addr[11:0]}; // 根据Page Size决定
     assign phy_addr   = csr_direct_addr ? vtl_addr    :
                         dmw0_hit        ? dmw0_paddr  :
                         dmw1_hit        ? dmw1_paddr  :
