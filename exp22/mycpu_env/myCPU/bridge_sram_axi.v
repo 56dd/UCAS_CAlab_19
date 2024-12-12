@@ -260,7 +260,7 @@ module bridge_sram_axi(
 					w_next_state = W_DATA_RESP;
 			end
 			W_REQ_END:
-				if(bvalid &bvalid)
+				if(bvalid &bready)
 					w_next_state = IDLE;
 				else
 					w_next_state = W_REQ_END;

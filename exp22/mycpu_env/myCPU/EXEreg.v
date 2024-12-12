@@ -261,7 +261,7 @@ always @(posedge clk) begin
     assign dmw1_hit  = (vtl_addr[31:29] == csr_dmw1_vseg) & (crmd_plv_CSRoutput == 2'd0 & csr_dmw1_plv0 | crmd_plv_CSRoutput == 2'd3 & csr_dmw1_plv3);
     assign dmw0_paddr = {csr_dmw0_pseg, vtl_addr[28:0]};
     assign dmw1_paddr = {csr_dmw1_pseg, vtl_addr[28:0]};
-    assign tlb_paddr  = (s1_ps == 6'd22) ? {s1_ppn[19:10], vtl_addr[21:0]} : {s1_ppn, vtl_addr[11:0]}; // 根据Page Size决定
+    assign tlb_paddr  = (s1_ps == 6'd21) ? {s1_ppn[19:10], vtl_addr[21:0]} : {s1_ppn, vtl_addr[11:0]}; // 根据Page Size决定
     assign phy_addr   = csr_direct_addr ? vtl_addr    :
                         dmw0_hit        ? dmw0_paddr  :
                         dmw1_hit        ? dmw1_paddr  :

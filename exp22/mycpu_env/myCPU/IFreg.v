@@ -226,7 +226,7 @@ module IFreg(
     assign dmw0_paddr = {csr_dmw0_pseg, nextpc_vrtl[28:0]};
     assign dmw1_paddr = {csr_dmw1_pseg, nextpc_vrtl[28:0]};
     //tlb物理地址，4MB
-    assign tlb_paddr  = (s0_ps == 6'd22) ? {s0_ppn[19:10], nextpc_vrtl[21:0]} : {s0_ppn, nextpc_vrtl[11:0]}; // 根据Page Size决定
+    assign tlb_paddr  = (s0_ps == 6'd21) ? {s0_ppn[19:10], nextpc_vrtl[21:0]} : {s0_ppn, nextpc_vrtl[11:0]}; // 根据Page Size决定
     assign nextpc_phy = csr_direct_addr ? nextpc_vrtl :
                         dmw0_hit        ? dmw0_paddr  :
                         dmw1_hit        ? dmw1_paddr  :
