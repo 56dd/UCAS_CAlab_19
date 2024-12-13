@@ -1,6 +1,6 @@
 module cache(
-    input wire        clk,
-    input wire        resetn,
+   input wire        clk,
+   input wire        resetn,
 
     // cache与CPU的交互接口
     input wire        valid,  // CPU 访问cache 请求的有效信号
@@ -210,7 +210,7 @@ assign {way0_tag, way0_v} = tagv_w0_rdata;
 assign {way1_tag, way1_v} = tagv_w1_rdata;
 assign way0_hit = way0_v && (way0_tag == reg_tag);
 assign way1_hit = way1_v && (way1_tag == reg_tag);
-assign cache_hit = way0_hit || way1_hit;
+assign cache_hit = (way0_hit || way1_hit) && (datm_r == 2'b01);
 
 
 // data select
@@ -274,7 +274,7 @@ reg [1:0] datm_r;
 always @(posedge clk)begin
     if(reset)
         datm_r <= 2'b01;
-    else if(addr_ok)
+    else if(valid)
         datm_r <= datm;
     else if(data_ok)
         datm_r <= 2'b01;
@@ -314,9 +314,7 @@ always @(*)begin
             next_state = REPLACE;
     end
     REFILL:begin
-        if(ret_valid == 1 && ret_last == 1 && reg_op == WRITE)
-            next_state = LOOKUP;
-        else if(ret_valid == 1 && ret_last == 1)
+        if(ret_valid == 1 && ret_last == 1)
             next_state = IDLE;
         else
             next_state = REFILL;
@@ -385,7 +383,7 @@ end
 always @(posedge clk)begin
     if(reset)
         refill_word_counter <= 2'b0;
-    else if((current_state == REFILL) && (ret_valid == 1))
+    else if((current_state == REFILL) && (ret_valid == 1) && ~uncache_flag)
         refill_word_counter <= refill_word_counter + 1'b1;
 end
 
@@ -502,12 +500,12 @@ end
 
 // cache --> CPU 输出信号的赋值
 assign addr_ok = (current_state == IDLE) ||
-                 (current_state == LOOKUP) && cache_hit &&
+                 (current_state == LOOKUP) && (cache_hit  || datm==2'b0) &&
                  valid && (~conflict_case1) && (~conflict_case2);
 assign data_ok = (current_state == LOOKUP) && (cache_hit) && ~uncache_flag ||
                  (current_state == MISS) && uncache_flag && wr_rdy && reg_op == WRITE ||
                  (current_state == REFILL) && uncache_flag && ret_valid && ret_last || 
-                 (current_state == REFILL) && ~uncache_flag && ret_valid && (refill_word_counter == reg_offset[3:2]) && (reg_op == READ);
+                 (current_state == REFILL) && ~uncache_flag && ret_valid && (refill_word_counter == reg_offset[3:2]);
 assign rdata   = load_res;
 
 // cache --> AXI 输出信号的赋值

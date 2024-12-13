@@ -1,6 +1,6 @@
 module bridge_sram_axi(
-    input               aclk,
-    input               aresetn,
+    input               	aclk,
+    input               	aresetn,
     // read req channel
     output  reg [ 3:0]      arid,
     output  reg [31:0]      araddr,
