@@ -266,7 +266,10 @@ always @(posedge clk) begin
                         dmw0_hit        ? dmw0_paddr  :
                         dmw1_hit        ? dmw1_paddr  :
                                           tlb_paddr   ;
-    assign datm       = {1'b0,phy_addr[31:12] != 20'hbfaff && phy_addr[31:12] != 20'hbfaf8 && phy_addr[27:12] != 16'h0}; 
+    assign datm       = csr_direct_addr ? csr_crmd_datm :
+                        dmw0_hit        ? csr_dmw0_mat  :
+                        dmw1_hit        ? csr_dmw1_mat  :
+                                          s1_mat        ;  
     
     assign tlb_used = (es_res_from_mem | (|es_mem_we)) & ~wb_ex & ~ms_ex & ~(|es_except_zip[5:0]) & ~es_except_ale & ~es_except_adem //es_mem_req 
                       & (~csr_direct_addr & ~dmw0_hit & ~dmw1_hit);
