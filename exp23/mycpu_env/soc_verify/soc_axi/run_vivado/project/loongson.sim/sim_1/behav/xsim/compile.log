@@ -1,0 +1,65 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/rtl/xilinx_ip/clk_pll/clk_pll_clk_wiz.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll_clk_wiz
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/rtl/xilinx_ip/clk_pll/clk_pll.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_pll
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/rtl/xilinx_ip/axi_ram/sim/axi_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi_ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/rtl/xilinx_ip/axi_crossbar_1x2/sim/axi_crossbar_1x2.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi_crossbar_1x2
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/run_vivado/project/loongson.srcs/sources_1/ip/data_bank_ram/sim/data_bank_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module data_bank_ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/run_vivado/project/loongson.srcs/sources_1/ip/tagv_ram/sim/tagv_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tagv_ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/EXEreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module EXEreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/IDreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module IDreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/IFreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module IFreg
+WARNING: [VRFC 10-3380] identifier 'inst_sram_addr_ack_r' is used before its declaration [d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/IFreg.v:104]
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/MEMreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module MEMreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/WBreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module WBreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/alu.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module alu
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/rtl/axi_wrap/axi_wrap.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi_wrap
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/rtl/ram_wrap/axi_wrap_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module axi_wrap_ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/bridge_sram_axi.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module bridge_sram_axi
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/cache.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module cache
+INFO: [VRFC 10-2458] undeclared symbol lookup_en, assumed default net type wire [d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/cache.v:341]
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/rtl/CONFREG/confreg.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module confreg
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/csr.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module csr
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/div.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module div
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/mul.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module Adder
+INFO: [VRFC 10-311] analyzing module mul
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/mycpu_core.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module mycpu_core
+INFO: [VRFC 10-2458] undeclared symbol w_vppn, assumed default net type wire [d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/mycpu_core.v:444]
+INFO: [VRFC 10-2458] undeclared symbol w_asid, assumed default net type wire [d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/mycpu_core.v:445]
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/mycpu_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module mycpu_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/reg_file.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module regfile
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/rtl/soc_lite_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module soc_lite_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/tlb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tlb
+WARNING: [VRFC 10-3380] identifier 'rand_num' is used before its declaration [d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/tlb.v:176]
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/myCPU/tools.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module decoder_2_4
+INFO: [VRFC 10-311] analyzing module decoder_4_16
+INFO: [VRFC 10-311] analyzing module decoder_5_32
+INFO: [VRFC 10-311] analyzing module decoder_6_64
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/testbench/mycpu_tb.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module tb_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "d:/calab/UCAS_CAlab_19/exp23/mycpu_env/soc_verify/soc_axi/run_vivado/project/loongson.sim/sim_1/behav/xsim/glbl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module glbl
