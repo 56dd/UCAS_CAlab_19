@@ -31,7 +31,13 @@ module cache(
     output wire [ 3:0] wr_wstrb,  // 写操作字节掩码，仅在 WRITE_BYTE, WRITE_HALFWORD, WRITE_WORD下有意义，for uncached 指令
     output wire [127:0] wr_data, // 写数据
 
-    input  wire        wr_rdy    // 写请求能否被接收的握手信号
+    input  wire        wr_rdy,    // 写请求能否被接收的握手信号
+
+    input  wire        cacop_store_tag,
+    input  wire        cacop_Index_Invalidate,
+    input  wire        cacop_Hit_Invalidate,
+    input  wire [31:0] cacop_va,
+    output wire        cacop_ok
 
     );
 
@@ -503,5 +509,10 @@ assign wr_addr = {32{replace_way == 1'b0}} & {way0_tag, reg_index, 4'b0000} |
 assign wr_wstrb = 4'b1111; // 只有 uncached 才有意义
 assign wr_data = {128{replace_way == 1'b0}} & way0_load_block |
                  {128{replace_way == 1'b1}} & way1_load_block;
+
+
+assign cacop_ok = cacop_store_tag & (1'b1)
+                 |cacop_Index_Invalidate & (1'b1)
+                 |cacop_Hit_Invalidate & (1'b1);
 
 endmodule

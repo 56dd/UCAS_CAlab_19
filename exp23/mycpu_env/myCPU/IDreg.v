@@ -10,7 +10,7 @@ module IDreg(
     // ds and es interface
     input  wire                  es_allowin,      //1
     output wire                  ds2es_valid,     //1
-    output wire [`DS2ES_BUS -1:0] ds2es_bus,      //268   {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
+    output wire [`DS2ES_BUS -1:0] ds2es_bus,      //274   {ds_alu_op, ds_res_from_mem, ds_alu_src1,ds_alu_src2,ds_rf_zip,ds_rkd_value,ds_pc,ds_mem_inst_zip,inst_rdcntvh , inst_rdcntvl,ds_except_zip
     // signals to determine whether confict occurs
     input  wire [37:0] ws_rf_zip,       //38            {ws_rf_we, ws_rf_waddr, ws_rf_wdata}
     input  wire [39:0] ms_rf_zip,       //40            {ms_res_from_mem, ms_csr_re,  ms_rf_we, ms_rf_waddr, ms_rf_wdata}
@@ -129,6 +129,9 @@ module IDreg(
     wire        inst_syscall;
     wire        inst_break;
 
+//Cache
+    wire        inst_cacop;
+
 //TLB
     wire        inst_tlbsrch;
     wire        inst_tlbrd;
@@ -157,6 +160,7 @@ module IDreg(
     wire        type_ex;        // 例外相关类，exception
     wire        type_else;      // 不知道啥类
     wire        type_tlb;       // tlb指令
+    wire        type_cache;     // cache指令
 
     wire        need_ui5;
     wire        need_ui12;
@@ -227,6 +231,8 @@ module IDreg(
     wire        inst_rdcntvh;
 
     reg [`TLB_ERRLEN-1:0] ds_tlb_exc;
+
+    wire [4:0] cacop_code;
     
 
 //------------------------------state control signal---------------------------------------
@@ -368,6 +374,8 @@ module IDreg(
     assign inst_tlbfill = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h10] & rk == 5'h0d;
     assign inst_invtlb  = op_31_26_d[6'h01] & op_25_22_d[4'h9] & op_21_20_d[2'h0] & op_19_15_d[5'h13];
 
+    assign inst_cacop   = op_31_26_d[6'h01] & op_25_22_d[4'h8];
+
 
     // 指令分类
     assign type_al    = inst_add_w  | inst_sub_w  | inst_slti   | inst_slt   | inst_sltui  | inst_sltu  |
@@ -384,12 +392,12 @@ module IDreg(
                         inst_rdcntid;
     assign type_else  = inst_rdcntvh| inst_rdcntvl| inst_lu12i_w| inst_pcaddul2i; 
     assign type_tlb   = inst_tlbfill || inst_tlbrd || inst_tlbsrch || inst_tlbwr || inst_invtlb && invtlb_op < 5'h07;
-
+    assign type_cache = inst_cacop;
 
     assign ds_alu_op[ 0] = inst_add_w | inst_addi_w | inst_ld_w | inst_ld_hu |
                         inst_ld_h  | inst_ld_bu  | inst_ld_b | inst_st_b  | 
                         inst_st_w  | inst_st_h   | inst_jirl | inst_bl    | 
-                        inst_pcaddul2i;
+                        inst_pcaddul2i | inst_cacop;
     assign ds_alu_op[ 1] = inst_sub_w | inst_bne | inst_beq;
     assign ds_alu_op[ 2] = inst_slt | inst_slti | inst_blt | inst_bge;
     assign ds_alu_op[ 3] = inst_sltu | inst_sltui | inst_bltu | inst_bgeu;
@@ -415,7 +423,7 @@ module IDreg(
     assign need_si12  =  inst_slti    | inst_sltui  | inst_addi_w |
                          inst_ld_w    | inst_ld_b   | inst_ld_h   | 
                          inst_ld_bu   | inst_ld_hu  |inst_st_w    | 
-                         inst_st_b    | inst_st_h;
+                         inst_st_b    | inst_st_h   | inst_cacop;
     // assign need_si16  =  inst_jirl | inst_beq | inst_bne;
     assign need_si20  =  inst_lu12i_w | inst_pcaddul2i;
     assign need_si26  =  inst_b | inst_bl;
@@ -457,7 +465,8 @@ module IDreg(
                         inst_ori    |
                         inst_xori   |
                         inst_slti   |
-                        inst_sltui;
+                        inst_sltui  |
+                        inst_cacop;
 
     assign ds_alu_src1 = ds_src1_is_pc  ? ds_pc[31:0] : rj_value;
     assign ds_alu_src2 = ds_src2_is_imm ? imm : rkd_value;
@@ -469,7 +478,7 @@ module IDreg(
     assign gr_we         = ~inst_st_w & ~inst_st_h & ~inst_st_b & ~inst_beq  & 
                            ~inst_bne  & ~inst_b    & ~inst_bge  & ~inst_bgeu & 
                            ~inst_blt  & ~inst_bltu & ~inst_syscall & 
-                           ~inst_tlbfill & ~inst_tlbrd & ~inst_tlbsrch & ~inst_tlbwr & ~inst_invtlb;
+                           ~inst_tlbfill & ~inst_tlbrd & ~inst_tlbsrch & ~inst_tlbwr & ~inst_invtlb & ~inst_cacop;
     assign dest          = dst_is_r1 ? 5'd1 :
                             dst_is_rj ? rj  : rd;
 
@@ -519,7 +528,7 @@ module IDreg(
     assign ds_csr_wvalue   = rkd_value;
     assign ds_csr_num     = {14{inst_rdcntid}} & 14'h40 | {14{~inst_rdcntid}} & ds_inst[23:10];
 
-    assign ds_except_ine= ~(type_al | type_bj | type_ld_st | type_else | type_ex |type_tlb) & ~ds_except_adef;
+    assign ds_except_ine= ~(type_al | type_bj | type_ld_st | type_else | type_ex |type_tlb | type_cache) & ~ds_except_adef;
     assign ds_except_brk  = inst_break;
     assign ds_except_int  = has_int;
     assign ds_except_sys  = inst_syscall;
@@ -529,7 +538,7 @@ module IDreg(
                         ds_except_int,ds_except_brk,ds_except_ine,ds_except_adef, ds_except_sys, ds_except_ertn //[5:0] 5bit
                         };//84
     
-    assign id_refetch_flag = inst_invtlb || inst_tlbrd || inst_tlbwr || inst_tlbfill 
+    assign id_refetch_flag = inst_invtlb || inst_tlbrd || inst_tlbwr || inst_tlbfill || inst_cacop 
                          || (ds_csr_we && (ds_csr_num == `CSR_CRMD && (|ds_csr_wmask[4:3]) || ds_csr_num == `CSR_DMW0 || ds_csr_num == `CSR_DMW1 || ds_csr_num == `CSR_ASID));  // 当前指令造成下一条指令需要Refetch
                         // Reserved for exp19
                         // 虚实转换需要读取CSR.ASID; CSR.CRMD; ds_csr_num == `CSR_DMW因此修改后必须Refetch来确保取指正确
@@ -554,6 +563,8 @@ module IDreg(
                                         (ms_csr_we && (ms_csr_num == `CSR_ASID || ms_csr_num == `CSR_TLBEHI))
                     );
 
+    assign cacop_code = ds_inst[4:0];
+
 //------------------------------ds to es interface--------------------------------------
     assign ds2es_bus = {ds_alu_op,          //19 bit
                         ds_res_from_mem,    //1  bit
@@ -567,7 +578,9 @@ module IDreg(
                         inst_rdcntvl,       //1
                         ds_except_zip,      //84 bit
                         ds2es_tlb_zip,      //11 bit
-                        ds_tlb_exc          //8  bit
-                        };//268
+                        ds_tlb_exc,          //8  bit
+                        inst_cacop,         //1  bit
+                        cacop_code          //5  bit
+                        };//274
 
 endmodule

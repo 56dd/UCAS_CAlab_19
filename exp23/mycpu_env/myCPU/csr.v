@@ -255,7 +255,7 @@ module csr(
         if (reset)
             csr_crmd_datf <= 2'b0;
         else if (ertn_flush && csr_estat_ecode==6'b111111)
-            csr_crmd_datf <= current_exc_fetch_r ? 2'b01 : 2'b00;
+            csr_crmd_datf <= 2'b01;
         else if (csr_we && csr_num==`CSR_CRMD)
             csr_crmd_datf <= csr_wmask[`CSR_CRMD_DATF]&csr_wvalue[`CSR_CRMD_DATF]
                           | ~csr_wmask[`CSR_CRMD_DATF]&csr_crmd_datf;

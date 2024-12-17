@@ -118,6 +118,15 @@ module mycpu_top(
     wire to_cpu_data_ok;
     wire [31:0] to_cpu_rdata;
 
+    wire icache_store_tag;
+    wire icache_Index_Invalidate;
+    wire icache_Hit_Invalidate;
+    wire dcache_store_tag;
+    wire dcache_Index_Invalidate;
+    wire dcache_Hit_Invalidate;
+    wire [31:0] cache_va;
+    wire cacop_ok;
+
     wire uncache;
     assign uncache = datm == 2'b00;
     assign to_cpu_addr_ok = ~uncache & dcache_addr_ok | uncache & data_sram_addr_ok;
@@ -156,7 +165,14 @@ module mycpu_top(
         .wr_addr(icache_wr_addr             ),
         .wr_wstrb(icache_wr_strb             ),
         .wr_data(icache_wr_data             ),
-        .wr_rdy (icache_wr_rdy              )//icache不会真正要写sram，置1没有关系
+        .wr_rdy (icache_wr_rdy              ),//icache不会真正要写sram，置1没有关系
+
+        .cacop_store_tag (icache_store_tag),
+        .cacop_Index_Invalidate (icache_Index_Invalidate),
+        .cacop_Hit_Invalidate (icache_Hit_Invalidate),
+        .cacop_va (cache_va),
+        .cacop_ok (cacop_ok)
+
     );
 
     //exp22:Dcache
@@ -190,7 +206,14 @@ module mycpu_top(
         .wr_addr(dcache_wr_addr             ),
         .wr_wstrb(dcache_wr_wstrb            ),
         .wr_data(dcache_wr_data             ),
-        .wr_rdy (dcache_wr_rdy              )
+        .wr_rdy (dcache_wr_rdy              ),
+
+        .cacop_store_tag(dcache_store_tag),
+        .cacop_Index_Invalidate(dcache_Index_Invalidate),
+        .cacop_Hit_Invalidate(dcache_Hit_Invalidate),
+        .cacop_va(cache_va),
+        .cacop_ok(cacop_ok)
+
     );
 
     mycpu_core my_core(
@@ -226,7 +249,16 @@ module mycpu_top(
         .inst_addr_vrtl     (inst_addr_vrtl     ),
         //DCACHE ADD!
         .data_addr_vrtl     (data_addr_vrtl     ),
-        .datm               (datm               )
+        .datm               (datm               ),
+
+        .icache_store_tag   (icache_store_tag   ),
+        .icache_Index_Invalidate (icache_Index_Invalidate),
+        .icache_Hit_Invalidate (icache_Hit_Invalidate),
+        .dcache_store_tag   (dcache_store_tag   ),
+        .dcache_Index_Invalidate (dcache_Index_Invalidate),
+        .dcache_Hit_Invalidate (dcache_Hit_Invalidate),
+        .cache_va           (cache_va           ),
+        .cacop_ok           (cacop_ok           )
     );
 
     bridge_sram_axi my_bridge_sram_axi(

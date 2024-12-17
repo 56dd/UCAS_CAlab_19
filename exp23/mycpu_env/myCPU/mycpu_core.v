@@ -32,7 +32,16 @@ module mycpu_core(
     output wire [31:0]  inst_addr_vrtl,
     //DCACHE ADD!
     output wire [31:0]  data_addr_vrtl,
-    output wire [1:0]   datm
+    output wire [1:0]   datm,
+
+    output wire icache_store_tag,
+    output wire icache_Index_Invalidate,
+    output wire icache_Hit_Invalidate,
+    output wire dcache_store_tag,
+    output wire dcache_Index_Invalidate,
+    output wire dcache_Hit_Invalidate,
+    output wire [31:0] cache_va,
+    input  wire cacop_ok
 );
     wire        ds_allowin;
     wire        es_allowin;
@@ -323,7 +332,16 @@ module mycpu_core(
         .datm(datm),
 
 
-        .vtl_addr (data_addr_vrtl)
+        .vtl_addr (data_addr_vrtl),
+
+        .icache_store_tag(icache_store_tag),
+        .icache_Index_Invalidate(icache_Index_Invalidate),
+        .icache_Hit_Invalidate(icache_Hit_Invalidate),
+        .dcache_store_tag(dcache_store_tag),
+        .dcache_Index_Invalidate(dcache_Index_Invalidate),
+        .dcache_Hit_Invalidate(dcache_Hit_Invalidate),
+        .cache_va(cache_va),
+        .cacop_ok(cacop_ok)
     );
 
     MEMreg my_memReg(

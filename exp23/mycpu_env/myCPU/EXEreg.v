@@ -61,7 +61,16 @@ module EXEreg(
     //DCACHE ADD
     output wire [31:0] vtl_addr,//虚地址 
     input wire [1:0]  csr_crmd_datm,
-    output wire [1:0] datm
+    output wire [1:0] datm,
+
+    output wire icache_store_tag,
+    output wire icache_Index_Invalidate,
+    output wire icache_Hit_Invalidate,
+    output wire dcache_store_tag,
+    output wire dcache_Index_Invalidate,
+    output wire dcache_Hit_Invalidate,
+    output wire [31:0] cache_va,
+    input  wire cacop_ok
 );
 
     wire        es_ready_go;
@@ -105,6 +114,10 @@ module EXEreg(
     wire        es_mem_req;
     wire        es_except_adem;
 
+    //cache
+    reg        es_cacop;
+    reg  [4:0] es_cacop_code;
+
 
     // TLB
     reg  [10:0] ds2es_tlb_zip; // ZIP信号
@@ -140,13 +153,14 @@ module EXEreg(
     wire        isStore;
 //------------------------------state control signal---------------------------------------
     assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale ||es_except_adem||(|es2ms_tlb_exc))& es_valid;
-    assign es_ready_go      = alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok);
+    assign es_ready_go      = ~es_cacop & alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok)
+                              |es_cacop & alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok) & (cacop_ok);
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
     assign es2ms_valid      = es_valid & es_ready_go;
     always @(posedge clk) begin
         if(~resetn)
             es_valid <= 1'b0;
-        else if(wb_ex)
+        else if(wb_ex | ms_ex)
             es_valid <= 1'b0;
         else if(es_allowin)
             es_valid <= ds2es_valid; 
@@ -160,7 +174,8 @@ module EXEreg(
              inst_rdcntvh , inst_rdcntvl,
              es_except_zip,
              ds2es_tlb_zip,
-             ds2es_tlb_exc} <= {`DS2ES_BUS{1'b0}};
+             ds2es_tlb_exc,
+             es_cacop,es_cacop_code} <= {`DS2ES_BUS{1'b0}};
         else if(ds2es_valid & es_allowin)
             {es_alu_op, es_res_from_mem, es_alu_src1, es_alu_src2,
              es_csr_re, es_rf_we, es_rf_waddr, es_rkd_value, es_pc, es_st_op_zip, 
@@ -168,7 +183,8 @@ module EXEreg(
              inst_rdcntvh , inst_rdcntvl,
              es_except_zip,
              ds2es_tlb_zip,
-             ds2es_tlb_exc} <= ds2es_bus;    
+             ds2es_tlb_exc,
+             es_cacop,es_cacop_code} <= ds2es_bus;    
     end
     assign {op_st_b, op_st_h, op_st_w} = es_st_op_zip;
     assign {op_ld_b, op_ld_bu, op_ld_h, op_ld_hu, op_ld_w} = es_ld_inst_zip;
@@ -279,4 +295,14 @@ always @(posedge clk) begin
     assign es_tlb_exc[`EARRAY_PPI_MEM] = es_valid & tlb_used & (isLoad | isStore) & !es_tlb_exc[`EARRAY_PIL] & !es_tlb_exc[`EARRAY_PIS] & (crmd_plv_CSRoutput > s1_plv);
     assign es_tlb_exc[`EARRAY_PME ] = es_valid & tlb_used & isStore & !es_tlb_exc[`EARRAY_PPI_MEM] & !s1_d;
     assign es2ms_tlb_exc = ds2es_tlb_exc | es_tlb_exc;
+//---------------------------------cache---------------------------------------
+    assign icache_store_tag = es_cacop & (es_cacop_code == 5'b00000);
+    assign icache_Index_Invalidate = es_cacop & (es_cacop_code == 5'b01000);
+    assign icache_Hit_Invalidate = es_cacop & (es_cacop_code == 5'b10000);
+    assign dcache_store_tag = es_cacop & (es_cacop_code == 5'b00001);
+    assign dcache_Index_Invalidate = es_cacop & (es_cacop_code == 5'b01001);
+    assign dcache_Hit_Invalidate = es_cacop & (es_cacop_code == 5'b10001);
+    assign cache_va = vtl_addr;
+
+
 endmodule
