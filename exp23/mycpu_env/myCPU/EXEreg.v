@@ -296,12 +296,12 @@ always @(posedge clk) begin
     assign es_tlb_exc[`EARRAY_PME ] = es_valid & tlb_used & isStore & !es_tlb_exc[`EARRAY_PPI_MEM] & !s1_d;
     assign es2ms_tlb_exc = ds2es_tlb_exc | es_tlb_exc;
 //---------------------------------cache---------------------------------------
-    assign icache_store_tag = es_cacop & (es_cacop_code == 5'b00000);
-    assign icache_Index_Invalidate = es_cacop & (es_cacop_code == 5'b01000);
-    assign icache_Hit_Invalidate = es_cacop & (es_cacop_code == 5'b10000);
-    assign dcache_store_tag = es_cacop & (es_cacop_code == 5'b00001);
-    assign dcache_Index_Invalidate = es_cacop & (es_cacop_code == 5'b01001);
-    assign dcache_Hit_Invalidate = es_cacop & (es_cacop_code == 5'b10001);
+    assign icache_store_tag = es_cacop & (es_cacop_code == 5'b00000) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
+    assign icache_Index_Invalidate = es_cacop & (es_cacop_code == 5'b01000) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
+    assign icache_Hit_Invalidate = es_cacop & (es_cacop_code == 5'b10000) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
+    assign dcache_store_tag = es_cacop & (es_cacop_code == 5'b00001) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
+    assign dcache_Index_Invalidate = es_cacop & (es_cacop_code == 5'b01001) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
+    assign dcache_Hit_Invalidate = es_cacop & (es_cacop_code == 5'b10001) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
     assign cache_va = vtl_addr;
 
 

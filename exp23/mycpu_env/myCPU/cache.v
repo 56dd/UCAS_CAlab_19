@@ -41,6 +41,9 @@ module cache(
 
     );
 
+wire [2:0] cacop_operate;
+assign cacop_operate = {cacop_store_tag, cacop_Index_Invalidate, cacop_Hit_Invalidate};
+
 // cache 的 4 种操作类型
 wire lookup; //根据标签和索引查找是否命中
 wire hitwrite;//命中的写操作会进入 Write Buffer，随后将数据写入命中 Cache 行的对应位置。
@@ -278,7 +281,7 @@ end
 always @(*)begin
     case(current_state)
     IDLE:begin
-        if(valid && (~conflict_case1))
+        if((valid | (|cacop_operate[2:0])) && (~conflict_case1))
             next_state = LOOKUP;
         else
             next_state = IDLE;

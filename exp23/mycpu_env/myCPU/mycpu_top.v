@@ -125,6 +125,8 @@ module mycpu_top(
     wire dcache_Index_Invalidate;
     wire dcache_Hit_Invalidate;
     wire [31:0] cache_va;
+    wire icacop_ok;
+    wire dcacop_ok;
     wire cacop_ok;
 
     wire uncache;
@@ -171,7 +173,7 @@ module mycpu_top(
         .cacop_Index_Invalidate (icache_Index_Invalidate),
         .cacop_Hit_Invalidate (icache_Hit_Invalidate),
         .cacop_va (cache_va),
-        .cacop_ok (cacop_ok)
+        .cacop_ok (icacop_ok)
 
     );
 
@@ -212,7 +214,7 @@ module mycpu_top(
         .cacop_Index_Invalidate(dcache_Index_Invalidate),
         .cacop_Hit_Invalidate(dcache_Hit_Invalidate),
         .cacop_va(cache_va),
-        .cacop_ok(cacop_ok)
+        .cacop_ok(dcacop_ok)
 
     );
 
@@ -260,6 +262,12 @@ module mycpu_top(
         .cache_va           (cache_va           ),
         .cacop_ok           (cacop_ok           )
     );
+
+    wire icache_cacop;
+    wire dcache_cacop;
+    assign icache_cacop = icache_store_tag | icache_Index_Invalidate | icache_Hit_Invalidate;
+    assign dcache_cacop = dcache_store_tag | dcache_Index_Invalidate | dcache_Hit_Invalidate;
+    assign cacop_ok = icache_cacop & icacop_ok | dcache_cacop & dcacop_ok;
 
     bridge_sram_axi my_bridge_sram_axi(
     .aclk               (aclk               ),

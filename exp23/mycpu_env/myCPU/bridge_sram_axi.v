@@ -91,7 +91,7 @@ module bridge_sram_axi(
 	// 地址已经握手成功而未响应的情况，�?要计�?
 	reg [1:0] ar_resp_cnt;
 	// 数据寄存器，0-指令SRAM寄存器，1-数据SRAM寄存器（根据id索引�?
-	reg [31:0] buf_rdata [1:0];
+	reg [31:0] buf_rdata [2:0];
 	// 数据相关的判断信�?
 	wire read_block;
 	// 若干寄存�?
@@ -142,7 +142,7 @@ module bridge_sram_axi(
 			{arlen, arburst, arlock, arcache, arprot} <= {8'b0, 2'b1, 2'b0, 4'b0, 3'b0};	// 常�??
 		end
 		else if(ar_current_state[0]) begin	// 读请求状态机为空闲状态，更新数据
-			arid   <= {3'b0, (  data_sram_req & ~data_sram_wr) | ( dcache_rd_req)};	// 数据RAM请求优先于指令RAM
+			arid   <= {2'b0 ,(data_sram_req & ~data_sram_wr), (dcache_rd_req)};	// 数据RAM请求优先于指令RAM
 			araddr <= (   data_sram_req && ~data_sram_wr) ? data_sram_addr : 
 					  ( dcache_rd_req) ? dcache_rd_addr :
 					   icache_rd_addr;
@@ -210,23 +210,23 @@ module bridge_sram_axi(
 	assign read_block = (araddr == awaddr) & (|w_current_state[4:1]) & ~b_current_state[2];	// 读写地址相同且有写操作且数据未写�?
 	always @(posedge aclk)begin
 		if(!aresetn)
-			{buf_rdata[1], buf_rdata[0]} <= 64'b0;
+			{buf_rdata[2], buf_rdata[1], buf_rdata[0]} <= 96'b0;
 		else if(rvalid & rready)
 			buf_rdata[rid] <= rdata;
 	end
 	assign dcache_ret_data = buf_rdata[1];
-	assign dcache_rd_rdy = arid[0] & arvalid & arready ; 
-	assign dcache_ret_valid = rid_r[0] & (|r_current_state[3:2]) ; 
-	assign dcache_ret_last = rid_r[0] & r_current_state[3] ;
+	assign dcache_rd_rdy = ~arid[1] & arid[0] & arvalid & arready ; 
+	assign dcache_ret_valid = ~rid_r[1] & rid_r[0] & (|r_current_state[3:2]) ; 
+	assign dcache_ret_last = ~rid_r[1] & rid_r[0] & r_current_state[3] ;
 	
 	assign icache_ret_data = buf_rdata[0];
-	assign icache_ret_valid = ~rid_r[0] & (|r_current_state[3:2]); // rvalid & rready的下�?�?
-	assign icache_rd_rdy = ~arid[0] & arvalid & arready;
-	assign icache_ret_last = ~rid_r[0] & r_current_state[3];
+	assign icache_ret_valid = ~rid_r[1] & ~rid_r[0] & (|r_current_state[3:2]); // rvalid & rready的下�?�?
+	assign icache_rd_rdy = ~arid[1] & ~arid[0] & arvalid & arready;
+	assign icache_ret_last = ~rid_r[1] & ~rid_r[0] & r_current_state[3];
 
-	assign data_sram_rdata = buf_rdata[1];
-	assign data_sram_addr_ok = arid[0] & arvalid & arready | wid[0] & awvalid & awready ; 
-	assign data_sram_data_ok = rid_r[0] & r_current_state[3] | bid[0] & bvalid & bready; 
+	assign data_sram_rdata = buf_rdata[2];
+	assign data_sram_addr_ok = arid[1] & arvalid & arready | wid[1] & awvalid & awready ; 
+	assign data_sram_data_ok = rid_r[1]  & r_current_state[3] | bid[1] & bvalid & bready; 
 
 	// data_ok 不采用如下是因为�?要从buffer中拿数据，则要等到下�?�?
 	// assign inst_sram_data_ok = ~rid[0] & rvalid & rready;
@@ -294,12 +294,13 @@ module bridge_sram_axi(
 		if(~aresetn) begin
 			awaddr <= 32'b0;
 			awsize <= 3'b010;
-			{awlen, awburst, awlock, awcache, awprot, awid} <= {8'b0, 2'b1, 1'b0, 1'b0, 1'b0, 1'b1};	// 常�??
+			{awlen, awburst, awlock, awcache, awprot, awid} <= {8'b0, 2'b1, 1'b0, 1'b0, 1'b0, 1'b0};	// 常�??
 		end
 		else if(w_current_state[0]) begin	// 写请求状态机为空闲状态，更新数据
 			awaddr <= ( data_sram_req && data_sram_wr) ? data_sram_addr : ( dcache_wr_req) ? dcache_wr_addr : icache_rd_addr;
 			awsize <= (data_sram_req && data_sram_wr) ? {1'b0, data_sram_size} : 3'b010;
 			awlen  <= (dcache_wr_req && (dcache_wr_type == 3'b100)) ? 8'b11 : 8'b0;
+			awid    <= {2'b0, (data_sram_req & data_sram_wr), (dcache_wr_req)};
 		end
 	end
 
@@ -310,10 +311,11 @@ module bridge_sram_axi(
 		if(~aresetn) begin
 			wstrb <= 4'b0;
 			dcache_wr_data_r <= 128'b0;
-			wid <= 4'b1;	// 常�??
+			wid <= 4'b0;	// 常�??
 			wdata <= 32'b0;
 		end
 		else if(w_current_state[0]) begin	// 写请求状态机为空闲状态，更新数据
+			wid <= {2'b0, (data_sram_req & data_sram_wr), (dcache_wr_req)};
 			wstrb <=  data_sram_req ? data_sram_wstrb : dcache_wr_wstrb;
 			dcache_wr_data_r  <= dcache_wr_data;
 			data_sram_wdata_r <= data_sram_wdata;
