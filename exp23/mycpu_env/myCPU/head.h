@@ -65,4 +65,5 @@
 // TODO: CACHE-RELATED ECODES
 
 `define ESUBCODE_ADEF 9'b00    
-`define ESUBCODE_ADEM 9'b01     
+`define ESUBCODE_ADEM 9'b01    
+

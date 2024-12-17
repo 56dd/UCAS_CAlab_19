@@ -282,8 +282,12 @@ always @(posedge clk) begin
                         dmw0_hit        ? dmw0_paddr  :
                         dmw1_hit        ? dmw1_paddr  :
                                           tlb_paddr   ;
-    assign datm       = {1'b0,phy_addr[31:12] != 20'hbfaff && phy_addr[31:12] != 20'hbfaf8 && phy_addr[27:12] != 16'h0};
-    
+
+    assign datm       = csr_direct_addr ? csr_crmd_datm :
+                        dmw0_hit        ? csr_dmw0_mat  :
+                        dmw1_hit        ? csr_dmw1_mat  :
+                                          s1_mat        ;
+
     assign tlb_used = (es_res_from_mem | (|es_mem_we)) & ~wb_ex & ~ms_ex & ~(|es_except_zip[5:0]) & ~es_except_ale & ~es_except_adem //es_mem_req 
                       & (~csr_direct_addr & ~dmw0_hit & ~dmw1_hit);
     assign isStore  = |es_mem_we;
@@ -302,7 +306,10 @@ always @(posedge clk) begin
     assign dcache_store_tag = es_cacop & (es_cacop_code == 5'b00001) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
     assign dcache_Index_Invalidate = es_cacop & (es_cacop_code == 5'b01001) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
     assign dcache_Hit_Invalidate = es_cacop & (es_cacop_code == 5'b10001) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
-    assign cache_va = vtl_addr;
+    assign cache_va = (icache_store_tag | icache_Index_Invalidate | dcache_store_tag | dcache_Index_Invalidate) ? vtl_addr :
+                      (icache_Hit_Invalidate) ? 32'b0 :
+                      (dcache_Hit_Invalidate) ? 32'b1 :
+                      32'b0;
 
 
 endmodule

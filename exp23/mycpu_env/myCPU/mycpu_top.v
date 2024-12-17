@@ -169,9 +169,9 @@ module mycpu_top(
         .wr_data(icache_wr_data             ),
         .wr_rdy (icache_wr_rdy              ),//icache不会真正要写sram，置1没有关系
 
-        .cacop_store_tag (icache_store_tag),
-        .cacop_Index_Invalidate (icache_Index_Invalidate),
-        .cacop_Hit_Invalidate (icache_Hit_Invalidate),
+        .cache_store_tag (icache_store_tag),
+        .cache_Index_Invalidate (icache_Index_Invalidate),
+        .cache_Hit_Invalidate (icache_Hit_Invalidate),
         .cacop_va (cache_va),
         .cacop_ok (icacop_ok)
 
@@ -210,9 +210,9 @@ module mycpu_top(
         .wr_data(dcache_wr_data             ),
         .wr_rdy (dcache_wr_rdy              ),
 
-        .cacop_store_tag(dcache_store_tag),
-        .cacop_Index_Invalidate(dcache_Index_Invalidate),
-        .cacop_Hit_Invalidate(dcache_Hit_Invalidate),
+        .cache_store_tag(dcache_store_tag),
+        .cache_Index_Invalidate(dcache_Index_Invalidate),
+        .cache_Hit_Invalidate(dcache_Hit_Invalidate),
         .cacop_va(cache_va),
         .cacop_ok(dcacop_ok)
 
