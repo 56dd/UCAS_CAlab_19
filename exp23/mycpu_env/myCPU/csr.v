@@ -153,6 +153,7 @@ module csr(
     wire    csr_ticlr_clr;
 
     reg current_exc_fetch_r;
+    reg current_exc_cacop_r;
     wire tlbehi_exc;
 
     reg [5:0] csr_tlbidx_ps;
@@ -266,7 +267,8 @@ module csr(
         if (reset)
             csr_crmd_datm <= 2'b0;
         else if (ertn_flush && csr_estat_ecode==6'b111111)
-            csr_crmd_datm <= current_exc_fetch_r ? 2'b00 : 2'b01;   
+            csr_crmd_datm <=  current_exc_cacop_r ? 2'b00 :
+                              current_exc_fetch_r ? 2'b00 : 2'b01;   
         else if (csr_we && csr_num==`CSR_CRMD)
             csr_crmd_datm <= csr_wmask[`CSR_CRMD_DATM]&csr_wvalue[`CSR_CRMD_DATM]
                           | ~csr_wmask[`CSR_CRMD_DATM]&csr_crmd_datm;
@@ -323,6 +325,7 @@ module csr(
             csr_estat_ecode <= wb_ecode;
             csr_estat_esubcode <= wb_esubcode;
             current_exc_fetch_r <= current_exc_fetch;
+            current_exc_cacop_r <= current_exc_cacop;
         end
     end
 
