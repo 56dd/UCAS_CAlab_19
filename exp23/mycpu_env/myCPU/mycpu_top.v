@@ -141,7 +141,7 @@ module mycpu_top(
         //----------cpu interface------
         .clk    (aclk                       ),
         .resetn (aresetn                    ),
-        .valid  (inst_sram_req              ),//pre-if request valid
+        .valid  (inst_sram_req & ~icache_Hit_Invalidate),//pre-if request valid
         .op     (inst_sram_wr               ),//always 0==read
         .index  (inst_addr_vrtl[11:4]       ),
         .tag    (inst_sram_addr[31:12]      ),//from tlb:inst_sram_addr[31:12]=实地址

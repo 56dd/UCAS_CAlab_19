@@ -69,6 +69,8 @@ module MEMreg(
     reg  [`TLB_ERRLEN-1:0] es2ms_tlb_exc;
     wire [`TLB_ERRLEN-1:0] ms2ws_tlb_exc;
 
+    reg   ms_cacop;
+
 //------------------------------state control signal---------------------------------------
 
     //assign ms_ready_go      = 1'b1;
@@ -105,11 +107,11 @@ module MEMreg(
 //------------------------------exe and mem state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {ms_wait_data_ok_r,ms_ld_inst_zip, ms_pc, ms_except_zip,es2ms_tlb_zip, es2ms_tlb_exc} <= {`ES2MS_BUS{1'b0}};//ms_except_zip={es_except_zip,es_except_ale,es_except_adem }
+            {ms_wait_data_ok_r,ms_ld_inst_zip, ms_pc, ms_except_zip,es2ms_tlb_zip, es2ms_tlb_exc,ms_cacop} <= {`ES2MS_BUS{1'b0}};//ms_except_zip={es_except_zip,es_except_ale,es_except_adem }
             {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, ms_rf_result_tmp} <= 39'b0;
         end
         if(es2ms_valid & ms_allowin) begin
-            {ms_wait_data_ok_r,ms_ld_inst_zip, ms_pc, ms_except_zip,es2ms_tlb_zip, es2ms_tlb_exc} <= es2ms_bus;
+            {ms_wait_data_ok_r,ms_ld_inst_zip, ms_pc, ms_except_zip,es2ms_tlb_zip, es2ms_tlb_exc,ms_cacop} <= es2ms_bus;
             {ms_csr_re, ms_res_from_mem, ms_rf_we, ms_rf_waddr, ms_rf_result_tmp} <= es_rf_zip;
         end
     end
@@ -134,8 +136,9 @@ module MEMreg(
                         ms_pc,              // 32 bit
                         ms_except_zip,      // 87 bit
                         ms2wb_tlb_zip,       //10
-                        ms2ws_tlb_exc       //8
-                    };//169
+                        ms2ws_tlb_exc,      //8
+                        ms_cacop            //1
+                    };//170
 //---------------------------------- tlb --------------------------------------
     assign {ms_refetch_flag, inst_tlbsrch, inst_tlbrd, inst_tlbwr, inst_tlbfill, tlbsrch_found, tlbsrch_idxgot} = es2ms_tlb_zip;
     assign ms2wb_tlb_zip = es2ms_tlb_zip;

@@ -41,6 +41,11 @@ module cache(
 
     );
 
+    wire [19:0]  cacop_va_tag;
+    assign cacop_va_tag = cacop_va[31:12];
+    wire [7:0]  cacop_va_index;
+    assign cacop_va_index = cacop_va[11:4];
+
     // 主状态机的状态
     localparam IDLE    = 5'b00001,
                LOOKUP  = 5'b00010,
@@ -59,10 +64,24 @@ reg [4:0] next_state;
 
     wire        cacop_store_tag;    
     wire        cacop_Index_Invalidate;
-    wire        cacop_Hit_Invalidate;
+    wire        cacop_Hit_Invalidate_ur;
     assign      cacop_store_tag = cache_store_tag & current_state == IDLE;
     assign      cacop_Index_Invalidate = cache_Index_Invalidate & current_state == IDLE;
-    assign      cacop_Hit_Invalidate = cache_Hit_Invalidate & current_state == IDLE;
+    assign      cacop_Hit_Invalidate_ur = cache_Hit_Invalidate & current_state == IDLE;
+
+    reg         cacop_Hit_Invalidate_r;
+
+    always @(posedge clk)begin
+        if(reset)
+            cacop_Hit_Invalidate_r <= 1'b0;
+        else if(cacop_ok)
+            cacop_Hit_Invalidate_r <= 1'b0;
+        else
+            cacop_Hit_Invalidate_r <= cacop_Hit_Invalidate;
+    end
+
+    wire        cacop_Hit_Invalidate;
+    assign      cacop_Hit_Invalidate = cacop_Hit_Invalidate_r | cacop_Hit_Invalidate_ur;
 
 // CPU-->cache 请求类型 (op)
 localparam READ  = 1'b0;
@@ -94,7 +113,7 @@ wire [ 7:0] data_addr;
 wire [31:0] data_wdata;
 wire [31:0] data_w0_b0_rdata, data_w0_b1_rdata, data_w0_b2_rdata, data_w0_b3_rdata, data_w1_b0_rdata, data_w1_b1_rdata, data_w1_b2_rdata, data_w1_b3_rdata;
 wire        data_w0_b0_en, data_w0_b1_en, data_w0_b2_en, data_w0_b3_en, data_w1_b0_en, data_w1_b1_en, data_w1_b2_en, data_w1_b3_en;
-wire [ 3:0] data_w0_b0_we, data_w0_b1_we, data_w0_b2_we, data_w0_b3_we, data_w1_b0_we, data_w1_b1_we, data_w1_b2_we, data_w1_b3_we;
+wire [ 3:0] data_w0_b0_we, data_w0_b1_we, data_w0_b2_we, data_w0_b3_we,data_w1_b0_we, data_w1_b1_we, data_w1_b2_we, data_w1_b3_we;
 
 
 // cache 的逻辑组织结构（对 cache 的硬件结构实例化）
@@ -222,8 +241,10 @@ wire        cache_hit;
 
 assign {way0_tag, way0_v} = tagv_w0_rdata;
 assign {way1_tag, way1_v} = tagv_w1_rdata;
-assign way0_hit = way0_v && (way0_tag == reg_tag);
-assign way1_hit = way1_v && (way1_tag == reg_tag);
+assign way0_hit = ~cache_Hit_Invalidate && way0_v && (way0_tag == reg_tag) ||
+                   cache_Hit_Invalidate && way0_v && (way0_tag == cacop_va_tag);
+assign way1_hit = ~cache_Hit_Invalidate && way1_v && (way1_tag == reg_tag) ||
+                   cache_Hit_Invalidate && way1_v && (way1_tag == cacop_va_tag);
 assign cache_hit = way0_hit || way1_hit;
 
 
@@ -270,6 +291,7 @@ assign replace_block_dirty = (replace_way == 1'b0) && dirty_way0[reg_index] && w
 wire conflict_case1 = (writebuf_cstate == WRITEBUF_WRITE)  // writebuff 状态机处于 WRITE 状态
                    && valid && (op == READ)                // 一个新的读 cache 请求（写请求不用返回数据，因此不用考虑冲突）
                    && (offset[3:2] == write_bank);         // 读写同一个 bank
+//cacop指令不考率冲突是因为重取指
 // 第2种冲突可以通过前递解决
 wire conflict_case2 = (current_state == LOOKUP)            // 主状态机处于 LOOKUP 状态
                    && (reg_op == WRITE)                    // 当前是 store 操作
@@ -287,13 +309,13 @@ end
 always @(*)begin
     case(current_state)
     IDLE:begin
-        if(valid && (~conflict_case1))
+        if((valid | cacop_Hit_Invalidate) && (~conflict_case1))
             next_state = LOOKUP;
         else
             next_state = IDLE;
     end
     LOOKUP:begin
-        if(~cache_hit)
+        if(~cache_hit && ~cacop_Hit_Invalidate)
             next_state = MISS;
         else if((~valid) || conflict_case1 || conflict_case2)
             next_state = IDLE;
@@ -347,8 +369,8 @@ always @(*) begin
 end
 
 // 判断当前操作的类型
-assign lookup = (current_state == IDLE) && valid && (~conflict_case1) ||
-                (current_state == LOOKUP) && valid && cache_hit && (~conflict_case1) && (~conflict_case2);
+assign lookup = (current_state == IDLE) && (valid || cacop_Hit_Invalidate) && (~conflict_case1) ||
+                (current_state == LOOKUP) && (valid || cacop_Hit_Invalidate) && cache_hit && (~conflict_case1) && (~conflict_case2);
 assign hitwrite = (writebuf_cstate == WRITEBUF_WRITE);
 assign replace = (current_state == MISS) || (current_state == REPLACE);
 assign refill = (current_state == REFILL);
@@ -415,52 +437,58 @@ assign mixed_word = {{reg_wstrb[3]? reg_wdata[31:24] : ret_data[31:24]},
 assign refill_word = ((refill_word_counter == reg_offset[3:2]) && (reg_op == WRITE))? mixed_word : ret_data;
 
 // tagv ram 的输入信号生成
-assign tagv_w0_en = lookup_en || ((replace || refill) && (replace_way == 1'b0)) || ((cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0]));
-assign tagv_w1_en = lookup_en || ((replace || refill) && (replace_way == 1'b1)) || ((cacop_store_tag || cacop_Index_Invalidate) && (cacop_va[0]));
+assign tagv_w0_en = lookup_en || ((replace || refill) && (replace_way == 1'b0)) || ((cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0]))
+                    ||(cache_Hit_Invalidate && current_state == LOOKUP && way0_hit);
+assign tagv_w1_en = lookup_en || ((replace || refill) && (replace_way == 1'b1)) || ((cacop_store_tag || cacop_Index_Invalidate) && (cacop_va[0]))
+                    ||(cache_Hit_Invalidate && current_state == LOOKUP && way1_hit);
 assign tagv_w0_we = refill && (replace_way == 1'b0) && ret_valid && (refill_word_counter == reg_offset[3:2])
-                 || (cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0]);
+                 || (cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0])
+                 || (cache_Hit_Invalidate && current_state == LOOKUP && way0_hit);
 assign tagv_w1_we = refill && (replace_way == 1'b1) && ret_valid && (refill_word_counter == reg_offset[3:2])
-                 || (cacop_store_tag || cacop_Index_Invalidate) && (cacop_va[0]);
+                 || (cacop_store_tag || cacop_Index_Invalidate) && (cacop_va[0])
+                 || (cache_Hit_Invalidate && current_state == LOOKUP && way1_hit);
 assign tagv_wdata = {21{refill}} & {reg_tag, 1'b1} |
-                    {21{cacop_store_tag || cacop_Index_Invalidate}} & 21'b0; // refill 的 cache block v 位自动置1
+                    {21{cacop_store_tag || cacop_Index_Invalidate}} & 21'b0 |
+                    {21{cacop_Hit_Invalidate && cache_hit}} & 21'b0; // refill 的 cache block v 位自动置1
 assign tagv_addr  = {8{cacop_store_tag || cacop_Index_Invalidate}} & cacop_va[11:4] |
                     {8{~cacop_store_tag & ~cacop_Index_Invalidate}} & (
                     {8{lookup_en}} & index |
+                    {8{cacop_Hit_Invalidate && cache_hit}} & cacop_va_index |
                     {8{replace || refill}} & reg_index);
 
 
 assign data_w0_b0_en = lookup_en && (offset[3:2] == 2'b00) ||
                        hitwrite && (write_way == 1'b0)||
                        (replace || refill) && (replace_way == 1'b0)||
-                       cacop_store_tag && (~cacop_va[0]);
+                       (cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0]);
 assign data_w0_b1_en = lookup_en && (offset[3:2] == 2'b01) ||
                        hitwrite && (write_way == 1'b0)||
                        (replace || refill) && (replace_way == 1'b0)||
-                       cacop_store_tag && (~cacop_va[0]);
+                       (cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0]);
 assign data_w0_b2_en = lookup_en && (offset[3:2] == 2'b10) ||
                        hitwrite && (write_way == 1'b0)||
                        (replace || refill) && (replace_way == 1'b0)||
-                       cacop_store_tag && (~cacop_va[0]);
+                       (cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0]);
 assign data_w0_b3_en = lookup_en && (offset[3:2] == 2'b11) ||
                        hitwrite && (write_way == 1'b0)||
                        (replace || refill) && (replace_way == 1'b0)||
-                       cacop_store_tag && (~cacop_va[0]);
+                       (cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0]);
 assign data_w1_b0_en = lookup_en && (offset[3:2] == 2'b00) ||
                        hitwrite && (write_way == 1'b1)||
                        (replace || refill) && (replace_way == 1'b1)||
-                       cacop_store_tag && (cacop_va[0]);
+                       (cacop_store_tag || cacop_Index_Invalidate) && (cacop_va[0]);
 assign data_w1_b1_en = lookup_en && (offset[3:2] == 2'b01) ||
                        hitwrite && (write_way == 1'b1)||
                        (replace || refill) && (replace_way == 1'b1)||
-                       cacop_store_tag && (cacop_va[0]);
+                       (cacop_store_tag || cacop_Index_Invalidate) && (cacop_va[0]);
 assign data_w1_b2_en = lookup_en && (offset[3:2] == 2'b10) ||
                        hitwrite && (write_way == 1'b1)||
                        (replace || refill) && (replace_way == 1'b1)||
-                       cacop_store_tag && (cacop_va[0]);
+                       (cacop_store_tag || cacop_Index_Invalidate) && (cacop_va[0]);
 assign data_w1_b3_en = lookup_en && (offset[3:2] == 2'b11) ||
                        hitwrite && (write_way == 1'b1)||
                        (replace || refill) && (replace_way == 1'b1)||
-                       cacop_store_tag && (cacop_va[0]);
+                       (cacop_store_tag || cacop_Index_Invalidate) && (cacop_va[0]);
 
 
 
@@ -489,11 +517,13 @@ assign data_w1_b3_we = {4{hitwrite && (write_way == 1'b1) && (write_bank == 2'b1
                        {4{refill && (replace_way == 1'b1) && (refill_word_counter == 2'b11) && ret_valid}} & {4'b1111} |
                        {4{cacop_store_tag && (cacop_va[0])}} & {4'b1111};
 
-assign data_wdata = (cacop_store_tag || cacop_Index_Invalidate) ? 32'b0 :
+
+assign data_wdata = (cacop_store_tag) ? 32'b0 :
                         refill ? refill_word :
                             (hitwrite ? write_data : 32'b0);
 
-assign data_addr  = (cacop_store_tag || cacop_Index_Invalidate) ? cacop_va[11:4] :
+assign data_addr  = (cacop_Hit_Invalidate) ? cacop_va_index :
+                    (cacop_store_tag || cacop_Index_Invalidate) ? cacop_va[11:4] :
                         (replace || refill)? reg_index :
                                         (hitwrite ? write_index :
                                                     (lookup_en ? index : 8'b0));
@@ -521,7 +551,7 @@ end
 
 
 // cache --> CPU 输出信号的赋值
-assign addr_ok = (current_state == IDLE) && (~conflict_case1) ||
+assign addr_ok = (current_state == IDLE) && (~conflict_case1) && valid ||
                  (current_state == LOOKUP) && cache_hit &&
                  valid && (~conflict_case1) && (~conflict_case2);
 assign data_ok = (current_state == LOOKUP) && (cache_hit || (reg_op == WRITE)) ||
@@ -535,15 +565,18 @@ assign rd_addr = {reg_tag, reg_index, 4'b0000};
 
 
 assign wr_req = (current_state == MISS) && replace_block_dirty ||
-                (cacop_Index_Invalidate && (cacop_va[0] ? dirty_way1[cacop_va[11:4]] : dirty_way0[cacop_va[11:4]]));
+                (cacop_Index_Invalidate && (cacop_va[0] ? dirty_way1[cacop_va[11:4]] : dirty_way0[cacop_va[11:4]])) ||
+                (cacop_Hit_Invalidate && current_state == LOOKUP && (way0_hit & dirty_way0[reg_index] | way1_hit & dirty_way1[reg_index]));
 assign wr_type = WRITE_BLOCK; 
 assign wr_addr = {32{cacop_Index_Invalidate}} & {cacop_va[0] ? way1_tag : way0_tag, cacop_va[11:4], 4'b0000} |
-                 {32{~cacop_Index_Invalidate}} & (
+                 {32{cacop_Hit_Invalidate && current_state == LOOKUP}} & {{20{cache_hit}} & cacop_va_tag,reg_index,4'b0000} |
+                 {32{~cacop_Index_Invalidate & ~cacop_Hit_Invalidate}} & (
                  {32{replace_way == 1'b0}} & {way0_tag, reg_index, 4'b0000} |
                  {32{replace_way == 1'b1}} & {way1_tag, reg_index, 4'b0000});
 assign wr_wstrb = 4'b1111; // 只有 uncached 才有意义
 assign wr_data = {128{cacop_Index_Invalidate}} & (cacop_va[0] ? way1_load_block : way0_load_block) |
-                 {128{~cacop_Index_Invalidate}} & (
+                 {128{cacop_Hit_Invalidate & current_state == LOOKUP}} & ( way1_hit ? way1_load_block : way0_load_block) |
+                 {128{~cacop_Index_Invalidate & ~cacop_Hit_Invalidate}} & (
                  {128{replace_way == 1'b0}} & way0_load_block |
                  {128{replace_way == 1'b1}} & way1_load_block);
 
@@ -551,6 +584,6 @@ assign wr_data = {128{cacop_Index_Invalidate}} & (cacop_va[0] ? way1_load_block 
 assign cacop_ok = cacop_store_tag & (1'b1)
                  |cacop_Index_Invalidate & ((cacop_va[0] ? dirty_way1[cacop_va[11:4]] : dirty_way0[cacop_va[11:4]]) & wr_rdy |
                                            ~(cacop_va[0] ? dirty_way1[cacop_va[11:4]] : dirty_way0[cacop_va[11:4]]))
-                 |cacop_Hit_Invalidate & (1'b1);
+                 |cacop_Hit_Invalidate & (current_state == LOOKUP);
 
 endmodule

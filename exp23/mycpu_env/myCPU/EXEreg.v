@@ -154,7 +154,7 @@ module EXEreg(
 //------------------------------state control signal---------------------------------------
     assign es_ex            = ((|es_except_zip[5:0]) || es_except_ale ||es_except_adem||(|es2ms_tlb_exc))& es_valid;
     assign es_ready_go      = ~es_cacop & alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok)
-                              |es_cacop & alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok) & (cacop_ok);
+                              |es_cacop & alu_complete & (~data_sram_req | data_sram_req & data_sram_addr_ok) & (cacop_ok | es_ex | ms_ex | wb_ex);
     assign es_allowin       = ~es_valid | es_ready_go & ms_allowin;     
     assign es2ms_valid      = es_valid & es_ready_go;
     always @(posedge clk) begin
@@ -203,9 +203,9 @@ module EXEreg(
                         es_except_ale,       //1
                         es_except_adem, 
                         es2ms_tlb_zip,      // 10 bits
-                        es2ms_tlb_exc       // 8  bits
-
-                    };//142
+                        es2ms_tlb_exc,       // 8  bits
+                        es_cacop             // 1
+                    };//143
     //地址错误：内存指�? |虚拟地址高位�?1且当前特权级是PLV3（用户模式）& 地址不命中直接映射窗�?
     //assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (vtl_addr[31] & crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
     //assign es_except_adem = (es_res_from_mem | (|es_mem_we)) & (crmd_plv_CSRoutput == 2'd3) & ~dmw0_hit & ~dmw1_hit & es_valid; 
@@ -288,13 +288,14 @@ always @(posedge clk) begin
                         dmw1_hit        ? csr_dmw1_mat  :
                                           s1_mat        ;
 
-    assign tlb_used = (es_res_from_mem | (|es_mem_we)) & ~wb_ex & ~ms_ex & ~(|es_except_zip[5:0]) & ~es_except_ale & ~es_except_adem //es_mem_req 
+    assign tlb_used = (es_res_from_mem | (|es_mem_we) | es_cacop & es_cacop_code[4:3] == 2'b10) & ~wb_ex & ~ms_ex & ~(|es_except_zip[5:0]) & ~es_except_ale & ~es_except_adem //es_mem_req 
                       & (~csr_direct_addr & ~dmw0_hit & ~dmw1_hit);
     assign isStore  = |es_mem_we;
     assign isLoad   = es_res_from_mem;
-    assign {es_tlb_exc[`EARRAY_PIF], es_tlb_exc[`EARRAY_TLBR_FETCH], es_tlb_exc[`EARRAY_PPI_FETCH]} = 3'b0;
-    assign es_tlb_exc[`EARRAY_TLBR_MEM] = es_valid & es_res_from_mem & tlb_used & !s1_found;
-    assign es_tlb_exc[`EARRAY_PIL ] = es_valid & tlb_used & isLoad  & !es_tlb_exc[`EARRAY_TLBR_MEM] & !s1_v;
+    assign {es_tlb_exc[`EARRAY_PIF], es_tlb_exc[`EARRAY_PPI_FETCH]} = 2'b0;
+    assign es_tlb_exc[`EARRAY_TLBR_FETCH] = es_valid & tlb_used & es_cacop & (es_cacop_code == 5'b10000) & !s1_found;
+    assign es_tlb_exc[`EARRAY_TLBR_MEM] = es_valid & (es_res_from_mem | (es_cacop & (es_cacop_code == 5'b10001))) & tlb_used & !s1_found;
+    assign es_tlb_exc[`EARRAY_PIL ] = es_valid & tlb_used & (isLoad | es_cacop ) & !es_tlb_exc[`EARRAY_TLBR_MEM] & !s1_v;
     assign es_tlb_exc[`EARRAY_PIS ] = es_valid & tlb_used & isStore & !es_tlb_exc[`EARRAY_TLBR_MEM] & !s1_v;
     assign es_tlb_exc[`EARRAY_PPI_MEM] = es_valid & tlb_used & (isLoad | isStore) & !es_tlb_exc[`EARRAY_PIL] & !es_tlb_exc[`EARRAY_PIS] & (crmd_plv_CSRoutput > s1_plv);
     assign es_tlb_exc[`EARRAY_PME ] = es_valid & tlb_used & isStore & !es_tlb_exc[`EARRAY_PPI_MEM] & !s1_d;
@@ -307,8 +308,7 @@ always @(posedge clk) begin
     assign dcache_Index_Invalidate = es_cacop & (es_cacop_code == 5'b01001) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
     assign dcache_Hit_Invalidate = es_cacop & (es_cacop_code == 5'b10001) & es_valid & ms_allowin & ~wb_ex & ~ms_ex & ~es_ex;
     assign cache_va = (icache_store_tag | icache_Index_Invalidate | dcache_store_tag | dcache_Index_Invalidate) ? vtl_addr :
-                      (icache_Hit_Invalidate) ? 32'b0 :
-                      (dcache_Hit_Invalidate) ? 32'b1 :
+                      ((icache_Hit_Invalidate | dcache_Hit_Invalidate) & ~(|es_tlb_exc)) ? phy_addr :
                       32'b0;
 
 

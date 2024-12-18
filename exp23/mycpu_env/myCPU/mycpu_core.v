@@ -202,6 +202,8 @@ module mycpu_core(
 
     wire [1:0] csr_crmd_datm;
 
+    wire       current_exc_cacop;
+
     IFreg my_ifReg(
         .clk(clk),
         .resetn(resetn),
@@ -406,7 +408,8 @@ module mycpu_core(
         .wb_tlbsrch_idxgot(wb_tlbsrch_idxgot),
         .wb_refetch_flush(wb_refetch_flush),
 
-        .current_exc_fetch(current_exc_fetch)
+        .current_exc_fetch(current_exc_fetch),
+        .current_exc_cacop(current_exc_cacop)
     );
 
      csr u_csr(
@@ -487,7 +490,8 @@ module mycpu_core(
         .csr_dmw0_mat(csr_dmw0_mat),
         .csr_dmw1_mat(csr_dmw1_mat),
         .csr_direct_addr(csr_direct_addr),
-        .current_exc_fetch(current_exc_fetch)
+        .current_exc_fetch(current_exc_fetch),
+        .current_exc_cacop(current_exc_cacop)
     );
 
     tlb u_tlb(

@@ -83,7 +83,8 @@ module csr(
     output reg  [2:0] csr_dmw1_vseg,
     output wire csr_direct_addr,
     output reg  [1:0]  csr_crmd_plv,
-    input  wire current_exc_fetch
+    input  wire current_exc_fetch,
+    input  wire current_exc_cacop
 );  
     `define CSR_CRMD_PLV  1:0
     `define CSR_CRMD_PIE   2
@@ -341,7 +342,8 @@ module csr(
 
     always @(posedge clk) begin
         if (wb_ex && wb_ex_addr_err)
-        csr_badv_vaddr <= current_exc_fetch ? wb_pc : wb_vaddr;
+        csr_badv_vaddr <=   current_exc_cacop ? wb_vaddr :
+                            current_exc_fetch ? wb_pc : wb_vaddr;
     end
 
 
@@ -461,7 +463,8 @@ module csr(
             csr_tlbehi_vppn <= csr_wmask[`CSR_TLBEHI_VPPN]&csr_wvalue[`CSR_TLBEHI_VPPN]
                             | ~csr_wmask[`CSR_TLBEHI_VPPN]&csr_tlbehi_vppn;
         else if (wb_ex && tlbehi_exc)
-            csr_tlbehi_vppn <= current_exc_fetch ? wb_pc[`CSR_TLBEHI_VPPN] : wb_vaddr[`CSR_TLBEHI_VPPN];
+            csr_tlbehi_vppn <=  current_exc_cacop ? wb_vaddr[`CSR_TLBEHI_VPPN] : 
+                                current_exc_fetch ? wb_pc[`CSR_TLBEHI_VPPN] : wb_vaddr[`CSR_TLBEHI_VPPN];
         else if (tlbrd_we && r_tlb_e)
             csr_tlbehi_vppn <= r_tlb_vppn;
         else if (tlbrd_we && ~r_tlb_e)

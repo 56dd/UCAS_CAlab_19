@@ -36,7 +36,9 @@ module WBreg(
     output wire [`TLBNUM_IDX-1:0] wb_tlbsrch_idxgot,
     output wire         wb_refetch_flush,
 
-    output wire         current_exc_fetch
+    output wire         current_exc_fetch,
+
+    output wire         current_exc_cacop
 );
     
     wire        ws_ready_go;
@@ -69,6 +71,8 @@ module WBreg(
     // wire        tlbsrch_found;
     // wire [ 3:0] tlbsrch_idxgot;
     reg  [`TLB_ERRLEN-1:0] ws_tlb_exc;
+
+    reg         ws_cacop;
 //------------------------------state control signal---------------------------------------
 
     assign ws_ready_go      = 1'b1;
@@ -85,11 +89,11 @@ module WBreg(
 //------------------------------mem and wb state interface---------------------------------------
     always @(posedge clk) begin
         if(~resetn) begin
-            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip,ws_tlb_exc}  <= {`MS2WS_BUS{1'b0}};
+            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip,ws_tlb_exc,ws_cacop}  <= {`MS2WS_BUS{1'b0}};
             {csr_re,ws_rf_we_tmp, ws_rf_waddr, ws_rf_wdata_tmp} <= 39'b0;
         end
         if(ms2ws_valid & ws_allowin) begin
-            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip,ws_tlb_exc} <= ms2ws_bus;
+            {wb_vaddr, wb_pc, ws_except_zip,ms2wb_tlb_zip,ws_tlb_exc,ws_cacop} <= ms2ws_bus;
             {csr_re,ws_rf_we_tmp, ws_rf_waddr, ws_rf_wdata_tmp} <= ms_rf_zip ;//1+1+5+32==39
         end
     end
@@ -139,4 +143,6 @@ module WBreg(
     assign {wb_refetch_flag, inst_wb_tlbsrch, inst_wb_tlbrd, inst_wb_tlbwr, inst_wb_tlbfill, wb_tlbsrch_found, wb_tlbsrch_idxgot} = ms2wb_tlb_zip;
     assign tlbwe = (inst_wb_tlbwr || inst_wb_tlbfill) && ws_valid;
     assign wb_refetch_flush = wb_refetch_flag && ws_valid;
+    
+    assign current_exc_cacop = ws_cacop;
 endmodule
