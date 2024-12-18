@@ -34,7 +34,7 @@ module IDreg(
     wire        ds_src1_is_pc;
     wire        ds_src2_is_imm;
     wire        ds_res_from_mem;
-    reg  [31:0] ds_pc;
+(*mark_debug = "true"*)    reg  [31:0] ds_pc;
     wire [31:0] ds_rkd_value;
 
     wire        dst_is_r1;

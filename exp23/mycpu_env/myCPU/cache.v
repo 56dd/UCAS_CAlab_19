@@ -1,49 +1,49 @@
 module cache(
-    input wire        clk,
-    input wire        resetn,
+(*mark_debug = "true"*)    input wire        clk,
+(*mark_debug = "true"*)    input wire        resetn,
 
     // cache与CPU的交互接口
-    input wire        valid,  // CPU 访问cache 请求的有效信号
-    input wire        op,     // 读或写
-    input wire [ 7:0] index,  // vaddr[11:4] 索引
-    input wire [19:0] tag,    // paddr[31:12] 标签
-    input wire [ 3:0] offset, // vaddr[3:0] 偏移量
-    input wire [ 3:0] wstrb,  // 字节写使能
-    input wire [31:0] wdata,  // 写数据
+(*mark_debug = "true"*)    input wire        valid,  // CPU 访问cache 请求的有效信号
+(*mark_debug = "true"*)    input wire        op,     // 读或写
+(*mark_debug = "true"*)    input wire [ 7:0] index,  // vaddr[11:4] 索引
+(*mark_debug = "true"*)    input wire [19:0] tag,    // paddr[31:12] 标签
+(*mark_debug = "true"*)    input wire [ 3:0] offset, // vaddr[3:0] 偏移量
+(*mark_debug = "true"*)    input wire [ 3:0] wstrb,  // 字节写使能
+(*mark_debug = "true"*)    input wire [31:0] wdata,  // 写数据
     
-    output wire        addr_ok, // 地址传输完成信号
-    output wire        data_ok, // 数据传输完成信号
-    output wire [31:0] rdata,   // cache读数据
+(*mark_debug = "true"*)    output wire        addr_ok, // 地址传输完成信号
+(*mark_debug = "true"*)    output wire        data_ok, // 数据传输完成信号
+(*mark_debug = "true"*)    output wire [31:0] rdata,   // cache读数据
 
     // cache与总线的交互接口
-    output wire        rd_req,   // 读请求有效信号
-    output wire [ 2:0] rd_type,  // 读请求类型
-    output wire [31:0] rd_addr,  // 读请求起始地址
+(*mark_debug = "true"*)    output wire        rd_req,   // 读请求有效信号
+(*mark_debug = "true"*)    output wire [ 2:0] rd_type,  // 读请求类型
+(*mark_debug = "true"*)    output wire [31:0] rd_addr,  // 读请求起始地址
 
-    input  wire        rd_rdy,   // 读请求是否被内存接收
-    input  wire        ret_valid,// 返回数据有效
-    input  wire        ret_last, // 读请求的最后一个返回数据
-    input  wire [31:0] ret_data, // 读返回数据
+(*mark_debug = "true"*)    input  wire        rd_rdy,   // 读请求是否被内存接收
+(*mark_debug = "true"*)    input  wire        ret_valid,// 返回数据有效
+(*mark_debug = "true"*)    input  wire        ret_last, // 读请求的最后一个返回数据
+(*mark_debug = "true"*)    input  wire [31:0] ret_data, // 读返回数据
 
-    output wire        wr_req,   // 写请求有效信号
-    output wire [ 2:0] wr_type,  // 写请求类型
-    output wire [31:0] wr_addr,  // 写请求起始地址
-    output wire [ 3:0] wr_wstrb,  // 写操作字节掩码，仅在 WRITE_BYTE, WRITE_HALFWORD, WRITE_WORD下有意义，for uncached 指令
-    output wire [127:0] wr_data, // 写数据
+(*mark_debug = "true"*)    output wire        wr_req,   // 写请求有效信号
+(*mark_debug = "true"*)    output wire [ 2:0] wr_type,  // 写请求类型
+(*mark_debug = "true"*)    output wire [31:0] wr_addr,  // 写请求起始地址
+(*mark_debug = "true"*)    output wire [ 3:0] wr_wstrb,  // 写操作字节掩码，仅在 WRITE_BYTE, WRITE_HALFWORD, WRITE_WORD下有意义，for uncached 指令
+(*mark_debug = "true"*)    output wire [127:0] wr_data, // 写数据
 
-    input  wire        wr_rdy,    // 写请求能否被接收的握手信号
+(*mark_debug = "true"*)    input  wire        wr_rdy,    // 写请求能否被接收的握手信号
 
-    input  wire        cache_store_tag,
-    input  wire        cache_Index_Invalidate,
-    input  wire        cache_Hit_Invalidate,
-    input  wire [31:0] cacop_va,
-    output wire        cacop_ok
+(*mark_debug = "true"*)    input  wire        cache_store_tag,
+(*mark_debug = "true"*)    input  wire        cache_Index_Invalidate,
+(*mark_debug = "true"*)    input  wire        cache_Hit_Invalidate,
+(*mark_debug = "true"*)    input  wire [31:0] cacop_va,
+(*mark_debug = "true"*)    output wire        cacop_ok
 
     );
 
-    wire [19:0]  cacop_va_tag;
+(*mark_debug = "true"*)    wire [19:0]  cacop_va_tag;
     assign cacop_va_tag = cacop_va[31:12];
-    wire [7:0]  cacop_va_index;
+(*mark_debug = "true"*)    wire [7:0]  cacop_va_index;
     assign cacop_va_index = cacop_va[11:4];
 
     // 主状态机的状态
@@ -54,34 +54,31 @@ module cache(
                REFILL  = 5'b10000;
 
 // cache 的 4 种操作类型
-wire lookup; //根据标签和索引查找是否命中
-wire hitwrite;//命中的写操作会进入 Write Buffer，随后将数据写入命中 Cache 行的对应位置。
-wire replace;//如果查找未命中或者缓存中的数据需要被更新，执行替换cache，即读取一个 Cache 行
-wire refill;//将内存返回的数据（以及 store miss 待写入的数据）填入 Replace 空出的位置上
+(*mark_debug = "true"*) wire lookup; //根据标签和索引查找是否命中
+(*mark_debug = "true"*) wire hitwrite;//命中的写操作会进入 Write Buffer，随后将数据写入命中 Cache 行的对应位置。
+(*mark_debug = "true"*) wire replace;//如果查找未命中或者缓存中的数据需要被更新，执行替换cache，即读取一个 Cache 行
+(*mark_debug = "true"*) wire refill;//将内存返回的数据（以及 store miss 待写入的数据）填入 Replace 空出的位置上
 
-reg [4:0] current_state;
-reg [4:0] next_state;
+(*mark_debug = "true"*) reg [4:0] current_state;
+(*mark_debug = "true"*) reg [4:0] next_state;
 
-    wire        cacop_store_tag;    
-    wire        cacop_Index_Invalidate;
-    wire        cacop_Hit_Invalidate_ur;
+(*mark_debug = "true"*)    wire        cacop_store_tag;    
+(*mark_debug = "true"*)    wire        cacop_Index_Invalidate;
+(*mark_debug = "true"*)    wire        cacop_Hit_Invalidate_ur;
     assign      cacop_store_tag = cache_store_tag & current_state == IDLE;
     assign      cacop_Index_Invalidate = cache_Index_Invalidate & current_state == IDLE;
     assign      cacop_Hit_Invalidate_ur = cache_Hit_Invalidate & current_state == IDLE;
 
-    reg         cacop_Hit_Invalidate_r;
+(*mark_debug = "true"*)    reg         cacop_Hit_Invalidate;
 
     always @(posedge clk)begin
         if(reset)
-            cacop_Hit_Invalidate_r <= 1'b0;
+            cacop_Hit_Invalidate <= 1'b0;
         else if(cacop_ok)
-            cacop_Hit_Invalidate_r <= 1'b0;
-        else
-            cacop_Hit_Invalidate_r <= cacop_Hit_Invalidate;
+            cacop_Hit_Invalidate <= 1'b0;
+        else if(current_state == IDLE)
+            cacop_Hit_Invalidate <= cacop_Hit_Invalidate_ur;
     end
-
-    wire        cacop_Hit_Invalidate;
-    assign      cacop_Hit_Invalidate = cacop_Hit_Invalidate_r | cacop_Hit_Invalidate_ur;
 
 // CPU-->cache 请求类型 (op)
 localparam READ  = 1'b0;
@@ -99,21 +96,21 @@ localparam WRITE_HALFWORD = 3'b001;
 localparam WRITE_WORD     = 3'b010;
 localparam WRITE_BLOCK    = 3'b100;
 
-wire         reset;
+(*mark_debug = "true"*) wire         reset;
 assign       reset = ~resetn;    
 
 // tagv_ram 和 data_bank_ram 的输入输出信号
-wire [ 7:0] tagv_addr;
-wire [20:0] tagv_wdata;
-wire [20:0] tagv_w0_rdata, tagv_w1_rdata;
-wire        tagv_w0_en, tagv_w1_en;
-wire        tagv_w0_we, tagv_w1_we;
+(*mark_debug = "true"*) wire [ 7:0] tagv_addr;
+(*mark_debug = "true"*) wire [20:0] tagv_wdata;
+(*mark_debug = "true"*) wire [20:0] tagv_w0_rdata, tagv_w1_rdata;
+(*mark_debug = "true"*) wire        tagv_w0_en, tagv_w1_en;
+(*mark_debug = "true"*) wire        tagv_w0_we, tagv_w1_we;
 
-wire [ 7:0] data_addr;
-wire [31:0] data_wdata;
-wire [31:0] data_w0_b0_rdata, data_w0_b1_rdata, data_w0_b2_rdata, data_w0_b3_rdata, data_w1_b0_rdata, data_w1_b1_rdata, data_w1_b2_rdata, data_w1_b3_rdata;
-wire        data_w0_b0_en, data_w0_b1_en, data_w0_b2_en, data_w0_b3_en, data_w1_b0_en, data_w1_b1_en, data_w1_b2_en, data_w1_b3_en;
-wire [ 3:0] data_w0_b0_we, data_w0_b1_we, data_w0_b2_we, data_w0_b3_we,data_w1_b0_we, data_w1_b1_we, data_w1_b2_we, data_w1_b3_we;
+(*mark_debug = "true"*) wire [ 7:0] data_addr;
+(*mark_debug = "true"*) wire [31:0] data_wdata;
+(*mark_debug = "true"*) wire [31:0] data_w0_b0_rdata, data_w0_b1_rdata, data_w0_b2_rdata, data_w0_b3_rdata, data_w1_b0_rdata, data_w1_b1_rdata, data_w1_b2_rdata, data_w1_b3_rdata;
+(*mark_debug = "true"*) wire        data_w0_b0_en, data_w0_b1_en, data_w0_b2_en, data_w0_b3_en, data_w1_b0_en, data_w1_b1_en, data_w1_b2_en, data_w1_b3_en;
+(*mark_debug = "true"*) wire [ 3:0] data_w0_b0_we, data_w0_b1_we, data_w0_b2_we, data_w0_b3_we,data_w1_b0_we, data_w1_b1_we, data_w1_b2_we, data_w1_b3_we;
 
 
 // cache 的逻辑组织结构（对 cache 的硬件结构实例化）
@@ -201,8 +198,8 @@ data_bank_ram data_way1_bank3(
     .wea(data_w1_b3_we)
 );
 // D 域：每一路用 256 位的寄存器实现，dirty 位用于指示某个缓存行的数据是否已经被修改
-reg [255:0] dirty_way0;
-reg [255:0] dirty_way1;
+(*mark_debug = "true"*) reg [255:0] dirty_way0;
+(*mark_debug = "true"*) reg [255:0] dirty_way1;
 
 
 
@@ -211,47 +208,45 @@ reg [255:0] dirty_way1;
 localparam WRITEBUF_IDLE  = 2'b01,
            WRITEBUF_WRITE = 2'b10;
 
-reg [1:0] writebuf_cstate;
-reg [1:0] writebuf_nstate;
+(*mark_debug = "true"*) reg [1:0] writebuf_cstate;
+(*mark_debug = "true"*) reg [1:0] writebuf_nstate;
 
 
 // request buffer
-reg        reg_op;
-reg [ 7:0] reg_index;
-reg [19:0] reg_tag;
-reg [ 3:0] reg_offset;
-reg [ 3:0] reg_wstrb;
-reg [31:0] reg_wdata;
+(*mark_debug = "true"*) reg        reg_op;
+(*mark_debug = "true"*) reg [ 7:0] reg_index;
+(*mark_debug = "true"*) reg [19:0] reg_tag;
+(*mark_debug = "true"*) reg [ 3:0] reg_offset;
+(*mark_debug = "true"*) reg [ 3:0] reg_wstrb;
+(*mark_debug = "true"*) reg [31:0] reg_wdata;
 
 // miss buffer
-reg [ 1:0] refill_word_counter;  // 1个 cache block 有 4 个 32 位数据
+(*mark_debug = "true"*) reg [ 1:0] refill_word_counter;  // 1个 cache block 有 4 个 32 位数据
 
 // write buffer
-reg        write_way;   //写入的路
-reg [ 1:0] write_bank;  //写入的缓存块
-reg [ 7:0] write_index; //索引
-reg [ 3:0] write_strb; //写使能信号
-reg [31:0] write_data;
+(*mark_debug = "true"*) reg        write_way;   //写入的路
+(*mark_debug = "true"*) reg [ 1:0] write_bank;  //写入的缓存块
+(*mark_debug = "true"*) reg [ 7:0] write_index; //索引
+(*mark_debug = "true"*) reg [ 3:0] write_strb; //写使能信号
+(*mark_debug = "true"*) reg [31:0] write_data;
 
 // tag compare，此处未考虑 Uncache 情况，如果是 Uncache，一定要不命中
-wire        way0_v, way1_v;
-wire [19:0] way0_tag, way1_tag;
-wire        way0_hit, way1_hit;
-wire        cache_hit;
+(*mark_debug = "true"*) wire        way0_v, way1_v;
+(*mark_debug = "true"*) wire [19:0] way0_tag, way1_tag;
+(*mark_debug = "true"*) wire        way0_hit, way1_hit;
+(*mark_debug = "true"*) wire        cache_hit;
 
 assign {way0_tag, way0_v} = tagv_w0_rdata;
 assign {way1_tag, way1_v} = tagv_w1_rdata;
-assign way0_hit = ~cache_Hit_Invalidate && way0_v && (way0_tag == reg_tag) ||
-                   cache_Hit_Invalidate && way0_v && (way0_tag == cacop_va_tag);
-assign way1_hit = ~cache_Hit_Invalidate && way1_v && (way1_tag == reg_tag) ||
-                   cache_Hit_Invalidate && way1_v && (way1_tag == cacop_va_tag);
+assign way0_hit = way0_v && (way0_tag == reg_tag);
+assign way1_hit = way1_v && (way1_tag == reg_tag);
 assign cache_hit = way0_hit || way1_hit;
 
 
 // data select
-wire [127:0] way0_load_block, way1_load_block;
-wire [ 31:0] way0_load_word, way1_load_word;
-wire [ 31:0] load_res;
+(*mark_debug = "true"*) wire [127:0] way0_load_block, way1_load_block;
+(*mark_debug = "true"*) wire [ 31:0] way0_load_word, way1_load_word;
+(*mark_debug = "true"*) wire [ 31:0] load_res;
 
 assign way0_load_block = {data_w0_b3_rdata, data_w0_b2_rdata, data_w0_b1_rdata, data_w0_b0_rdata};
 assign way1_load_block = {data_w1_b3_rdata, data_w1_b2_rdata, data_w1_b1_rdata, data_w1_b0_rdata};
@@ -309,7 +304,7 @@ end
 always @(*)begin
     case(current_state)
     IDLE:begin
-        if((valid | cacop_Hit_Invalidate) && (~conflict_case1))
+        if((valid | cacop_Hit_Invalidate_ur) && (~conflict_case1))
             next_state = LOOKUP;
         else
             next_state = IDLE;
@@ -317,7 +312,7 @@ always @(*)begin
     LOOKUP:begin
         if(~cache_hit && ~cacop_Hit_Invalidate)
             next_state = MISS;
-        else if((~valid) || conflict_case1 || conflict_case2)
+        else if((~valid && ~cacop_Hit_Invalidate) || conflict_case1 || conflict_case2)
             next_state = IDLE;
         else
             next_state = LOOKUP;
@@ -369,7 +364,7 @@ always @(*) begin
 end
 
 // 判断当前操作的类型
-assign lookup = (current_state == IDLE) && (valid || cacop_Hit_Invalidate) && (~conflict_case1) ||
+assign lookup = (current_state == IDLE) && (valid || cacop_Hit_Invalidate_ur) && (~conflict_case1) ||
                 (current_state == LOOKUP) && (valid || cacop_Hit_Invalidate) && cache_hit && (~conflict_case1) && (~conflict_case2);
 assign hitwrite = (writebuf_cstate == WRITEBUF_WRITE);
 assign replace = (current_state == MISS) || (current_state == REPLACE);
@@ -393,7 +388,7 @@ always @(posedge clk)begin
     else if(lookup == 1)begin
         reg_op <= op;
         reg_index <= index;
-        reg_tag <= tag;
+        reg_tag <= cacop_Hit_Invalidate_ur ? cacop_va_tag : tag;
         reg_offset <= offset;
         reg_wstrb <= wstrb;
         reg_wdata <= wdata;
@@ -428,13 +423,14 @@ always @(posedge clk)begin
 end
 
 // refill 数据的赋值
-wire [31:0] refill_word;
-wire [31:0] mixed_word;
+(*mark_debug = "true"*) wire [31:0] refill_word;
+(*mark_debug = "true"*) wire [31:0] mixed_word;
 assign mixed_word = {{reg_wstrb[3]? reg_wdata[31:24] : ret_data[31:24]},
                      {reg_wstrb[2]? reg_wdata[23:16] : ret_data[23:16]},
                      {reg_wstrb[1]? reg_wdata[15: 8] : ret_data[15: 8]},
                      {reg_wstrb[0]? reg_wdata[ 7: 0] : ret_data[ 7: 0]}};
 assign refill_word = ((refill_word_counter == reg_offset[3:2]) && (reg_op == WRITE))? mixed_word : ret_data;
+
 
 // tagv ram 的输入信号生成
 assign tagv_w0_en = lookup_en || ((replace || refill) && (replace_way == 1'b0)) || ((cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0]))
@@ -522,7 +518,7 @@ assign data_wdata = (cacop_store_tag) ? 32'b0 :
                         refill ? refill_word :
                             (hitwrite ? write_data : 32'b0);
 
-assign data_addr  = (cacop_Hit_Invalidate) ? cacop_va_index :
+assign data_addr  = (cacop_Hit_Invalidate | cacop_Hit_Invalidate_ur) ? cacop_va_index :
                     (cacop_store_tag || cacop_Index_Invalidate) ? cacop_va[11:4] :
                         (replace || refill)? reg_index :
                                         (hitwrite ? write_index :
@@ -566,16 +562,16 @@ assign rd_addr = {reg_tag, reg_index, 4'b0000};
 
 assign wr_req = (current_state == MISS) && replace_block_dirty ||
                 (cacop_Index_Invalidate && (cacop_va[0] ? dirty_way1[cacop_va[11:4]] : dirty_way0[cacop_va[11:4]])) ||
-                (cacop_Hit_Invalidate && current_state == LOOKUP && (way0_hit & dirty_way0[reg_index] | way1_hit & dirty_way1[reg_index]));
+                (cacop_Hit_Invalidate  && (way0_hit & dirty_way0[reg_index] | way1_hit & dirty_way1[reg_index]));
 assign wr_type = WRITE_BLOCK; 
 assign wr_addr = {32{cacop_Index_Invalidate}} & {cacop_va[0] ? way1_tag : way0_tag, cacop_va[11:4], 4'b0000} |
-                 {32{cacop_Hit_Invalidate && current_state == LOOKUP}} & {{20{cache_hit}} & cacop_va_tag,reg_index,4'b0000} |
+                 {32{cacop_Hit_Invalidate}} & {{20{cache_hit}} & cacop_va_tag,reg_index,4'b0000} |
                  {32{~cacop_Index_Invalidate & ~cacop_Hit_Invalidate}} & (
                  {32{replace_way == 1'b0}} & {way0_tag, reg_index, 4'b0000} |
                  {32{replace_way == 1'b1}} & {way1_tag, reg_index, 4'b0000});
 assign wr_wstrb = 4'b1111; // 只有 uncached 才有意义
 assign wr_data = {128{cacop_Index_Invalidate}} & (cacop_va[0] ? way1_load_block : way0_load_block) |
-                 {128{cacop_Hit_Invalidate & current_state == LOOKUP}} & ( way1_hit ? way1_load_block : way0_load_block) |
+                 {128{cacop_Hit_Invalidate}} & ( way1_hit ? way1_load_block : way0_load_block) |
                  {128{~cacop_Index_Invalidate & ~cacop_Hit_Invalidate}} & (
                  {128{replace_way == 1'b0}} & way0_load_block |
                  {128{replace_way == 1'b1}} & way1_load_block);
@@ -584,6 +580,6 @@ assign wr_data = {128{cacop_Index_Invalidate}} & (cacop_va[0] ? way1_load_block 
 assign cacop_ok = cacop_store_tag & (1'b1)
                  |cacop_Index_Invalidate & ((cacop_va[0] ? dirty_way1[cacop_va[11:4]] : dirty_way0[cacop_va[11:4]]) & wr_rdy |
                                            ~(cacop_va[0] ? dirty_way1[cacop_va[11:4]] : dirty_way0[cacop_va[11:4]]))
-                 |cacop_Hit_Invalidate & (current_state == LOOKUP);
+                 |cacop_Hit_Invalidate & (~wr_req | wr_req & wr_rdy);
 
 endmodule

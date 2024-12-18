@@ -1,7 +1,7 @@
-`include "head.h"
+`include "head.h" 
 module mycpu_top(
-    input  aclk   ,
-    input  aresetn,
+(*mark_debug = "true"*)    input  aclk   ,
+(*mark_debug = "true"*)    input  aresetn,
     // read req channel
     output [ 3:0] arid   , // 读请求ID
     output [31:0] araddr , // 读请求地址

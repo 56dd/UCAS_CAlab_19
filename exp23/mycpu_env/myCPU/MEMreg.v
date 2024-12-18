@@ -40,7 +40,7 @@ module MEMreg(
     wire [31:0] shift_rdata   ;
 
     reg  [85:0] ms_except_zip;
-    reg  [31:0] ms_pc;
+(*mark_debug = "true"*)    reg  [31:0] ms_pc;
     reg  [31:0] es_rf_result_tmp;
     
 
