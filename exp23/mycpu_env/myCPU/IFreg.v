@@ -80,7 +80,7 @@ module IFreg(
     assign {br_stall,br_taken, br_target} = br_zip;//34
 
     wire [31:0] fs_inst;
-(*mark_debug = "true"*)    reg  [31:0] fs_pc;
+    reg  [31:0] fs_pc;
     reg  [31:0] fs_inst_buf;
     reg         inst_buf_valid;  // 判断指令缓存是否有效
     reg         inst_sram_addr_ack;

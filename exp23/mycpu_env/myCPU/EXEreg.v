@@ -11,7 +11,7 @@ module EXEreg(
     output wire [`ES2MS_BUS-1:0] es2ms_bus,          //123   
     output wire [39:0] es_rf_zip,           //40   
     output wire        es2ms_valid,         //1
-(*mark_debug = "true"*)    output reg  [31:0] es_pc,               //32
+    output reg  [31:0] es_pc,               //32
     output wire [`TLB_CONFLICT_BUS_LEN -1:0] es_tlb_blk_zip,
     // data sram interface
     output wire         data_sram_req,      //1

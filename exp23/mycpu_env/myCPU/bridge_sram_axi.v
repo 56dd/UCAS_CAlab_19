@@ -48,7 +48,7 @@ module bridge_sram_axi(
     input  wire [31:0]      icache_rd_addr,
     output wire        	icache_rd_rdy,		// icache_addr_ok
     output wire        	icache_ret_valid,	// icache_data_ok
-	output wire			icache_ret_last,
+		output wire			icache_ret_last,
     output wire [31:0]      icache_ret_data,
     // dcache rd interface
 	input   wire         	dcache_rd_req,
@@ -209,7 +209,7 @@ module bridge_sram_axi(
 	assign rready = r_current_state[1] || r_current_state[2];	// R_DATA_START | R_DATA_MID
 	assign read_block = (araddr == awaddr) & (|w_current_state[4:1]) & ~b_current_state[2];	// 读写地址相同且有写操作且数据未写�?
 	always @(posedge aclk)begin
-		if(!aresetn)
+		if(~aresetn)
 			{buf_rdata[2], buf_rdata[1], buf_rdata[0]} <= 96'b0;
 		else if(rvalid & rready)
 			buf_rdata[rid] <= rdata;
