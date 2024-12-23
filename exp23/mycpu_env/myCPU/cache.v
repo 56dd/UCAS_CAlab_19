@@ -2,36 +2,36 @@ module cache(
     input wire        clk,
     input wire        resetn,
 
-    // cache与CPU的交互接口
-    input wire        valid,  // CPU 访问cache 请求的有效信号
-    input wire        op,     // 读或写
+    // cache与CPU的交互接�?
+    input wire        valid,  // CPU 访问cache 请求的有效信�?
+    input wire        op,     // 读或�?
     input wire [ 7:0] index,  // vaddr[11:4] 索引
     input wire [19:0] tag,    // paddr[31:12] 标签
-    input wire [ 3:0] offset, // vaddr[3:0] 偏移量
-    input wire [ 3:0] wstrb,  // 字节写使能
-    input wire [31:0] wdata,  // 写数据
+    input wire [ 3:0] offset, // vaddr[3:0] 偏移�?
+    input wire [ 3:0] wstrb,  // 字节写使�?
+    input wire [31:0] wdata,  // 写数�?
     
     output wire        addr_ok, // 地址传输完成信号
     output wire        data_ok, // 数据传输完成信号
-    output wire [31:0] rdata,   // cache读数据
+    output wire [31:0] rdata,   // cache读数�?
 
-    // cache与总线的交互接口
-    output wire        rd_req,   // 读请求有效信号
-    output wire [ 2:0] rd_type,  // 读请求类型
-    output wire [31:0] rd_addr,  // 读请求起始地址
+    // cache与�?�线的交互接�?
+    output wire        rd_req,   // 读请求有效信�?
+    output wire [ 2:0] rd_type,  // 读请求类�?
+    output wire [31:0] rd_addr,  // 读请求起始地�?
 
     input  wire        rd_rdy,   // 读请求是否被内存接收
     input  wire        ret_valid,// 返回数据有效
-    input  wire        ret_last, // 读请求的最后一个返回数据
-    input  wire [31:0] ret_data, // 读返回数据
+    input  wire        ret_last, // 读请求的�?后一个返回数�?
+    input  wire [31:0] ret_data, // 读返回数�?
 
-    output wire        wr_req,   // 写请求有效信号
-    output wire [ 2:0] wr_type,  // 写请求类型
-    output wire [31:0] wr_addr,  // 写请求起始地址
+    output wire        wr_req,   // 写请求有效信�?
+    output wire [ 2:0] wr_type,  // 写请求类�?
+    output wire [31:0] wr_addr,  // 写请求起始地�?
     output wire [ 3:0] wr_wstrb,  // 写操作字节掩码，仅在 WRITE_BYTE, WRITE_HALFWORD, WRITE_WORD下有意义，for uncached 指令
-    output wire [127:0] wr_data, // 写数据
+    output wire [127:0] wr_data, // 写数�?
 
-    input  wire        wr_rdy,    // 写请求能否被接收的握手信号
+    input  wire        wr_rdy,    // 写请求能否被接收的握手信�?
 
     input  wire        cache_store_tag,
     input  wire        cache_Index_Invalidate,
@@ -46,18 +46,18 @@ module cache(
     wire [7:0]  cacop_va_index;
     assign cacop_va_index = cacop_va[11:4];
 
-    // 主状态机的状态
+    // 主状态机的状�?
     localparam IDLE    = 5'b00001,
                LOOKUP  = 5'b00010,
                MISS    = 5'b00100,
                REPLACE = 5'b01000,
                REFILL  = 5'b10000;
 
-// cache 的 4 种操作类型
- wire lookup; //根据标签和索引查找是否命中
- wire hitwrite;//命中的写操作会进入 Write Buffer，随后将数据写入命中 Cache 行的对应位置。
- wire replace;//如果查找未命中或者缓存中的数据需要被更新，执行替换cache，即读取一个 Cache 行
- wire refill;//将内存返回的数据（以及 store miss 待写入的数据）填入 Replace 空出的位置上
+// cache �? 4 种操作类�?
+ wire lookup; //根据标签和索引查找是否命�?
+ wire hitwrite;//命中的写操作会进�? Write Buffer，随后将数据写入命中 Cache 行的对应位置�?
+ wire replace;//如果查找未命中或者缓存中的数据需要被更新，执行替换cache，即读取�?�? Cache �?
+ wire refill;//将内存返回的数据（以�? store miss 待写入的数据）填�? Replace 空出的位置上
 
  reg [4:0] current_state;
  reg [4:0] next_state;
@@ -84,13 +84,13 @@ module cache(
 localparam READ  = 1'b0;
 localparam WRITE = 1'b1;
 
-// cache-->内存 读请求类型 (rd_type)
+// cache-->内存 读请求类�? (rd_type)
 localparam READ_BYTE     = 3'b000; //1字节
 localparam READ_HALFWORD = 3'b001; //2字节
 localparam READ_WORD     = 3'b010; //4字节
 localparam READ_BLOCK    = 3'b100; 
 
-// cache-->内存 写请求类型 (wr_type)
+// cache-->内存 写请求类�? (wr_type)
 localparam WRITE_BYTE     = 3'b000;
 localparam WRITE_HALFWORD = 3'b001;
 localparam WRITE_WORD     = 3'b010;
@@ -99,7 +99,7 @@ localparam WRITE_BLOCK    = 3'b100;
  wire         reset;
 assign       reset = ~resetn;    
 
-// tagv_ram 和 data_bank_ram 的输入输出信号
+// tagv_ram �? data_bank_ram 的输入输出信�?
  wire [ 7:0] tagv_addr;
  wire [20:0] tagv_wdata;
  wire [20:0] tagv_w0_rdata, tagv_w1_rdata;
@@ -113,8 +113,8 @@ assign       reset = ~resetn;
  wire [ 3:0] data_w0_b0_we, data_w0_b1_we, data_w0_b2_we, data_w0_b3_we,data_w1_b0_we, data_w1_b1_we, data_w1_b2_we, data_w1_b3_we;
 
 
-// cache 的逻辑组织结构（对 cache 的硬件结构实例化）
-// Tag V 域：每一路用 256*21 bit 的 ram 实现
+// cache 的�?�辑组织结构（对 cache 的硬件结构实例化�?
+// Tag V 域：每一路用 256*21 bit �? ram 实现
 tagv_ram tagv_way0(
     .addra(tagv_addr),
     .clka(clk),
@@ -132,7 +132,7 @@ tagv_ram tagv_way1(
     .wea(tagv_w1_we)
 );
 
-// data block：每一路拆分成4个 bank，每个 bank 用 256*32 bit 的 ram 实现
+// data block：每�?路拆分成4�? bank，每�? bank �? 256*32 bit �? ram 实现
 data_bank_ram data_way0_bank0(
     .addra(data_addr),
     .clka(clk),
@@ -221,16 +221,16 @@ localparam WRITEBUF_IDLE  = 2'b01,
  reg [31:0] reg_wdata;
 
 // miss buffer
- reg [ 1:0] refill_word_counter;  // 1个 cache block 有 4 个 32 位数据
+ reg [ 1:0] refill_word_counter;  // 1�? cache block �? 4 �? 32 位数�?
 
 // write buffer
  reg        write_way;   //写入的路
  reg [ 1:0] write_bank;  //写入的缓存块
  reg [ 7:0] write_index; //索引
- reg [ 3:0] write_strb; //写使能信号
+ reg [ 3:0] write_strb; //写使能信�?
  reg [31:0] write_data;
 
-// tag compare，此处未考虑 Uncache 情况，如果是 Uncache，一定要不命中
+// tag compare，此处未考虑 Uncache 情况，如果是 Uncache，一定要不命�?
  wire        way0_v, way1_v;
  wire [19:0] way0_tag, way1_tag;
  wire        way0_hit, way1_hit;
@@ -250,20 +250,20 @@ assign cache_hit = way0_hit || way1_hit;
 
 assign way0_load_block = {data_w0_b3_rdata, data_w0_b2_rdata, data_w0_b1_rdata, data_w0_b0_rdata};
 assign way1_load_block = {data_w1_b3_rdata, data_w1_b2_rdata, data_w1_b1_rdata, data_w1_b0_rdata};
-assign way0_load_word = way0_load_block[reg_offset[3:2]*32 +: 32]; //从拼接的缓存块中选择一个特定的 32 位数据单元
+assign way0_load_word = way0_load_block[reg_offset[3:2]*32 +: 32]; //从拼接的缓存块中选择�?个特定的 32 位数据单�?
 assign way1_load_word = way1_load_block[reg_offset[3:2]*32 +: 32];
 assign load_res = {32{way0_hit}} & way0_load_word |
                   {32{way1_hit}} & way1_load_word |
                   {32{current_state == REFILL}} & ret_data;
 
 
-// LFSR 线性反馈移位寄存器，是一种用于随机生成序列的寄存器，用于选择替换的缓存行
+// LFSR 线�?�反馈移位寄存器，是�?种用于随机生成序列的寄存器，用于选择替换的缓存行
 reg [2:0] lfsr;
 always @(posedge clk)begin
     if(reset)begin
         lfsr <= 3'b111;
     end
-    else if(ret_valid == 1 & ret_last == 1)begin  //数据有效且传输完成
+    else if(ret_valid == 1 & ret_last == 1)begin  //数据有效且传输完�?
         lfsr <= {lfsr[0], lfsr[2]^lfsr[0], lfsr[1]};
     end
 end
@@ -277,23 +277,23 @@ assign replace_data = replace_way? way1_load_block : way0_load_block;
 //脏块是指已修改但还未写回主存的数据块
 wire   replace_block_dirty;
 assign replace_block_dirty = (replace_way == 1'b0) && dirty_way0[reg_index] && way0_v 
-                        //选择 way0，way0 中的指定索引块是脏的，并且 way0 有效
+                        //选择 way0，way0 中的指定索引块是脏的，并�? way0 有效
                         || (replace_way == 1'b1) && dirty_way1[reg_index] && way1_v;
 
 
 
-// 第1种冲突由于读写端口的重合，无法避免
-wire conflict_case1 = (writebuf_cstate == WRITEBUF_WRITE)  // writebuff 状态机处于 WRITE 状态
-                   && valid && (op == READ)                // 一个新的读 cache 请求（写请求不用返回数据，因此不用考虑冲突）
-                   && (offset[3:2] == write_bank);         // 读写同一个 bank
-//cacop指令不考率冲突是因为重取指
-// 第2种冲突可以通过前递解决
-wire conflict_case2 = (current_state == LOOKUP)            // 主状态机处于 LOOKUP 状态
-                   && (reg_op == WRITE)                    // 当前是 store 操作
-                   && valid && (op == READ)                // 一个新的读 cache 请求
+// �?1种冲突由于读写端口的重合，无法避�?
+wire conflict_case1 = (writebuf_cstate == WRITEBUF_WRITE)  // writebuff 状�?�机处于 WRITE 状�??
+                   && valid && (op == READ)                // �?个新的读 cache 请求（写请求不用返回数据，因此不用�?�虑冲突�?
+                   && (offset[3:2] == write_bank);         // 读写同一�? bank
+//cacop指令不�?�率冲突是因为重取指
+// �?2种冲突可以�?�过前�?�解�?
+wire conflict_case2 = (current_state == LOOKUP)            // 主状态机处于 LOOKUP 状�??
+                   && (reg_op == WRITE)                    // 当前�? store 操作
+                   && valid && (op == READ)                // �?个新的读 cache 请求
                    && {tag, index, offset[3:2]} == {reg_tag, reg_index, offset[3:2]}; // 地址相等
 
-// 主状态机赋值
+// 主状态机赋�??
 always @(posedge clk)begin
     if(reset)
         current_state <= IDLE;
@@ -304,7 +304,7 @@ end
 always @(*)begin
     case(current_state)
     IDLE:begin
-        if((valid | cacop_Hit_Invalidate_ur) && (~conflict_case1))
+        if((valid | cacop_Hit_Invalidate_ur) && (~conflict_case1) && ~cacop_Hit_Invalidate)
             next_state = LOOKUP;
         else
             next_state = IDLE;
@@ -312,7 +312,7 @@ always @(*)begin
     LOOKUP:begin
         if(~cache_hit && ~cacop_Hit_Invalidate)
             next_state = MISS;
-        else if((~valid && ~cacop_Hit_Invalidate) || conflict_case1 || conflict_case2)
+        else if((~valid ) || conflict_case1 || conflict_case2)
             next_state = IDLE;
         else
             next_state = LOOKUP;
@@ -338,7 +338,7 @@ always @(*)begin
     endcase
 end
 
-// writebuffer 状态机的赋值
+// writebuffer 状�?�机的赋�?
 always @(posedge clk)begin
     if(reset)
         writebuf_cstate <= WRITEBUF_IDLE;
@@ -363,7 +363,7 @@ always @(*) begin
     endcase
 end
 
-// 判断当前操作的类型
+// 判断当前操作的类�?
 assign lookup = (current_state == IDLE) && (valid || cacop_Hit_Invalidate_ur) && (~conflict_case1) ||
                 (current_state == LOOKUP) && (valid || cacop_Hit_Invalidate) && cache_hit && (~conflict_case1) && (~conflict_case2);
 assign hitwrite = (writebuf_cstate == WRITEBUF_WRITE);
@@ -372,10 +372,10 @@ assign refill = (current_state == REFILL);
 
 assign lookup_en = (current_state == IDLE) && valid && (~conflict_case1) ||
                 (current_state == LOOKUP) && valid && (~conflict_case1) && (~conflict_case2); 
-                // 对于 ram 片选信号的生成，需要防止cache输出产生的 cache_hit 信号影响 ram 片选信号的生成
+                // 对于 ram 片�?�信号的生成，需要防止cache输出产生�? cache_hit 信号影响 ram 片�?�信号的生成
 
 
-// request buffer 的赋值
+// request buffer 的赋�?
 always @(posedge clk)begin
     if(reset)begin
         reg_op <= 1'b0;
@@ -395,7 +395,7 @@ always @(posedge clk)begin
     end
 end
 
-// miss buffer 的赋值
+// miss buffer 的赋�?
 always @(posedge clk)begin
     if(reset)
         refill_word_counter <= 2'b0;
@@ -404,7 +404,7 @@ always @(posedge clk)begin
 end
 
 
-// write buffer 的赋值
+// write buffer 的赋�?
 always @(posedge clk)begin
     if(reset)begin
         write_way <= 1'b0;
@@ -422,7 +422,7 @@ always @(posedge clk)begin
     end
 end
 
-// refill 数据的赋值
+// refill 数据的赋�?
 wire [31:0] refill_word;
 wire [31:0] mixed_word;
 assign mixed_word = {{reg_wstrb[3]? reg_wdata[31:24] : ret_data[31:24]},
@@ -432,7 +432,7 @@ assign mixed_word = {{reg_wstrb[3]? reg_wdata[31:24] : ret_data[31:24]},
 assign refill_word = ((refill_word_counter == reg_offset[3:2]) && (reg_op == WRITE))? mixed_word : ret_data;
 
 
-// tagv ram 的输入信号生成
+// tagv ram 的输入信号生�?
 assign tagv_w0_en = lookup_en || ((replace || refill) && (replace_way == 1'b0)) || ((cacop_store_tag || cacop_Index_Invalidate) && (~cacop_va[0]))
                     ||(cache_Hit_Invalidate && current_state == LOOKUP && way0_hit);
 assign tagv_w1_en = lookup_en || ((replace || refill) && (replace_way == 1'b1)) || ((cacop_store_tag || cacop_Index_Invalidate) && (cacop_va[0]))
@@ -445,7 +445,7 @@ assign tagv_w1_we = refill && (replace_way == 1'b1) && ret_valid && (refill_word
                  || (cache_Hit_Invalidate && current_state == LOOKUP && way1_hit);
 assign tagv_wdata = {21{refill}} & {reg_tag, 1'b1} |
                     {21{cacop_store_tag || cacop_Index_Invalidate}} & 21'b0 |
-                    {21{cacop_Hit_Invalidate && cache_hit}} & 21'b0; // refill 的 cache block v 位自动置1
+                    {21{cacop_Hit_Invalidate && cache_hit}} & 21'b0; // refill �? cache block v 位自动置1
 assign tagv_addr  = {8{cacop_store_tag || cacop_Index_Invalidate}} & cacop_va[11:4] |
                     {8{~cacop_store_tag & ~cacop_Index_Invalidate}} & (
                     {8{lookup_en}} & index |
@@ -525,7 +525,7 @@ assign data_addr  = (cacop_Hit_Invalidate | cacop_Hit_Invalidate_ur) ? cacop_va_
                                                     (lookup_en ? index : 8'b0));
 
 
-// dirty 表的赋值（同步写异步读）
+// dirty 表的赋�?�（同步写异步读�?
 always @(posedge clk)begin
     if(reset)begin
         dirty_way0 <= 256'b0;
@@ -546,7 +546,7 @@ always @(posedge clk)begin
 end
 
 
-// cache --> CPU 输出信号的赋值
+// cache --> CPU 输出信号的赋�?
 assign addr_ok = (current_state == IDLE) && (~conflict_case1) && valid ||
                  (current_state == LOOKUP) && cache_hit &&
                  valid && (~conflict_case1) && (~conflict_case2);
@@ -554,9 +554,9 @@ assign data_ok = (current_state == LOOKUP) && (cache_hit || (reg_op == WRITE)) |
                  (current_state == REFILL) && ret_valid && (refill_word_counter == reg_offset[3:2]) && (reg_op == READ);
 assign rdata   = load_res;
 
-// cache --> AXI 输出信号的赋值
+// cache --> AXI 输出信号的赋�?
 assign rd_req = (current_state == REPLACE);
-assign rd_type = READ_BLOCK; // 后续加入 ucached 需要补充！
+assign rd_type = READ_BLOCK; // 后续加入 ucached �?要补充！
 assign rd_addr = {reg_tag, reg_index, 4'b0000};
 
 
